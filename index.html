@@ -39,6 +39,17 @@
 .hero-voortgang{font-size:var(--fs-s);font-weight:var(--gewicht-vet);color:var(--mut);padding:0 var(--ruimte-1)}
 .hero-voortgang .voortgang{background:var(--tint);color:var(--st)}
 
+/* Plaatje kiezen: tik op de poster, kies de poster van een seizoen */
+.poster-knop{display:block;flex:none;border-radius:var(--r-l)}
+.poster-knop:active{transform:scale(.97)}
+.plaatjes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ruimte-3);margin-top:var(--ruimte-3)}
+.plaatje-keuze{display:grid;gap:var(--ruimte-1);min-width:0;text-align:left;font-size:var(--fs-xs);font-weight:var(--gewicht-vet);color:var(--mut)}
+.plaatje-keuze img{display:block;width:100%;aspect-ratio:5/7;object-fit:cover;border-radius:var(--r-m);background:var(--tint);box-shadow:0 0 0 3px transparent;transition:box-shadow var(--duur-snel)}
+.plaatje-keuze span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plaatje-keuze[aria-pressed="true"] img{box-shadow:0 0 0 3px var(--ink)}
+.plaatje-keuze[aria-pressed="true"] span{color:var(--ink)}
+.plaatjes .skelet{height:auto;aspect-ratio:5/7;margin:0;border-radius:var(--r-m)}
+
 /* Statuskeuze: de gekozen status in zijn eigen kleur */
 .chips.status .chip[aria-pressed="true"]{background:var(--c);color:var(--blok-ink)}
 .chips.status .chip[aria-pressed="true"] .stip{background:var(--blok-ink)}
@@ -201,7 +212,6 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzvZqn5IrCF5pv_YFCuuGQk
       deel('t1', 'seizoen', 'Seizoen 3 Part 2', 104578, 'TV', 2019, 10, 0),
       deel('t1', 'seizoen', 'The Final Season', 110277, 'TV', 2020, 16, 0),
       deel('t1', 'seizoen', 'The Final Season Part 2', 131681, 'TV', 2022, 12, 0),
-      deel('t1', 'extra', 'The Final Season: The Final Chapters', 146984, 'SPECIAL', 2023, 2, 0),
       deel('t2', 'seizoen', '', 101922, 'TV', 2019, 26, 26),
       deel('t2', 'seizoen', 'Mugen Train Arc', 129874, 'TV', 2021, 7, 7, 'FINISHED', { alt: 112151 }),
       deel('t2', 'seizoen', 'Entertainment District Arc', 142329, 'TV', 2021, 11, 11),
@@ -281,6 +291,8 @@ const STATUSSEN = [
 const statusNaam = id => id === 'alles' ? 'Alles' : (STATUSSEN.find(s => s.id === id) || STATUSSEN[1]).naam;
 const FORMATEN = { TV: 'TV', TV_SHORT: 'Kort', ONA: 'ONA', OVA: 'OVA', MOVIE: 'Film', SPECIAL: 'Special', MUSIC: 'Muziek' };
 const SEIZOEN_FORMATEN = ['TV', 'TV_SHORT', 'ONA'];
+/** Alleen seizoenen en films; OVA's, specials en muziek laat de app weg. */
+const telt = m => isSeizoen(m) || m.format === 'MOVIE';
 /** Telt als seizoen: series, behalve losse webfilmpjes van één of twee afleveringen. */
 const isSeizoen = m => SEIZOEN_FORMATEN.includes(m.format) && !(m.format === 'ONA' && m.episodes && m.episodes <= 2);
 const NOG_BEZIG = ['RELEASING', 'NOT_YET_RELEASED', 'HIATUS'];
@@ -300,13 +312,15 @@ const opNaam = (a, b) => a.naam.localeCompare(b.naam, 'nl');
 
 const D = () => S.data;
 const titel = id => D().titels.find(t => t.id === id);
-const delenVan = id => D().delen.filter(d => d.titelId === id).sort((a, b) => getal(a.positie) - getal(b.positie));
+// Een extra die geen film is (OVA, special, van vóór deze regel) blijft in de Sheet, maar de app toont en telt hem niet
+const zichtbaar = d => d.soort !== 'extra' || !d.formaat || d.formaat === 'MOVIE';
+const delenVan = id => D().delen.filter(d => d.titelId === id && zichtbaar(d)).sort((a, b) => getal(a.positie) - getal(b.positie));
 const seizoenenVan = id => delenVan(id).filter(d => d.soort !== 'extra');
 const extrasVan = id => delenVan(id).filter(d => d.soort === 'extra');
 const taal = () => ((D().instellingen || []).find(x => x.id === 'taal') || { waarde: 'engels' }).waarde;
 /** Hoeveel afleveringen er nu te kijken zijn: bij een lopende serie het aantal dat al is uitgezonden. */
 const beschikbaar = d => d.bronStatus === 'NOT_YET_RELEASED' ? 0 : (getal(d.uitgezonden) || getal(d.afleveringen));
-const deelNaam = (d, k) => d.naam || (d.soort === 'extra' ? (FORMATEN[d.formaat] || 'Extra') : 'Seizoen ' + (k + 1));
+const deelNaam = (d, k) => d.naam || (d.soort === 'extra' ? 'Film' : 'Seizoen ' + (k + 1));
 const posterHtml = (t, klasse = '') => t.plaatje
   ? `<img class="poster ${klasse}" src="${esc(t.plaatje)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
   : `<span class="poster zonder ${klasse}" aria-hidden="true">${esc((t.naam || '?').charAt(0).toUpperCase())}</span>`;
@@ -351,7 +365,7 @@ function verwijder(tabel, ids) {
 
 /* ---------- Status automatisch ----------
    Eerste vink: Watching. Alles gezien: Finished, of Waiting als er nog iets uitkomt.
-   Films en extra's tellen niet mee voor "alles gezien", wel voor "er komt nog iets". */
+   Films tellen niet mee voor "alles gezien", wel voor "er komt nog iets". */
 function nieuweStatus(t) {
   const sz = seizoenenVan(t.id), alle = delenVan(t.id);
   const iets = alle.some(d => getal(d.gezien) > 0);
@@ -496,7 +510,7 @@ function tekenTitel() {
   const open = openSeizoen(t.id);
   const cijfer = cijferTekst(t.rating);
   let h = `<div style="--st:${stKleur(t.status)}">`;
-  h += `<div class="hero">${posterHtml(t, 'groot')}
+  h += `<div class="hero"><button type="button" class="poster-knop" data-act="plaatje-kies" data-id="${t.id}" aria-label="Plaatje kiezen">${posterHtml(t, 'groot')}</button>
     <div class="hero-rechts">
       <button type="button" class="blok kleur cijfer-knop" style="--c:var(--st)" data-act="rating-open" data-id="${t.id}" aria-label="Jouw cijfer: ${cijfer || 'nog niet gegeven'}">
         <span class="blok-label">Jouw cijfer</span><b class="${cijfer ? '' : 'geen'}">${cijfer || '–'}</b></button>
@@ -507,10 +521,10 @@ function tekenTitel() {
   h += `<div class="kopje">Seizoenen</div><div class="groep">`;
   sz.forEach((d, k) => { h += deelRij(d, k, open === d.id); });
   h += `<button type="button" class="rij" data-act="deel-toevoegen" data-id="${t.id}"><span class="plus-rond">${ico('plus')}</span><span class="naam">Seizoen of film toevoegen</span></button></div>`;
-  if (ex.length) h += `<div class="kopje">Films &amp; extra's</div><div class="groep">${ex.map((d, k) => deelRij(d, k, false)).join('')}</div>`;
+  if (ex.length) h += `<div class="kopje">Films</div><div class="groep">${ex.map((d, k) => deelRij(d, k, false)).join('')}</div>`;
   h += `<div class="groep" style="margin-top:var(--ruimte-6)">
     ${navRij('titel-naam', 'potlood', 'Naam wijzigen', t.id)}
-    ${navRij('titel-plaatje', 'plaatje', 'Plaatje wijzigen', t.id)}
+    ${navRij('plaatje-kies', 'plaatje', 'Plaatje kiezen', t.id)}
     ${delenVan(t.id).some(d => d.bronId) ? navRij('titel-nieuw', 'vakjes', 'Nieuwe delen zoeken', t.id) : ''}
     ${navRij('titel-weg', 'prullenbak', 'Verwijder', t.id, true)}
   </div></div>`;
@@ -532,7 +546,7 @@ function deelRij(d, k, open) {
   let meta = '';
   if (d.bronStatus === 'NOT_YET_RELEASED') meta = 'Nog niet uit';
   else if (d.alt) { const a = D().delen.find(x => x.titelId === d.titelId && String(x.bronId) === String(d.alt)); if (a) meta = 'Zelfde verhaal als ' + deelNaam(a, seizoenenVan(d.titelId).indexOf(a)); }
-  const rechts = extra ? (FORMATEN[d.formaat] || 'Extra') : `${g}/${tot || '?'}`;
+  const rechts = extra ? 'Film' : `${g}/${tot || '?'}`;
   const naam = deelNaam(d, k);
   const klapbaar = !extra && max;
   let h = veegRij('d-' + d.id, [['wijzig', 'deel-wijzig', d.id, `${naam} wijzigen`], ['weg', 'deel-weg', d.id, `${naam} verwijderen`]],
@@ -655,13 +669,13 @@ async function haalReeks(startId) {
   // Wat alleen via een zijverhaal binnenkomt, is altijd een extra (ook als het een serie is)
   const viaZij = new Set([...zij.keys()].filter(id => !knopen.has(id)));
   zij.forEach((n, id) => { if (!knopen.has(id)) knopen.set(id, n); });
-  const telt = m => !viaZij.has(m.id) && isSeizoen(m);
-  const alle = [...knopen.values()].filter(m => m.format && m.format !== 'MUSIC').sort((a, b) => datumWaarde(a) - datumWaarde(b));
-  const seizoenen = alle.filter(telt);
+  const isDeel = m => !viaZij.has(m.id) && isSeizoen(m);
+  const alle = [...knopen.values()].filter(m => m.format && (isDeel(m) || m.format === 'MOVIE')).sort((a, b) => datumWaarde(a) - datumWaarde(b));
+  const seizoenen = alle.filter(isDeel);
   const eerste = seizoenen[0] || alle[0];
   const basis = basisNaam(eerste);
   return { basis, plaatje: (eerste.coverImage || {}).large || '', eerste,
-    delen: alle.map(m => ({ m, soort: telt(m) ? 'seizoen' : 'extra', naam: m === eerste ? '' : kortNaam(mediaNaam(m), basis), alt: alt.has(m.id) && knopen.has(alt.get(m.id)) ? alt.get(m.id) : '' })) };
+    delen: alle.map(m => ({ m, soort: isDeel(m) ? 'seizoen' : 'extra', naam: m === eerste ? '' : kortNaam(mediaNaam(m), basis), alt: alt.has(m.id) && knopen.has(alt.get(m.id)) ? alt.get(m.id) : '' })) };
 }
 const deelUitMedia = (titelId, x, positie) => ({
   id: 'd' + nieuwId(), titelId, soort: x.soort, positie, naam: x.naam, bronId: x.m.id, formaat: x.m.format || '',
@@ -742,7 +756,7 @@ function zoekInvoer(q) {
     try {
       const d = await anilist(`query($s:String){Page(perPage:15){media(search:$s,type:ANIME,sort:SEARCH_MATCH){${MEDIA}}}}`, { s: vraag });
       if (vraag !== S.zoekQ || !$('#ac')) return;
-      const r = d.Page.media.filter(m => m.format !== 'MUSIC');
+      const r = d.Page.media.filter(telt);
       $('#ac').innerHTML = (r.length ? `<div class="groep">${r.map(m => {
         const al = inLijst(m.id), t = al && titel(al.titelId);
         const meta = [(m.startDate || {}).year, FORMATEN[m.format], m.episodes ? m.episodes + ' afl.' : ''].filter(Boolean).join(' · ');
@@ -782,7 +796,7 @@ async function kiesMedia(id) {
     $('#venster-inhoud').innerHTML = `<h2>Dat lukte niet</h2><p class="ac-leeg">AniList is even niet bereikbaar. Probeer het zo opnieuw.</p>`;
   }
 }
-/** Keuzelijst met alle seizoenen en extra's; seizoenen en films staan aan, OVA's en specials uit. */
+/** Keuzelijst met alle seizoenen en films; alles staat aan. */
 function toonReeks(r, titelId) {
   const rij = (x, k) => {
     const al = inLijst(x.m.id);
@@ -797,7 +811,7 @@ function toonReeks(r, titelId) {
   $('#venster-inhoud').innerHTML = `<h2>${titelId ? 'Nieuwe delen' : esc(r.basis)}</h2>
     ${titelId ? '' : `<label class="label" for="rk-naam">Naam</label><input class="veld" id="rk-naam" value="${esc(r.basis)}" autocomplete="off">`}
     ${sz.length ? `<div class="kopje">Seizoenen</div><div class="groep">${sz.map(({ x, k }) => rij(x, k)).join('')}</div>` : ''}
-    ${ex.length ? `<div class="kopje">Films &amp; extra's</div><div class="groep">${ex.map(({ x, k }) => rij(x, k)).join('')}</div>` : ''}
+    ${ex.length ? `<div class="kopje">Films</div><div class="groep">${ex.map(({ x, k }) => rij(x, k)).join('')}</div>` : ''}
     <button type="button" class="knop breed" data-act="reeks-bewaar" data-id="${titelId || ''}">Toevoegen</button>`;
 }
 function bewaarReeks(titelId) {
@@ -818,7 +832,9 @@ function bewaarReeks(titelId) {
   // Het eerste seizoen in de lijst heet "Seizoen 1": geen eigen naam nodig
   const eersteSeizoen = gekozen.find(x => x.soort === 'seizoen');
   const delen = gekozen.map((x, k) => deelUitMedia(id, Object.assign({}, x, { naam: x === eersteSeizoen && x.m === r.eerste ? '' : (x.naam || mediaNaam(x.m)) }), k + 1));
-  const t = { id, soort: 'anime', naam, plaatje: r.plaatje, status: 'towatch', rating: '', toegevoegd: Date.now(), gewijzigd: Date.now() };
+  // Plaatje van het eerste gekozen seizoen: vink je "Bleach" uit en houd je alleen TYBW, dan de poster van TYBW
+  const plaatje = ((eersteSeizoen || gekozen[0]).m.coverImage || {}).large || r.plaatje;
+  const t = { id, soort: 'anime', naam, plaatje, status: 'towatch', rating: '', toegevoegd: Date.now(), gewijzigd: Date.now() };
   sluitSheet();
   D().delen.push(...delen);
   bel('bewaar', 'delen', delen);
@@ -827,8 +843,32 @@ function bewaarReeks(titelId) {
   openTitel(id);
   melding(`${naam} toegevoegd.`);
 }
+/* Plaatje kiezen: de posters van alle seizoenen en films van deze titel (AniList), of een eigen link */
+async function openPlaatjes(id) {
+  const t = titel(id), metBron = delenVan(id).filter(d => d.bronId);
+  S.plaatjeVoor = id;
+  openSheet(`<h2>Plaatje kiezen</h2>
+    ${metBron.length ? `<div class="plaatjes" id="plaatjes">${'<span class="skelet"></span>'.repeat(Math.min(metBron.length, 6))}</div>` : ''}
+    <div class="groep" style="margin-top:var(--ruimte-4)"><button type="button" class="rij" data-act="plaatje-link" data-id="${id}"><span class="rij-ico">${ico('plaatje')}</span><span class="naam">Eigen link plakken</span></button></div>`);
+  if (!metBron.length) return;
+  try {
+    const data = await anilist('query{' + metBron.map((d, i) => `m${i}:Media(id:${Number(d.bronId)}){coverImage{large}}`).join(' ') + '}');
+    if (S.plaatjeVoor !== id || !$('#plaatjes')) return;
+    const sz = seizoenenVan(id), ex = extrasVan(id), al = new Set();
+    $('#plaatjes').innerHTML = metBron.map((d, i) => {
+      const url = ((data['m' + i] || {}).coverImage || {}).large;
+      if (!url || al.has(url)) return '';
+      al.add(url);
+      const naam = deelNaam(d, d.soort === 'extra' ? ex.indexOf(d) : sz.indexOf(d));
+      return `<button type="button" class="plaatje-keuze" data-act="plaatje-zet" data-url="${esc(url)}" aria-pressed="${url === t.plaatje}" aria-label="Poster van ${esc(naam)}">
+        <img src="${esc(url)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span>${esc(naam)}</span></button>`;
+    }).join('');
+  } catch (e) {
+    if ($('#plaatjes')) $('#plaatjes').outerHTML = '<p class="ac-leeg">AniList is even niet bereikbaar. Probeer het zo opnieuw.</p>';
+  }
+}
 /* Zelf toevoegen, als AniList hem niet heeft */
-const soortKeuze = () => `<div class="keuze" id="zf-soort">${[['seizoen', 'Seizoen'], ['extra', 'Film of extra']].map(([id, n]) => `<button type="button" aria-pressed="${S.zelfSoort === id}" data-act="zf-soort" data-id="${id}">${n}</button>`).join('')}</div>`;
+const soortKeuze = () => `<div class="keuze" id="zf-soort">${[['seizoen', 'Seizoen'], ['extra', 'Film']].map(([id, n]) => `<button type="button" aria-pressed="${S.zelfSoort === id}" data-act="zf-soort" data-id="${id}">${n}</button>`).join('')}</div>`;
 function openZelf() {
   const doel = S.zoekDoel && titel(S.zoekDoel);
   S.zelfSoort = 'seizoen';
@@ -909,7 +949,9 @@ const ACTIES = {
   'toevoeg-open': () => openZoeken(),
   'titel-open': (b, id) => openTitel(id),
   'titel-naam': async (b, id) => { sluitVeeg(); const t = titel(id); const n = await vraagTekst('Naam wijzigen', t.naam); if (n) bewaar('titels', [{ id, naam: n }]); },
-  'titel-plaatje': async (b, id) => { const t = titel(id); const n = await vraagTekst('Link naar plaatje', t.plaatje, 'https://'); if (n !== null) bewaar('titels', [{ id, plaatje: n }]); },
+  'plaatje-kies': (b, id) => openPlaatjes(id),
+  'plaatje-zet': b => { const id = S.plaatjeVoor; sluitSheet(); bewaar('titels', [{ id, plaatje: b.dataset.url }]); melding('Plaatje gewijzigd.'); },
+  'plaatje-link': async (b, id) => { const t = titel(id); const n = await vraagTekst('Link naar plaatje', t.plaatje, 'https://'); if (n === null) return; sluitSheet(); bewaar('titels', [{ id, plaatje: n }]); },
   'titel-weg': async (b, id) => {
     sluitVeeg(); const t = titel(id);
     if (!(await bevestig(`${t.naam} verwijderen? Ook alles wat je hebt afgevinkt is dan weg.`))) return;
@@ -956,7 +998,7 @@ const ACTIES = {
     const d = D().delen.find(x => x.id === S.wijzigDeel);
     const afl = Math.max(0, Math.round(getal($('#dw-afl').value)));
     sluitSheet();
-    bewaarDelen(d.titelId, [{ id: d.id, naam: $('#dw-naam').value.trim(), soort: S.zelfSoort, afleveringen: afl || '', uitgezonden: '', gezien: Math.min(getal(d.gezien), afl || getal(d.gezien)) }]);
+    bewaarDelen(d.titelId, [{ id: d.id, naam: $('#dw-naam').value.trim(), soort: S.zelfSoort, formaat: S.zelfSoort === 'extra' ? 'MOVIE' : (d.formaat === 'MOVIE' ? 'TV' : d.formaat), afleveringen: afl || '', uitgezonden: '', gezien: Math.min(getal(d.gezien), afl || getal(d.gezien)) }]);
   },
   'deel-weg': async (b, id) => {
     sluitVeeg(); const d = D().delen.find(x => x.id === id);
