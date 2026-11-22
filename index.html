@@ -606,8 +606,22 @@ function kortNaam(vol, basis) {
 function basisNaam(m) {
   return mediaNaam(m).replace(/\s*(\(TV\)|Season 1|1st Season)$/i, '').trim();
 }
+/** Kern van een naam, zonder seizoen of ondertitel: "Naruto: Shippuden" → "naruto", "Attack on Titan Season 3" → "attackontitan". */
+const naamKern = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  .split(/[:：(]|\s(?:season|part)\b|\s\d+(?:st|nd|rd|th)\b/)[0].replace(/[^a-z0-9]+/g, '');
+/** Is dit vervolg een nieuwe serie in plaats van een nieuw seizoen?
+    Ja als de naam verandert (Naruto → Boruto, Dragon Ball Z → Dragon Ball GT),
+    of als beide lange series zijn (Naruto 220 → Shippuden 500 afleveringen). */
+function andereSerie(a, b) {
+  const ka = [a.title.english, a.title.romaji].map(naamKern).filter(Boolean);
+  const kb = [b.title.english, b.title.romaji].map(naamKern).filter(Boolean);
+  const zelfdeNaam = ka.some(x => kb.some(y => x.startsWith(y) || y.startsWith(x)));
+  if (!zelfdeNaam) return true;
+  return isSeizoen(a) && isSeizoen(b) && getal(a.episodes) >= LANG_SEIZOEN && getal(b.episodes) >= LANG_SEIZOEN;
+}
 /** Zoek de hele reeks rond één titel: vervolgen en voorgangers (PREQUEL/SEQUEL), plus de zijverhalen
-    en dubbele versies (SIDE_STORY, ALTERNATIVE) die daar direct aan hangen. Per stap één verzoek. */
+    en dubbele versies (SIDE_STORY, ALTERNATIVE) die daar direct aan hangen. Per stap één verzoek.
+    Een vervolg dat een andere serie is (zie andereSerie) wordt een eigen titel en komt er niet bij. */
 async function haalReeks(startId) {
   const knopen = new Map(), zij = new Map(), alt = new Map();
   let rand = [startId], ronde = 0, startOpnieuw = true;
@@ -622,6 +636,7 @@ async function haalReeks(startId) {
         m.relations.edges.forEach(e => {
           const n = e.node; if (n.type !== 'ANIME') return;
           if (e.relationType === 'PREQUEL' || e.relationType === 'SEQUEL') {
+            if (andereSerie(m, n)) return; // eigen titel, geen seizoen of extra
             if (!knopen.has(n.id) && !rand.includes(n.id) && !volgende.includes(n.id)) volgende.push(n.id);
           } else if (e.relationType === 'ALTERNATIVE' && isSeizoen(n)) {
             // Een andere serie over hetzelfde verhaal (FMA en FMA: Brotherhood): een eigen titel, geen seizoen
