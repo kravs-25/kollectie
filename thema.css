@@ -1,0 +1,15 @@
+/* =====================================================================
+   Kage Syztem · thema Kollectie · voor basis 0.2
+   Kleur betekent: de status van een titel.
+   ===================================================================== */
+[data-thema="kollectie"]{
+  --blok-1:var(--mosterd);    /* Watching: bezig, valt op */
+  --blok-2:var(--lavendel);   /* Waiting: in de wacht */
+  --blok-3:var(--salie);      /* Finished: klaar */
+  --blok-4:var(--zeegroen);   /* To watch: nog te doen */
+  --blok-5:var(--roze);       /* Dropped: gestopt */
+  --blok-6:var(--terracotta); /* vrij */
+  --blok-7:var(--zand);       /* vrij */
+  --blok-8:var(--kiezel);     /* vrij */
+  --merk:var(--lavendel);
+}

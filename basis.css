@@ -1,0 +1,241 @@
+/* =====================================================================
+   Kage Syztem · basis.css · versie 0.3 (22 november 2026)
+   ---------------------------------------------------------------------
+   De basis voor alle apps: maten, letter, beweging en onderdelen.
+   Ook het kleurenpalet staat hier: alle apps delen dezelfde kleuren.
+   Het thema van een app zegt alleen wat elke kleur betekent.
+   Gebruik:  <html data-thema="kollectie">
+             <link rel="stylesheet" href="basis.css">
+             <link rel="stylesheet" href="thema.css">
+   Pas dit bestand niet aan in een app. Iets nieuws? Dan komt het in de
+   bron (03 APPS/Kage Syztem) en krijgt de basis een nieuw versienummer.
+   ===================================================================== */
+
+:root{
+  color-scheme:dark;
+
+  /* ---------- letter ---------- */
+  --font:"Bricolage Grotesque",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --fs-xs:12px; --fs-s:14px; --fs-m:15px; --fs-basis:17px; --fs-l:18px; --fs-xl:24px; --fs-getal:34px; --fs-titel:44px;
+  --gewicht-naam:500; --gewicht-vet:700; --gewicht-zwaar:800;
+  --spatie-titel:-0.035em; --spatie-kop:-0.02em; --spatie-label:.06em;
+
+  /* ---------- vorm ---------- */
+  --r-s:10px; --r-m:14px; --r-l:18px; --r-blok:28px; --r-rond:999px;
+  --lijn-dik:1.5px;
+
+  /* ---------- ruimte en maten ---------- */
+  --ruimte-0:2px; --ruimte-1:4px; --ruimte-2:8px; --ruimte-3:12px; --ruimte-4:16px; --ruimte-5:20px; --ruimte-6:28px;
+  --rand:var(--ruimte-4);
+  --breedte:560px;
+  --h-s:44px; --tik:48px; --h-m:54px; --rij:58px;
+  --icoon-s:16px; --icoon-m:22px; --icoon-l:28px;
+  --vink:24px; --vink-r:9px;
+  --plaatje-b:54px; --plaatje-h:76px;
+  --actie-hoogte:56px;
+  --actie-ruimte:calc(var(--actie-hoogte) + var(--ruimte-6) * 2);
+  --veegknop:72px;
+
+  /* ---------- beweging ---------- */
+  --duur-snel:.15s; --duur:.2s; --duur-traag:.25s; --duur-lus:1.2s;
+  --veer:cubic-bezier(.2,.9,.3,1);
+
+  /* ---------- lagen ---------- */
+  --z-kop:5; --z-menu:8; --z-actie:9; --z-venster:20; --z-melding:30; --z-bevestig:40;
+
+  /* ---------- kleuren: één palet voor alle apps ---------- */
+  /* neutraal */
+  --bg:#1E1A16;   /* achtergrond, warm donkerbruin */
+  --vlak:#2B241E; /* neutraal blok, venster, menu */
+  --ink:#F3EADF;  /* tekst, crème */
+  --mut:#B3A08E;  /* bijtekst, kopjes */
+  --lijn:#3B3129; /* lijn in een neutraal blok */
+  --actie:#F3EADF; --actie-ink:#1E1A16;  /* actieknop, gekozen chip, huidig scherm */
+  --gevaar:#D9573F;                      /* verwijderen */
+  --wijzig:color-mix(in srgb,var(--ink) 25%,var(--vlak)); /* potlood onder het vegen */
+  --tint:rgba(243,234,223,.08);          /* ronde knoppen, chips, velden */
+  --overlay:rgba(10,6,3,.5); --schaduw:rgba(0,0,0,.5);
+
+  /* blokkleuren: licht en warm, want de tekst erop is altijd donker */
+  --salie:#A9C98F;
+  --mosterd:#F2D27A;
+  --terracotta:#EE9A72;
+  --roze:#E7A6B6;
+  --lavendel:#B7A6DE;
+  --zeegroen:#8FCDBE;
+  --zand:#D8C3A0;
+  --kiezel:#C9B9AA;
+  --blok-ink:#1E1A16;
+
+  /* Het thema van een app zegt alleen wat de kleuren betekenen:
+     --blok-1 … --blok-8 wijzen naar een kleur uit het palet hierboven,
+     en --merk is de kleur van het app-icoon. Standaard: */
+  --blok-1:var(--salie); --blok-2:var(--mosterd); --blok-3:var(--terracotta); --blok-4:var(--roze);
+  --blok-5:var(--lavendel); --blok-6:var(--zeegroen); --blok-7:var(--zand); --blok-8:var(--kiezel);
+  --merk:var(--salie);
+}
+
+/* ===================== basis ===================== */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:var(--fs-basis);line-height:1.35;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+input,textarea,select{font:inherit;color:inherit}
+img{display:block;object-fit:cover}
+svg{flex:none}
+.scherm{max-width:var(--breedte);margin:0 auto;padding:0 var(--rand) var(--actie-ruimte)}
+/* App-schil (iOS-webapp): de pagina scrolt nooit, alleen #scroller */
+html.app-schil,html.app-schil body{height:100%;overflow:hidden}
+html.app-schil #scroller{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-top:env(safe-area-inset-top)}
+
+/* ===================== kop en titel-schakelaar ===================== */
+.kop{display:flex;align-items:center;justify-content:space-between;gap:var(--ruimte-3);padding:var(--ruimte-3) 0;position:relative;z-index:var(--z-kop)}
+.titel{margin:0;font-size:var(--fs-titel);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-titel);line-height:1}
+.titel.lang{font-size:var(--fs-getal);line-height:1.05}  /* lange naam op een subpagina: mag over meer regels */
+.kop-links{position:relative;min-width:0}
+.terug{display:inline-flex;align-items:center;gap:var(--ruimte-1);color:var(--mut);font-weight:var(--gewicht-vet);font-size:var(--fs-m);height:var(--h-s)}
+
+.schakelaar{display:inline-flex;align-items:center;gap:var(--ruimte-2);text-align:left}
+.schakelaar .pijl{width:30px;height:30px;border-radius:var(--r-rond);background:var(--tint);display:grid;place-items:center;color:var(--mut);transition:transform var(--duur) var(--veer)}
+.schakelaar .pijl svg{width:var(--icoon-s);height:var(--icoon-s)}
+.schakelaar[aria-expanded="true"] .pijl{transform:rotate(180deg)}
+.schakelaar:disabled{cursor:default}
+.schakelaar:disabled .pijl{display:none}
+
+.schermmenu{position:absolute;top:calc(100% - var(--ruimte-1));left:0;min-width:230px;padding:var(--ruimte-1);background:var(--vlak);border-radius:var(--r-l);box-shadow:0 14px 34px var(--schaduw);z-index:var(--z-menu);transform-origin:top left;animation:open var(--duur) var(--veer)}
+.schermmenu[hidden]{display:none}
+.schermmenu button{display:flex;align-items:center;gap:var(--ruimte-3);width:100%;height:50px;padding:0 var(--ruimte-3);border-radius:var(--r-m);font-weight:var(--gewicht-naam);text-align:left}
+.schermmenu button svg{width:var(--icoon-m);height:var(--icoon-m)}
+.schermmenu button .n{margin-left:auto;font-size:var(--fs-s);color:var(--mut)}
+.schermmenu button[aria-current="page"]{background:var(--actie);color:var(--actie-ink)}
+.schermmenu button[aria-current="page"] .n{color:inherit;opacity:.6}
+.schermmenu hr{border:0;border-top:1px solid var(--lijn);margin:var(--ruimte-1) var(--ruimte-2)}
+.menu-waas{position:fixed;inset:0;z-index:calc(var(--z-menu) - 1)}
+@keyframes open{from{opacity:0;transform:scale(.96) translateY(-4px)}}
+
+.rond-knop{width:var(--h-s);height:var(--h-s);border-radius:var(--r-rond);background:var(--tint);display:grid;place-items:center;flex:none}
+.rond-knop svg{width:var(--icoon-m);height:var(--icoon-m)}
+
+/* ===================== chips ===================== */
+.chips{display:flex;gap:var(--ruimte-2);overflow-x:auto;margin:0 calc(var(--rand) * -1) var(--ruimte-4);padding:0 var(--rand);scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:36px;padding:0 var(--ruimte-3);border-radius:var(--r-rond);background:var(--tint);color:var(--mut);font-size:var(--fs-s);font-weight:var(--gewicht-vet);display:inline-flex;align-items:center;gap:6px}
+.chip .n{opacity:.7}
+.chip[aria-pressed="true"]{background:var(--actie);color:var(--actie-ink)}
+.chip .stip{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.chip.kleur{background:var(--c);color:var(--blok-ink)}  /* vaste kleurchip, zoals een status */
+
+/* ===================== blokken ===================== */
+/* Kleurblok: style="--c:var(--blok-1)". Zonder --c is het een neutraal blok. */
+.blok{--c:var(--vlak);background:var(--c);border-radius:var(--r-blok);padding:var(--ruimte-3);margin-bottom:var(--ruimte-2);display:flex;align-items:center;gap:var(--ruimte-3);text-align:left;width:100%}
+.blok.kleur{color:var(--blok-ink)}
+.blok-plaatje{width:var(--plaatje-b);height:var(--plaatje-h);border-radius:var(--r-m);flex:none;box-shadow:0 4px 10px rgba(0,0,0,.2);background:rgba(0,0,0,.15)}
+.blok-tekst{flex:1;min-width:0}
+.blok-label{display:block;font-size:11px;font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);text-transform:uppercase;opacity:.6}
+.blok-naam{display:block;font-size:var(--fs-l);font-weight:var(--gewicht-zwaar);letter-spacing:-.01em;line-height:1.15;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.getal{font-size:26px;font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-titel);line-height:1;text-align:right;flex:none}
+.getal small{display:block;font-size:11px;font-weight:var(--gewicht-vet);letter-spacing:0;opacity:.55;margin-top:2px}
+
+.voortgang{display:block;height:6px;border-radius:var(--r-rond);background:rgba(0,0,0,.15);margin-top:var(--ruimte-2);overflow:hidden}
+.voortgang i{display:block;height:100%;border-radius:inherit;background:currentColor;opacity:.75}
+
+/* Groepsblok: kop + rijen, in een kleur of neutraal */
+.groep{--c:var(--vlak);background:var(--c);border-radius:var(--r-blok);padding:var(--ruimte-3) var(--ruimte-4) var(--ruimte-1);margin-bottom:var(--ruimte-2)}
+.groep.kleur{color:var(--blok-ink)}
+.groep-kop{display:flex;justify-content:space-between;align-items:baseline;font-size:var(--fs-xl);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-kop);padding-bottom:var(--ruimte-1)}
+.groep-kop .n{font-size:var(--fs-s);opacity:.55}
+.kopje{font-size:var(--fs-xs);font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);text-transform:uppercase;color:var(--mut);margin:var(--ruimte-5) var(--ruimte-2) var(--ruimte-2)}
+
+/* ===================== rijen ===================== */
+.rij{display:flex;align-items:center;gap:var(--ruimte-3);min-height:var(--h-m);font-weight:var(--gewicht-naam);text-align:left;width:100%}
+.groep>*+*{border-top:var(--lijn-dik) solid color-mix(in srgb,currentColor 12%,transparent)}
+.groep:not(.kleur)>*+*{border-top:1px solid var(--lijn)}
+.groep>.geen-lijn{border-top:0}
+.rij .naam{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rij .rechts{color:color-mix(in srgb,currentColor 55%,transparent);font-weight:var(--gewicht-vet);font-size:var(--fs-m)}
+.rij .pijltje{color:var(--mut)}
+.rij.klaar .naam{text-decoration:line-through;opacity:.45}
+.rij:disabled{opacity:.45;cursor:default}
+.rij.gevaar{color:var(--gevaar)}
+.rij-tekst{flex:1;min-width:0;display:flex;flex-direction:column;text-align:left}
+.rij-tekst .naam{flex:none}
+.bijregel{font-size:var(--fs-s);font-weight:var(--gewicht-naam);color:color-mix(in srgb,currentColor 60%,transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rij-ico{width:var(--icoon-m);height:var(--icoon-m);display:grid;place-items:center;flex:none}
+.rij-ico svg{width:100%;height:100%}
+
+.vink{width:var(--vink);height:var(--vink);border-radius:var(--vink-r);border:2.5px solid currentColor;flex:none;display:grid;place-items:center;transition:background var(--duur-snel)}
+.vink svg{width:14px;height:14px;opacity:0}
+.vink[aria-pressed="true"],.rij.klaar .vink{background:currentColor}
+.vink[aria-pressed="true"] svg,.rij.klaar .vink svg{opacity:1;color:var(--c)}
+
+.stipje{width:30px;height:30px;border-radius:var(--r-s);background:var(--c);flex:none}
+
+/* ===================== knoppen ===================== */
+.knop{height:var(--tik);padding:0 var(--ruimte-5);border-radius:var(--r-rond);background:var(--actie);color:var(--actie-ink);font-weight:var(--gewicht-zwaar);display:inline-flex;align-items:center;justify-content:center;gap:var(--ruimte-2)}
+.knop.zacht{background:var(--tint);color:var(--ink)}
+.knop.gevaar{background:var(--gevaar);color:#fff}
+.knop.breed{width:100%}
+.knop svg{width:var(--icoon-m);height:var(--icoon-m)}
+
+.actieknop{position:fixed;left:50%;bottom:calc(var(--ruimte-5) + env(safe-area-inset-bottom));transform:translateX(-50%);height:var(--actie-hoogte);padding:0 var(--ruimte-6);border-radius:var(--r-rond);background:var(--actie);color:var(--actie-ink);font-size:var(--fs-basis);font-weight:var(--gewicht-zwaar);display:flex;align-items:center;gap:var(--ruimte-2);white-space:nowrap;box-shadow:0 10px 30px var(--schaduw);z-index:var(--z-actie);transition:transform var(--duur-snel)}
+.actieknop:active{transform:translateX(-50%) scale(.96)}
+.actieknop svg{width:var(--icoon-m);height:var(--icoon-m)}
+
+/* ===================== keuze (segmenten) ===================== */
+/* Eén keuze uit een paar: <div class="keuze"><button aria-pressed="true">…</button>…</div>
+   .keuze.raster zet de knoppen in een raster van --kolommen breed (standaard 10). */
+.keuze{display:flex;gap:2px;padding:var(--ruimte-1);background:var(--tint);border-radius:var(--r-rond);overflow-x:auto;scrollbar-width:none;margin-bottom:var(--ruimte-3)}
+.keuze::-webkit-scrollbar{display:none}
+.keuze button{flex:1 0 auto;height:36px;padding:0 var(--ruimte-3);border-radius:var(--r-rond);color:var(--mut);font-size:var(--fs-m);font-weight:var(--gewicht-vet);white-space:nowrap}
+.keuze button[aria-pressed="true"]{background:var(--actie);color:var(--actie-ink)}
+.keuze button:disabled{opacity:.35;cursor:default}
+.keuze.raster{display:grid;grid-template-columns:repeat(var(--kolommen,10),1fr);border-radius:var(--r-l)}
+.keuze.raster button{padding:0;min-width:0;border-radius:var(--r-m)}
+
+/* ===================== velden ===================== */
+.label{display:block;font-size:var(--fs-xs);font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);text-transform:uppercase;color:var(--mut);margin:0 var(--ruimte-1) var(--ruimte-1)}
+.veld{width:100%;height:var(--tik);padding:0 var(--ruimte-4);border-radius:var(--r-rond);background:var(--tint);border:0;outline:none;font-size:var(--fs-basis)}
+.veld:focus{box-shadow:0 0 0 2px var(--actie)}
+.veld::placeholder{color:var(--mut)}
+
+/* ===================== venster, bevestigen, melding ===================== */
+.venster-wrap{position:fixed;inset:0;z-index:var(--z-venster);display:flex;align-items:flex-end;justify-content:center}
+.venster-wrap[hidden]{display:none}
+.venster-bg{position:absolute;inset:0;background:var(--overlay);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);animation:waas var(--duur)}
+.venster{position:relative;width:100%;max-width:var(--breedte);max-height:88vh;overflow:auto;background:var(--vlak);border-radius:var(--r-blok) var(--r-blok) 0 0;padding:var(--ruimte-5) var(--rand) calc(var(--ruimte-6) + env(safe-area-inset-bottom));animation:omhoog var(--duur-traag) var(--veer)}
+.venster h2{margin:0 0 var(--ruimte-4);font-size:var(--fs-xl);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-kop);padding-right:var(--h-s)}
+.venster .sluit{position:absolute;top:var(--ruimte-3);right:var(--ruimte-3)}
+.venster.bevestig{margin:0 var(--ruimte-3) var(--ruimte-3);border-radius:var(--r-blok);text-align:center;max-width:440px}
+.venster.bevestig h2{padding:0;font-size:var(--fs-l)}
+.venster.bevestig .knop{width:100%;margin-top:var(--ruimte-2)}
+@keyframes omhoog{from{transform:translateY(100%)}}
+@keyframes waas{from{opacity:0}}
+
+.melding{position:fixed;left:50%;bottom:calc(var(--actie-ruimte) - var(--ruimte-4));transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);border-radius:var(--r-rond);padding:0 var(--ruimte-2) 0 var(--ruimte-5);min-height:var(--tik);display:flex;align-items:center;gap:var(--ruimte-3);font-weight:var(--gewicht-vet);font-size:var(--fs-m);white-space:nowrap;box-shadow:0 10px 30px var(--schaduw);z-index:var(--z-melding);transition:opacity var(--duur),transform var(--duur) var(--veer)}
+.melding:not(:has(button:not([hidden]))){padding-right:var(--ruimte-5)}
+.melding.toon{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.melding button{height:36px;padding:0 var(--ruimte-3);border-radius:var(--r-rond);background:color-mix(in srgb,var(--bg) 12%,transparent);font-weight:var(--gewicht-zwaar)}
+
+/* ===================== vegen ===================== */
+/* <div class="veeg" style="--n:2"><div class="veeg-knoppen"><button style="--c:var(--gevaar)">…</button></div><div class="veeg-inhoud">…</div></div> */
+.veeg{position:relative;border-radius:var(--r-blok);overflow:hidden;margin-bottom:var(--ruimte-2);--bw:calc(var(--n,1) * var(--veegknop))}
+.veeg>.veeg-inhoud{position:relative;transition:transform var(--duur-traag) var(--veer)}
+.veeg>.veeg-inhoud>.blok{margin:0}
+.veeg.open>.veeg-inhoud{transform:translateX(calc(var(--bw) * -1))}
+.veeg-knoppen{position:absolute;top:0;right:0;bottom:0;width:calc(var(--bw) + var(--r-blok));display:flex;justify-content:flex-end}
+.veeg-knoppen button{width:var(--veegknop);background:var(--c);color:#fff;display:grid;place-items:center}
+.veeg-knoppen button svg{width:var(--icoon-l);height:var(--icoon-l)}
+.veeg:not(.open):not(.bezig)>.veeg-knoppen{visibility:hidden}
+/* rijen binnen een groepsblok vegen ook: tot de rand van het blok */
+.groep .veeg{border-radius:0;margin:0 calc(var(--ruimte-4) * -1)}
+.groep .veeg-inhoud{background:var(--c);padding:0 var(--ruimte-4)}
+
+/* ===================== leeg en laden ===================== */
+.leeg{text-align:center;padding:var(--ruimte-6) var(--ruimte-4);color:var(--mut)}
+.leeg strong{display:block;color:var(--ink);font-size:var(--fs-xl);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-kop);margin-bottom:var(--ruimte-1)}
+.leeg .knop{margin-top:var(--ruimte-4)}
+.skelet{background:var(--vlak);border-radius:var(--r-blok);height:100px;margin-bottom:var(--ruimte-2);animation:skelet var(--duur-lus) ease-in-out infinite alternate}
+@keyframes skelet{to{opacity:.45}}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}

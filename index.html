@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="nl" class="app-schil" data-thema="kollectie">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kollectie</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kollectie">
+<meta name="theme-color" content="">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="basis.css">  <!-- Kage Syztem 0.3: niet aanpassen in deze app -->
+<link rel="stylesheet" href="thema.css">  <!-- Kollectie: kleur = status -->
+<style>
+/* ================= Kollectie: onderdelen die alleen deze app heeft =================
+   Alleen tokens uit basis.css en thema.css; geen losse kleuren of maten. */
+.kop-wrap{padding-top:var(--ruimte-3)}
+#headerextra:empty{display:none}
+
+/* Plaatjes (staand, 5:7) */
+.poster{display:block;object-fit:cover;background:var(--tint);flex:none}
+.poster.zonder{display:grid;place-items:center;font-weight:var(--gewicht-zwaar);font-size:var(--fs-xl);color:color-mix(in srgb,currentColor 55%,transparent)}
+.poster.mini{width:36px;height:50px;border-radius:var(--r-s);font-size:var(--fs-m)}
+.poster.groot{width:120px;height:170px;border-radius:var(--r-l);font-size:var(--fs-titel);box-shadow:0 10px 24px var(--schaduw)}
+
+/* Titelpagina: plaatje met cijfer en voortgang */
+.hero{display:grid;grid-template-columns:auto 1fr;gap:var(--ruimte-3);align-items:end;margin:var(--ruimte-2) 0 var(--ruimte-2)}
+.hero-rechts{display:grid;gap:var(--ruimte-3);min-width:0}
+.cijfer-knop{flex-direction:column;align-items:flex-start;gap:var(--ruimte-1);margin:0;padding:var(--ruimte-3) var(--ruimte-4)}
+.cijfer-knop b{font-size:var(--fs-titel);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-titel);line-height:1;font-variant-numeric:tabular-nums}
+.cijfer-knop b.geen{opacity:.4}
+.hero-voortgang{font-size:var(--fs-s);font-weight:var(--gewicht-vet);color:var(--mut);padding:0 var(--ruimte-1)}
+.hero-voortgang .voortgang{background:var(--tint);color:var(--st)}
+
+/* Statuskeuze: de gekozen status in zijn eigen kleur */
+.chips.status .chip[aria-pressed="true"]{background:var(--c);color:var(--blok-ink)}
+.chips.status .chip[aria-pressed="true"] .stip{background:var(--blok-ink)}
+
+/* Seizoensrij: tik op de naam = afleveringen open- of dichtklappen */
+.deel-knop{flex:1;min-width:0;display:flex;align-items:center;gap:var(--ruimte-3);min-height:var(--rij);text-align:left}
+.deel-knop:disabled{cursor:default}
+.deel-knop .rechts{font-variant-numeric:tabular-nums}
+.klap{color:var(--mut);display:grid;place-items:center;transition:transform var(--duur) var(--veer)}
+.klap svg{width:var(--icoon-s);height:var(--icoon-s)}
+.klap.open{transform:rotate(180deg)}
+.rij.af .rechts{color:var(--st)}
+
+/* Afleveringen afvinken: rondjes met nummers, tik = tot en met deze gezien */
+.afl-paneel{padding:var(--ruimte-1) 0 var(--ruimte-4)}
+.afl{display:grid;grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:var(--ruimte-2)}
+.afl-n{height:36px;border-radius:var(--r-rond);background:var(--tint);color:var(--mut);font-weight:var(--gewicht-vet);font-size:var(--fs-s);font-variant-numeric:tabular-nums;transition:background-color var(--duur-snel),transform var(--duur-snel)}
+.afl-n.gezien{background:var(--st);color:var(--blok-ink)}
+.afl-n:active{transform:scale(.88)}
+.afl-n:disabled{opacity:.35}
+.teller{display:flex;align-items:center;gap:var(--ruimte-2)}
+.teller .veld{width:104px;text-align:center;font-variant-numeric:tabular-nums;font-weight:var(--gewicht-vet);padding:0 var(--ruimte-2)}
+.teller .van{color:var(--mut);font-weight:var(--gewicht-vet);font-size:var(--fs-m)}
+.plus-rond{width:var(--vink);height:var(--vink);display:grid;place-items:center;flex:none;color:var(--mut)}
+.plus-rond svg{width:var(--icoon-m);height:var(--icoon-m)}
+
+/* Vensters */
+.venster:focus{outline:none}
+.venster.zoeken{height:86vh;display:flex;flex-direction:column}
+.venster.zoeken #venster-inhoud{display:flex;flex-direction:column;min-height:0;flex:1}
+.venster.zoeken #ac{flex:1;overflow-y:auto;margin:var(--ruimte-3) calc(var(--rand) * -1) 0;padding:0 var(--rand)}
+.venster .groep{background:color-mix(in srgb,var(--ink) 5%,var(--vlak))}
+.venster .groep .veeg-inhoud{background:inherit}
+.ac-leeg{margin:0;padding:var(--ruimte-4) var(--ruimte-1);color:var(--mut);font-size:var(--fs-m)}
+#al-zoek::-webkit-search-cancel-button,#al-zoek::-webkit-search-decoration{-webkit-appearance:none;appearance:none}
+.venster .label{margin-top:var(--ruimte-4)}
+.venster .knop.breed{margin-top:var(--ruimte-5)}
+#bevestig{z-index:var(--z-bevestig)}
+.venster.bevestig .veld{margin-bottom:var(--ruimte-2)}
+.rating-groot{font-size:var(--fs-titel);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-titel);text-align:center;margin:0 0 var(--ruimte-4);font-variant-numeric:tabular-nums}
+.rating-groot.geen{color:var(--mut)}
+
+/* Codescherm (eerste keer openen op een telefoon) */
+#code-scherm{position:fixed;inset:0;z-index:calc(var(--z-bevestig) + 10);background:var(--bg);display:grid;place-items:center;padding:var(--ruimte-5)}
+.code-kaart{width:100%;max-width:360px;display:grid;gap:var(--ruimte-3);text-align:center}
+.code-kaart img{justify-self:center;border-radius:var(--r-l)}
+.code-kaart h2{margin:var(--ruimte-1) 0 0;font-size:var(--fs-xl);font-weight:var(--gewicht-zwaar)}
+.code-kaart p{margin:0 0 var(--ruimte-2);color:var(--mut)}
+
+/* Preview-label */
+#preview-pill{position:fixed;left:var(--ruimte-2);bottom:calc(var(--ruimte-2) + env(safe-area-inset-bottom,0px));z-index:var(--z-actie);background:var(--tint);color:var(--mut);font-size:var(--fs-xs);font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);border-radius:var(--r-rond);padding:var(--ruimte-1) var(--ruimte-2)}
+</style>
+</head>
+<body>
+<div id="scroller"><div class="scherm">
+  <header class="kop-wrap">
+    <button type="button" id="terug" class="terug" data-act="terug" hidden><svg data-icoon="pijl-links" width="18" height="18" aria-hidden="true"></svg><span id="terug-tekst">Anime</span></button>
+    <div class="kop">
+      <div class="kop-links">
+        <button type="button" class="schakelaar" id="schakelaar" aria-haspopup="menu" aria-expanded="false"><h1 class="titel" id="title">Anime</h1><span class="pijl"><svg data-icoon="pijl-onder" aria-hidden="true"></svg></span></button>
+        <div class="schermmenu" id="schermmenu" role="menu" hidden></div>
+      </div>
+      <div id="topextra"></div>
+    </div>
+    <div id="headerextra"></div>
+  </header>
+  <main id="main"></main>
+</div></div>
+
+<button type="button" class="actieknop" id="actieknop" data-act="toevoeg-open" hidden><svg data-icoon="plus" aria-hidden="true"></svg>Anime toevoegen</button>
+
+<div id="venster" class="venster-wrap" hidden>
+  <div class="venster-bg" data-act="sluit"></div>
+  <div class="venster" role="dialog" aria-modal="true" tabindex="-1">
+    <button type="button" class="rond-knop sluit" data-act="sluit" aria-label="Sluiten"><svg data-icoon="kruis" aria-hidden="true"></svg></button>
+    <div id="venster-inhoud"></div>
+  </div>
+</div>
+<div id="bevestig" class="venster-wrap" hidden></div>
+<div class="melding" id="toast" role="status" aria-live="polite"><span id="toast-text"></span><button type="button" id="toast-btn" hidden></button></div>
+
+<script>
+/* ================= Verbinding met het loket (Apps Script) =================
+   Plak hieronder het adres van je Apps Script-webapp (eindigt op /exec).
+   Leeg laten = previewmodus met voorbeelddata. */
+const API_URL = 'https://script.google.com/macros/s/AKfycbzvZqn5IrCF5pv_YFCuuGQkhqMSOl4Jj1XP_5d_eqccJxAZ72ntISv-ie9rWnh3RBmi/exec';
+
+(function () {
+  if (!API_URL) return; // geen loket: previewmodus
+  window.API_MODUS = true;
+  const KEY = 'kollectie-code';
+  const code = () => { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } };
+  function vraagCode(melding) {
+    if (document.getElementById('code-scherm')) return;
+    const toon = () => {
+      const w = document.createElement('div');
+      w.id = 'code-scherm';
+      w.innerHTML = `<form class="code-kaart">
+          <img src="icon-180.png" alt="" width="72" height="72">
+          <h2>Kollectie</h2>
+          <p>${melding || 'Voer de geheime code in.'}</p>
+          <input class="veld" id="code-invoer" type="password" autocomplete="current-password" placeholder="Geheime code" aria-label="Geheime code">
+          <button class="knop breed" type="submit">Openen</button>
+        </form>`;
+      document.body.appendChild(w);
+      const inp = w.querySelector('#code-invoer');
+      w.querySelector('form').addEventListener('submit', e => {
+        e.preventDefault(); e.stopPropagation();
+        const v = inp.value.trim(); if (!v) return;
+        try { localStorage.setItem(KEY, v); } catch (err) {}
+        location.reload();
+      }, true);
+      inp.focus();
+    };
+    document.body ? toon() : document.addEventListener('DOMContentLoaded', toon);
+  }
+  window.LOKET = async function (actie, ...args) {
+    if (!code()) { vraagCode(); throw new Error('Geen code ingevoerd'); }
+    const r = await fetch(API_URL, { method: 'POST', redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ sleutel: code(), actie, args }) });
+    const d = await r.json();
+    if (d.fout === 'sleutel') {
+      try { localStorage.removeItem(KEY); } catch (e) {}
+      vraagCode('Die code klopt niet. Probeer het opnieuw.');
+      throw new Error('Onjuiste code');
+    }
+    if (d.fout) throw new Error(d.fout);
+    return d.data;
+  };
+})();
+</script>
+<script>
+/* ================= Previewmodus =================
+   Zonder loket draait de app op voorbeelddata die alleen in deze browser wordt bewaard.
+   Zoeken op AniList werkt ook in de preview. */
+(function () {
+  if (window.LOKET) return;
+  const KEY = 'kollectie-preview-v1';
+  const CDN = 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/';
+  function demo() {
+    const nu = Date.now(), dag = 864e5;
+    const T = [ // id, naam, plaatje, status, rating, dagen geleden gewijzigd
+      ['t1', 'Attack on Titan', 'bx16498-buvcRTBx4NSm.jpg', 'watching', '', 1],
+      ['t2', 'Demon Slayer: Kimetsu no Yaiba', 'bx101922-WBsBl0ClmgYL.jpg', 'waiting', 8.7, 20],
+      ['t3', 'Frieren: Beyond Journey’s End', 'bx154587-qQTzQnEJJ3oB.jpg', 'finished', 9.4, 60],
+      ['t4', 'One Piece', 'bx21-ELSYx3yMPcKM.jpg', 'watching', 9, 3],
+      ['t5', 'Jujutsu Kaisen', 'bx113415-LHBAeoZDIsnF.jpg', 'towatch', '', 5],
+      ['t6', 'Spy x Family', 'bx140960-Kb6R5nYQfjmP.jpg', 'dropped', 6.5, 90],
+      ['t7', 'Tokyo Ghoul', 'b20605-k665mVkSug8D.jpg', 'finished', 7, 300]
+    ];
+    const titels = T.map(([id, naam, img, status, rating, d]) => ({ id, soort: 'anime', naam, plaatje: CDN + img, status, rating, toegevoegd: nu - d * dag - 1e9, gewijzigd: nu - d * dag }));
+    let n = 0;
+    const deel = (titelId, soort, naam, bronId, formaat, jaar, afleveringen, gezien, bronStatus = 'FINISHED', extra = {}) =>
+      Object.assign({ id: 'd' + (++n), titelId, soort, positie: n, naam, bronId, formaat, jaar, afleveringen, uitgezonden: '', gezien, bronStatus, alt: '', gecheckt: nu }, extra);
+    const delen = [
+      deel('t1', 'seizoen', '', 16498, 'TV', 2013, 25, 25),
+      deel('t1', 'seizoen', 'Seizoen 2', 20958, 'TV', 2017, 12, 12),
+      deel('t1', 'seizoen', 'Seizoen 3', 99147, 'TV', 2018, 12, 7),
+      deel('t1', 'seizoen', 'Seizoen 3 Part 2', 104578, 'TV', 2019, 10, 0),
+      deel('t1', 'seizoen', 'The Final Season', 110277, 'TV', 2020, 16, 0),
+      deel('t1', 'seizoen', 'The Final Season Part 2', 131681, 'TV', 2022, 12, 0),
+      deel('t1', 'extra', 'The Final Season: The Final Chapters', 146984, 'SPECIAL', 2023, 2, 0),
+      deel('t2', 'seizoen', '', 101922, 'TV', 2019, 26, 26),
+      deel('t2', 'seizoen', 'Mugen Train Arc', 129874, 'TV', 2021, 7, 7, 'FINISHED', { alt: 112151 }),
+      deel('t2', 'seizoen', 'Entertainment District Arc', 142329, 'TV', 2021, 11, 11),
+      deel('t2', 'seizoen', 'Swordsmith Village Arc', 145139, 'TV', 2023, 11, 11),
+      deel('t2', 'seizoen', 'Hashira Training Arc', 166240, 'TV', 2024, 8, 8),
+      deel('t2', 'extra', 'The Movie: Mugen Train', 112151, 'MOVIE', 2020, 1, 1, 'FINISHED', { alt: 129874 }),
+      deel('t2', 'extra', 'Infinity Castle', 178788, 'MOVIE', 2025, 1, 1),
+      deel('t2', 'extra', 'Infinity Castle Part 2', 0, 'MOVIE', '', 1, 0, 'NOT_YET_RELEASED'),
+      deel('t3', 'seizoen', '', 154587, 'TV', 2023, 28, 28),
+      deel('t4', 'seizoen', '', 21, 'TV', 1999, '', 845, 'RELEASING', { uitgezonden: 1180 }),
+      deel('t5', 'seizoen', '', 113415, 'TV', 2020, 24, 0),
+      deel('t5', 'seizoen', 'Seizoen 2', 145064, 'TV', 2023, 23, 0),
+      deel('t6', 'seizoen', '', 140960, 'TV', 2022, 12, 5),
+      deel('t7', 'seizoen', '', 20605, 'TV', 2014, 12, 12)
+    ];
+    return { titels, delen, instellingen: [{ id: 'taal', waarde: 'engels' }] };
+  }
+  let db = null;
+  try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  if (!db) db = demo();
+  const opslaan = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} };
+  const kopie = x => JSON.parse(JSON.stringify(x));
+  const api = {
+    getState: () => kopie(db),
+    bewaar: (t, rijen) => {
+      rijen.forEach(r => { const b = db[t].find(x => x.id === r.id); if (b) Object.assign(b, r); else db[t].push(Object.assign({}, r)); });
+      opslaan(); return api.getState();
+    },
+    verwijder: (t, ids) => { db[t] = db[t].filter(x => !ids.includes(x.id)); opslaan(); return api.getState(); }
+  };
+  window.PREVIEW = true;
+  window.previewReset = () => { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); };
+  window.LOKET = (actie, ...args) => new Promise((ok, fout) => setTimeout(() => { try { ok(api[actie](...kopie(args))); } catch (e) { fout(e); } }, 120));
+  document.addEventListener('DOMContentLoaded', () => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.id = 'preview-pill'; b.textContent = 'Preview';
+    b.onclick = () => bevestig('Voorbeelddata terugzetten naar het begin?', 'Terugzetten').then(ok => { if (ok) window.previewReset(); });
+    document.body.appendChild(b);
+  });
+})();
+</script>
+<script>
+/* ================= De app ================= */
+document.querySelector('meta[name=theme-color]').content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+
+/* ---------- Iconen: één plek, eigen set (Kage Syztem, hoofdstuk 7) ---------- */
+const ICONEN = {
+  'tv': '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.2 2.8L12 6.4l3.8-3.6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="2.5" y="7" width="19" height="14" rx="4.5"/></svg>',
+  'schuifjes': '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="6" width="18" height="2.6" rx="1.3"/><circle cx="15.5" cy="7.3" r="3.3"/><rect x="3" y="15.4" width="18" height="2.6" rx="1.3"/><circle cx="8.5" cy="16.7" r="3.3"/></svg>',
+  'pijl-links': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
+  'ster': '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8l2.7 5.6 6.1.8-4.5 4.3 1.1 6.1L12 16.7l-5.4 2.9 1.1-6.1-4.5-4.3 6.1-.8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  'prullenbak': '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="5" width="16" height="2.6" rx="1.3"/><rect x="9" y="2.5" width="6" height="3" rx="1.2"/><path d="M6 9h12l-1 10.2a2 2 0 0 1-2 1.8H9a2 2 0 0 1-2-1.8z"/></svg>',
+  'plus': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  'min': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12h14"/></svg>',
+  'potlood': '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.2 4.3a2.5 2.5 0 0 1 3.5 0l1 1a2.5 2.5 0 0 1 0 3.5L9.4 19.1 4 20l.9-5.4z"/></svg>',
+  'plaatje': '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm-1.5 14.6V17a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5v-1.3l-3.6-3.6a1.3 1.3 0 0 0-1.8 0l-3.2 3.2-1.3-1.3a1.3 1.3 0 0 0-1.8 0zM9 10.8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>',
+  'pijl-rechts': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+  'pijl-onder': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  'vinkje': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  'kruis': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  'vakjes': '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2.4"/><rect x="13" y="3" width="8" height="8" rx="2.4"/><rect x="3" y="13" width="8" height="8" rx="2.4"/><rect x="13" y="13" width="8" height="8" rx="2.4"/></svg>'
+};
+const ico = (naam, attrs = '') => attrs ? ICONEN[naam].replace('<svg ', `<svg ${attrs} `) : ICONEN[naam];
+document.querySelectorAll('svg[data-icoon]').forEach(el => {
+  const attrs = [el.hasAttribute('aria-hidden') ? 'aria-hidden="true"' : '', el.getAttribute('width') ? `width="${el.getAttribute('width')}" height="${el.getAttribute('height')}"` : ''].filter(Boolean).join(' ');
+  el.outerHTML = ico(el.dataset.icoon, attrs);
+});
+
+/* ---------- Vaste waarden ---------- */
+const STATUSSEN = [
+  { id: 'watching', naam: 'Watching' },
+  { id: 'towatch',  naam: 'To watch' },
+  { id: 'waiting',  naam: 'Waiting' },
+  { id: 'finished', naam: 'Finished' },
+  { id: 'dropped',  naam: 'Dropped' }
+];
+const statusNaam = id => id === 'alles' ? 'Alles' : (STATUSSEN.find(s => s.id === id) || STATUSSEN[1]).naam;
+const FORMATEN = { TV: 'TV', TV_SHORT: 'Kort', ONA: 'ONA', OVA: 'OVA', MOVIE: 'Film', SPECIAL: 'Special', MUSIC: 'Muziek' };
+const SEIZOEN_FORMATEN = ['TV', 'TV_SHORT', 'ONA'];
+/** Telt als seizoen: series, behalve losse webfilmpjes van één of twee afleveringen. */
+const isSeizoen = m => SEIZOEN_FORMATEN.includes(m.format) && !(m.format === 'ONA' && m.episodes && m.episodes <= 2);
+const NOG_BEZIG = ['RELEASING', 'NOT_YET_RELEASED', 'HIATUS'];
+const LANG_SEIZOEN = 100; // vanaf zoveel afleveringen een teller in plaats van rondjes
+
+/* ---------- Hulpjes ---------- */
+const S = { data: null, tab: 'anime', status: 'watching', titelOpen: null, uitklap: {} };
+try { S.status = localStorage.getItem('kollectie-status') || 'watching'; } catch (e) {}
+let bezig = 0, teller = 0;
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nieuwId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const getal = v => { const n = Number(v); return v === '' || v == null || isNaN(n) ? 0 : n; };
+const cijferTekst = r => r === '' || r == null ? '' : String(Math.round(Number(r) * 10) / 10).replace('.', ',');
+const opNaam = (a, b) => a.naam.localeCompare(b.naam, 'nl');
+
+const D = () => S.data;
+const titel = id => D().titels.find(t => t.id === id);
+const delenVan = id => D().delen.filter(d => d.titelId === id).sort((a, b) => getal(a.positie) - getal(b.positie));
+const seizoenenVan = id => delenVan(id).filter(d => d.soort !== 'extra');
+const extrasVan = id => delenVan(id).filter(d => d.soort === 'extra');
+const taal = () => ((D().instellingen || []).find(x => x.id === 'taal') || { waarde: 'engels' }).waarde;
+/** Hoeveel afleveringen er nu te kijken zijn: bij een lopende serie het aantal dat al is uitgezonden. */
+const beschikbaar = d => d.bronStatus === 'NOT_YET_RELEASED' ? 0 : (getal(d.uitgezonden) || getal(d.afleveringen));
+const deelNaam = (d, k) => d.naam || (d.soort === 'extra' ? (FORMATEN[d.formaat] || 'Extra') : 'Seizoen ' + (k + 1));
+const posterHtml = (t, klasse = '') => t.plaatje
+  ? `<img class="poster ${klasse}" src="${esc(t.plaatje)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
+  : `<span class="poster zonder ${klasse}" aria-hidden="true">${esc((t.naam || '?').charAt(0).toUpperCase())}</span>`;
+
+/* ---------- Opslag: optimistisch (Kage Syztem, hoofdstuk 6) ---------- */
+const LOKAAL = 'kollectie-stand';
+function onthoudLokaal(s) { if (!window.API_MODUS) return; try { localStorage.setItem(LOKAAL, JSON.stringify(s)); } catch (e) {} }
+function leesLokaal() { if (!window.API_MODUS) return null; try { return JSON.parse(localStorage.getItem(LOKAAL)); } catch (e) { return null; } }
+function tekenSkelet() { $('#main').innerHTML = '<div class="skelet"></div>'.repeat(5); }
+function laad() {
+  if (!S.data) { const l = leesLokaal(); if (l) { S.data = l; wissel(S.tab); } else tekenSkelet(); }
+  LOKET('getState')
+    .then(s => { const eerste = !S.data; S.data = s; onthoudLokaal(s); if (eerste) wissel(S.tab); else if (!bezig) teken(); })
+    .catch(e => { if (!S.data) $('#main').innerHTML = `<div class="leeg"><strong>Laden lukte niet</strong>${esc(e.message)}. Herlaad de pagina.</div>`; });
+}
+function bel(fn, ...args) {
+  bezig++; teller++;
+  LOKET(fn, ...args)
+    .then(s => { bezig--; if (!bezig) { S.data = s; onthoudLokaal(s); teken(); } })
+    .catch(e => { bezig--; melding('Opslaan lukte niet (' + e.message + '). Gegevens worden opnieuw geladen.'); laad(); });
+}
+function peil() {
+  if (!S.data || bezig || document.visibilityState !== 'visible' || !window.API_MODUS) return;
+  const t = teller;
+  LOKET('getState').then(s => { if (!bezig && t === teller) { S.data = s; onthoudLokaal(s); teken(); } }).catch(() => {});
+}
+setInterval(peil, 15000);
+document.addEventListener('visibilitychange', peil);
+function bewaar(tabel, rijen) {
+  rijen.forEach(r => {
+    const b = D()[tabel].find(x => x.id === r.id);
+    if (b) Object.assign(b, r); else D()[tabel].push(Object.assign({}, r));
+  });
+  teken();
+  bel('bewaar', tabel, rijen);
+}
+function verwijder(tabel, ids) {
+  D()[tabel] = D()[tabel].filter(x => !ids.includes(x.id));
+  teken();
+  bel('verwijder', tabel, ids);
+}
+
+/* ---------- Status automatisch ----------
+   Eerste vink: Watching. Alles gezien: Finished, of Waiting als er nog iets uitkomt.
+   Films en extra's tellen niet mee voor "alles gezien", wel voor "er komt nog iets". */
+function nieuweStatus(t) {
+  const sz = seizoenenVan(t.id), alle = delenVan(t.id);
+  const iets = alle.some(d => getal(d.gezien) > 0);
+  const telbaar = sz.filter(d => beschikbaar(d) > 0);
+  const klaar = telbaar.length > 0 && telbaar.every(d => getal(d.gezien) >= beschikbaar(d));
+  if (klaar) return alle.some(d => NOG_BEZIG.includes(d.bronStatus)) ? 'waiting' : 'finished';
+  if (iets && t.status !== 'watching') return 'watching';
+  return t.status;
+}
+/** Bewaar gewijzigde delen en pas zo nodig de status van de titel aan. */
+function bewaarDelen(titelId, wijzigingen, undo) {
+  const t = titel(titelId);
+  const oud = t.status;
+  wijzigingen.forEach(w => Object.assign(D().delen.find(d => d.id === w.id), w));
+  const nieuw = nieuweStatus(t);
+  const tRij = { id: t.id, gewijzigd: Date.now() };
+  if (nieuw !== oud) tRij.status = nieuw;
+  bel('bewaar', 'delen', wijzigingen);
+  bewaar('titels', [tRij]);
+  if (nieuw !== oud) melding(`Status: ${statusNaam(nieuw)}`, undo ? 'Ongedaan maken' : '', undo);
+  else if (undo) melding('Seizoen bijgewerkt.', 'Ongedaan maken', undo);
+}
+
+
+/* ---------- Kleur betekent status (Kage Syztem, thema Kollectie) ---------- */
+const STATUS_KLEUR = { watching: 1, waiting: 2, finished: 3, towatch: 4, dropped: 5 };
+const stKleur = id => `var(--blok-${STATUS_KLEUR[id] || 8})`;
+
+/* ---------- Weergaven ---------- */
+const VIEWS = {
+  anime: { titel: 'Anime', teken: tekenAnime },
+  instellingen: { titel: 'Instellingen', teken: tekenInst }
+};
+/** Het schermmenu onder de titel (titel-schakelaar). */
+function zetMenu(tab) {
+  const n = D() ? D().titels.filter(t => t.soort === 'anime').length : '';
+  const knop = (id, icoon, naam, aantal) => `<button type="button" role="menuitem" data-act="tab" data-tab="${id}"${tab === id ? ' aria-current="page"' : ''}>${ico(icoon)}${naam}<span class="n">${aantal}</span></button>`;
+  $('#schermmenu').innerHTML = knop('anime', 'tv', 'Anime', n) + '<hr>' + knop('instellingen', 'schuifjes', 'Instellingen', '');
+}
+function wissel(tab) {
+  S.tab = tab;
+  S.titelOpen = null;
+  menuDicht();
+  teken();
+  $('#scroller').scrollTop = 0;
+}
+function teken() {
+  if (!S.data) return;
+  if (S.slepen) { S.uitgesteld = true; return; }
+  if (S.titelOpen && !titel(S.titelOpen)) S.titelOpen = null;
+  zetMenu(S.tab);
+  if (S.tab === 'anime' && S.titelOpen) tekenTitel();
+  else VIEWS[S.tab].teken();
+}
+/** Kop: op een hoofdscherm is de titel de schakelaar, op een subpagina staat er "‹ Terug" boven. */
+function zetKop(tekst, terug) {
+  $('#title').textContent = tekst;
+  $('#title').classList.toggle('lang', !!terug);
+  $('#schakelaar').disabled = !!terug;
+  $('#terug').hidden = !terug;
+  if (terug) $('#terug-tekst').textContent = terug;
+  $('#actieknop').hidden = true;
+}
+/** Houd de gekozen chip in beeld. */
+function chipInBeeld(rij) {
+  const g = rij && rij.querySelector('[aria-pressed="true"]');
+  if (g && (g.offsetLeft + g.offsetWidth > rij.scrollLeft + rij.clientWidth || g.offsetLeft < rij.scrollLeft)) rij.scrollLeft = g.offsetLeft - (rij.clientWidth - g.offsetWidth) / 2;
+}
+
+/* ---------- Overzicht ---------- */
+/** Het seizoen waar je nu bent: gezien, totaal en welk seizoen. */
+function voortgang(t) {
+  const sz = seizoenenVan(t.id);
+  const k = sz.findIndex(d => getal(d.gezien) < beschikbaar(d));
+  if (k < 0) return null;
+  const d = sz[k];
+  return { gezien: getal(d.gezien), tot: getal(d.afleveringen) || beschikbaar(d), seizoen: sz.length > 1 ? k + 1 : 0, lopend: !getal(d.afleveringen) };
+}
+/** Het grote getal rechts in een blok, met een woordje eronder. */
+function getalVan(t) {
+  if (t.status === 'watching') {
+    const v = voortgang(t);
+    if (v) return v.tot >= LANG_SEIZOEN || v.lopend ? [v.gezien, 'van ' + (v.tot || '?')] : [`${v.gezien}/${v.tot || '?'}`, v.seizoen ? 'seizoen ' + v.seizoen : 'afleveringen'];
+  }
+  const c = cijferTekst(t.rating);
+  if (c) return [c, 'jouw cijfer'];
+  if (t.status === 'towatch') {
+    const n = seizoenenVan(t.id).reduce((s, d) => s + (getal(d.afleveringen) || beschikbaar(d)), 0);
+    if (n) return [n, 'afleveringen'];
+  }
+  return null;
+}
+function tekenAnime() {
+  zetKop('Anime');
+  $('#actieknop').hidden = false;
+  const ts = D().titels.filter(t => t.soort === 'anime');
+  const tel = id => ts.filter(t => t.status === id).length;
+  const chips = [{ id: 'alles', naam: 'Alles' }, ...STATUSSEN];
+  $('#headerextra').innerHTML = `<div class="chips" role="tablist">${chips.map(s => {
+    const n = s.id === 'alles' ? ts.length : tel(s.id);
+    return `<button type="button" class="chip" data-act="status-tab" data-id="${s.id}" role="tab" aria-pressed="${S.status === s.id}">${s.id === 'alles' ? '' : `<span class="stip" style="--c:${stKleur(s.id)}"></span>`}${s.naam} <span class="n">${n}</span></button>`;
+  }).join('')}</div>`;
+  chipInBeeld($('#headerextra .chips'));
+  const alles = S.status === 'alles';
+  const lijst = (alles ? ts : ts.filter(t => t.status === S.status))
+    .sort(alles || S.status === 'watching' ? (a, b) => getal(b.gewijzigd) - getal(a.gewijzigd) : opNaam);
+  if (!lijst.length) {
+    $('#main').innerHTML = alles
+      ? `<div class="leeg"><strong>Nog niets in je lijst</strong>Tik onderin op Anime toevoegen.</div>`
+      : `<div class="leeg"><strong>Nog niets bij ${statusNaam(S.status)}</strong>Zet een anime op ${statusNaam(S.status)} en hij staat hier.</div>`;
+    return;
+  }
+  $('#main').innerHTML = lijst.map(t => {
+    const v = t.status === 'watching' ? voortgang(t) : null;
+    const g = getalVan(t);
+    return veegRij('t-' + t.id, [
+        ['wijzig', 'titel-naam', t.id, `${t.naam} hernoemen`],
+        ['weg', 'titel-weg', t.id, `${t.naam} verwijderen`]
+      ],
+      `<button type="button" class="blok kleur" style="--c:${stKleur(t.status)}" data-act="titel-open" data-id="${t.id}">
+        ${posterHtml(t, 'blok-plaatje')}
+        <span class="blok-tekst">${alles ? `<span class="blok-label">${statusNaam(t.status)}</span>` : ''}<span class="blok-naam">${esc(t.naam)}</span>${v && v.tot ? `<span class="voortgang"><i style="width:${Math.min(100, Math.round(v.gezien / v.tot * 100))}%"></i></span>` : ''}</span>
+        ${g ? `<span class="getal">${esc(g[0])}<small>${esc(g[1])}</small></span>` : ''}
+      </button>`);
+  }).join('');
+}
+/** Blok of rij die je naar links veegt voor acties met alleen iconen. */
+function veegRij(key, acties, inhoud) {
+  const knoppen = acties.map(([soort, act, id, label]) =>
+    `<button type="button" style="--c:var(${soort === 'weg' ? '--gevaar' : '--wijzig'})" data-act="${act}" data-id="${id}" aria-label="${esc(label)}">${ico(soort === 'weg' ? 'prullenbak' : 'potlood')}</button>`).join('');
+  return `<div class="veeg${S.swipeOpen === key ? ' open' : ''}" data-key="${key}" style="--n:${acties.length}"><div class="veeg-knoppen">${knoppen}</div><div class="veeg-inhoud">${inhoud}</div></div>`;
+}
+
+/* ---------- Titelpagina ---------- */
+function tekenTitel() {
+  const t = titel(S.titelOpen);
+  zetKop(t.naam, 'Anime');
+  $('#headerextra').innerHTML = '';
+  const sz = seizoenenVan(t.id), ex = extrasVan(t.id);
+  const totaal = sz.reduce((s, d) => s + (getal(d.afleveringen) || beschikbaar(d)), 0);
+  const gezien = sz.reduce((s, d) => s + getal(d.gezien), 0);
+  const open = openSeizoen(t.id);
+  const cijfer = cijferTekst(t.rating);
+  let h = `<div style="--st:${stKleur(t.status)}">`;
+  h += `<div class="hero">${posterHtml(t, 'groot')}
+    <div class="hero-rechts">
+      <button type="button" class="blok kleur cijfer-knop" style="--c:var(--st)" data-act="rating-open" data-id="${t.id}" aria-label="Jouw cijfer: ${cijfer || 'nog niet gegeven'}">
+        <span class="blok-label">Jouw cijfer</span><b class="${cijfer ? '' : 'geen'}">${cijfer || '–'}</b></button>
+      ${totaal ? `<div class="hero-voortgang">${gezien} van ${totaal} afleveringen<span class="voortgang"><i style="width:${Math.min(100, Math.round(gezien / totaal * 100))}%"></i></span></div>` : ''}
+    </div></div>`;
+  h += `<div class="kopje">Status</div>
+    <div class="chips status">${STATUSSEN.map(s => `<button type="button" class="chip" style="--c:${stKleur(s.id)}" aria-pressed="${t.status === s.id}" data-act="status-zet" data-id="${s.id}"><span class="stip"></span>${s.naam}</button>`).join('')}</div>`;
+  h += `<div class="kopje">Seizoenen</div><div class="groep">`;
+  sz.forEach((d, k) => { h += deelRij(d, k, open === d.id); });
+  h += `<button type="button" class="rij" data-act="deel-toevoegen" data-id="${t.id}"><span class="plus-rond">${ico('plus')}</span><span class="naam">Seizoen of film toevoegen</span></button></div>`;
+  if (ex.length) h += `<div class="kopje">Films &amp; extra's</div><div class="groep">${ex.map((d, k) => deelRij(d, k, false)).join('')}</div>`;
+  h += `<div class="groep" style="margin-top:var(--ruimte-6)">
+    ${navRij('titel-naam', 'potlood', 'Naam wijzigen', t.id)}
+    ${navRij('titel-plaatje', 'plaatje', 'Plaatje wijzigen', t.id)}
+    ${delenVan(t.id).some(d => d.bronId) ? navRij('titel-nieuw', 'vakjes', 'Nieuwe delen zoeken', t.id) : ''}
+    ${navRij('titel-weg', 'prullenbak', 'Verwijder', t.id, true)}
+  </div></div>`;
+  $('#main').innerHTML = h;
+  chipInBeeld($('#main .chips.status'));
+  ververs(t);
+}
+/** Het opengeklapte seizoen: je eigen keuze, anders het eerste dat nog niet af is. */
+function openSeizoen(titelId) {
+  if (S.uitklap[titelId] !== undefined) return S.uitklap[titelId];
+  const d = seizoenenVan(titelId).find(d => getal(d.gezien) < beschikbaar(d));
+  return d ? d.id : null;
+}
+const navRij = (act, icoon, tekst, id, gevaar) => `<button type="button" class="rij${gevaar ? ' gevaar' : ''}" data-act="${act}" data-id="${id}"><span class="rij-ico">${ico(icoon)}</span><span class="naam">${tekst}</span>${gevaar ? '' : `<span class="pijltje rij-ico">${ico('pijl-rechts')}</span>`}</button>`;
+function deelRij(d, k, open) {
+  const max = beschikbaar(d), tot = getal(d.afleveringen) || max, g = getal(d.gezien);
+  const af = max > 0 && g >= max;
+  const extra = d.soort === 'extra';
+  let meta = '';
+  if (d.bronStatus === 'NOT_YET_RELEASED') meta = 'Nog niet uit';
+  else if (d.alt) { const a = D().delen.find(x => x.titelId === d.titelId && String(x.bronId) === String(d.alt)); if (a) meta = 'Zelfde verhaal als ' + deelNaam(a, seizoenenVan(d.titelId).indexOf(a)); }
+  const rechts = extra ? (FORMATEN[d.formaat] || 'Extra') : `${g}/${tot || '?'}`;
+  const naam = deelNaam(d, k);
+  const klapbaar = !extra && max;
+  let h = veegRij('d-' + d.id, [['wijzig', 'deel-wijzig', d.id, `${naam} wijzigen`], ['weg', 'deel-weg', d.id, `${naam} verwijderen`]],
+    `<div class="rij${af ? ' af' : ''}">
+      <button type="button" class="vink" aria-pressed="${af}" data-act="deel-vink" data-id="${d.id}" aria-label="${esc(naam)} ${af ? 'niet gezien' : 'helemaal gezien'}"${max ? '' : ' disabled'}>${ico('vinkje')}</button>
+      <button type="button" class="deel-knop" data-act="${extra ? 'deel-vink' : 'deel-klap'}" data-id="${d.id}"${max ? '' : ' disabled'}>
+        <span class="rij-tekst"><span class="naam">${esc(naam)}</span>${meta ? `<span class="bijregel">${esc(meta)}</span>` : ''}</span>
+        <span class="rechts">${esc(rechts)}</span>
+        ${klapbaar ? `<span class="klap${open ? ' open' : ''}">${ico('pijl-onder')}</span>` : ''}
+      </button>
+    </div>`);
+  if (open && klapbaar) h += `<div class="afl-paneel geen-lijn">${afleveringen(d)}</div>`;
+  return h;
+}
+function afleveringen(d) {
+  const max = beschikbaar(d), tot = getal(d.afleveringen) || max, g = getal(d.gezien);
+  if (tot > LANG_SEIZOEN) return `<div class="teller">
+      <button type="button" class="rond-knop" data-act="afl-stap" data-id="${d.id}" data-stap="-1" aria-label="Eén aflevering terug">${ico('min')}</button>
+      <input class="veld" type="number" inputmode="numeric" min="0" max="${max}" value="${g}" data-afl-invoer="${d.id}" aria-label="Gezien tot en met aflevering">
+      <button type="button" class="rond-knop" data-act="afl-stap" data-id="${d.id}" data-stap="1" aria-label="Volgende aflevering gezien">${ico('plus')}</button>
+      <span class="van">van ${max}</span></div>`;
+  let h = '<div class="afl">';
+  for (let n = 1; n <= tot; n++) h += `<button type="button" class="afl-n${n <= g ? ' gezien' : ''}" data-act="afl" data-id="${d.id}" data-n="${n}"${n > max ? ' disabled' : ''} aria-label="Tot en met aflevering ${n} gezien">${n}</button>`;
+  return h + '</div>';
+}
+/** Lopende delen bijwerken vanaf AniList (hoogstens één keer per 6 uur per titel). */
+async function ververs(t) {
+  const oud = delenVan(t.id).filter(d => d.bronId && (NOG_BEZIG.includes(d.bronStatus) || !d.afleveringen) && Date.now() - getal(d.gecheckt) > 6 * 36e5);
+  if (!oud.length || S.ververs === t.id) return;
+  S.ververs = t.id;
+  try {
+    const data = await anilist('query{' + oud.map((d, i) => `m${i}:Media(id:${Number(d.bronId)}){${MEDIA}}`).join(' ') + '}');
+    const w = oud.map((d, i) => { const m = data['m' + i]; if (!m) return { id: d.id, gecheckt: Date.now() };
+      return { id: d.id, gecheckt: Date.now(), bronStatus: m.status, afleveringen: m.episodes || '', uitgezonden: m.nextAiringEpisode ? m.nextAiringEpisode.episode - 1 : '' }; });
+    bewaarDelen(t.id, w);
+  } catch (e) { /* stil: probeer het de volgende keer opnieuw */ }
+  S.ververs = null;
+}
+
+/* ---------- Instellingen ---------- */
+function tekenInst() {
+  zetKop('Instellingen');
+  $('#headerextra').innerHTML = '';
+  $('#main').innerHTML = `<div class="kopje">Namen bij toevoegen</div>
+    <div class="keuze">${[['engels', 'Engels'], ['romaji', 'Japans (romaji)']].map(([id, n]) => `<button type="button" aria-pressed="${taal() === id}" data-act="taal" data-id="${id}">${n}</button>`).join('')}</div>`;
+}
+
+
+/* ================= AniList ================= */
+const MEDIA = 'id title{romaji english} format episodes status startDate{year month day} nextAiringEpisode{episode} coverImage{large medium}';
+async function anilist(query, variables = {}, poging = 0) {
+  const r = await fetch('https://graphql.anilist.co', { method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ query, variables }) });
+  if (r.status === 429 && poging < 2) {
+    await new Promise(k => setTimeout(k, (Number(r.headers.get('Retry-After')) || 3) * 1000));
+    return anilist(query, variables, poging + 1);
+  }
+  const d = await r.json();
+  if (d.errors && !d.data) throw new Error(d.errors[0].message);
+  return d.data;
+}
+const mediaNaam = m => (taal() === 'romaji' ? m.title.romaji || m.title.english : m.title.english || m.title.romaji) || '';
+const datumWaarde = m => { const s = m.startDate || {}; return s.year ? s.year * 1e4 + (s.month || 12) * 100 + (s.day || 28) : 99999999; };
+/** Naam zonder de naam van de reeks ervoor: "Demon Slayer: … Mugen Train Arc" wordt "Mugen Train Arc". */
+function kortNaam(vol, basis) {
+  let n = vol;
+  if (basis && vol.toLowerCase().startsWith(basis.toLowerCase())) n = vol.slice(basis.length).replace(/^[\s:\-–—.,]+/, '');
+  return n.replace(/^Season (\d+)/i, 'Seizoen $1').replace(/\bSeason (\d+)\b/i, 'Seizoen $1');
+}
+function basisNaam(m) {
+  return mediaNaam(m).replace(/\s*(\(TV\)|Season 1|1st Season)$/i, '').trim();
+}
+/** Zoek de hele reeks rond één titel: vervolgen en voorgangers (PREQUEL/SEQUEL), plus de zijverhalen
+    en dubbele versies (SIDE_STORY, ALTERNATIVE) die daar direct aan hangen. Per stap één verzoek. */
+async function haalReeks(startId) {
+  const knopen = new Map(), zij = new Map(), alt = new Map();
+  let rand = [startId], ronde = 0, startOpnieuw = true;
+  while (rand.length && knopen.size < 40 && ronde < 15) {
+    const volgende = [];
+    for (let i = 0; i < rand.length; i += 6) {
+      const stuk = rand.slice(i, i + 6);
+      const data = await anilist('query{' + stuk.map((id, k) => `m${k}:Media(id:${id}){${MEDIA} relations{edges{relationType node{${MEDIA} type}}}}`).join(' ') + '}');
+      Object.values(data).forEach(m => {
+        if (!m) return;
+        knopen.set(m.id, m);
+        m.relations.edges.forEach(e => {
+          const n = e.node; if (n.type !== 'ANIME') return;
+          if (e.relationType === 'PREQUEL' || e.relationType === 'SEQUEL') {
+            if (!knopen.has(n.id) && !rand.includes(n.id) && !volgende.includes(n.id)) volgende.push(n.id);
+          } else if (e.relationType === 'ALTERNATIVE' && isSeizoen(n)) {
+            // Een andere serie over hetzelfde verhaal (FMA en FMA: Brotherhood): een eigen titel, geen seizoen
+          } else if (['SIDE_STORY', 'ALTERNATIVE', 'PARENT'].includes(e.relationType) && !zij.has(n.id)) zij.set(n.id, n);
+          if (e.relationType === 'ALTERNATIVE') { alt.set(m.id, n.id); alt.set(n.id, m.id); }
+        });
+      });
+    }
+    // Zocht je een film of extra zonder vervolgen? Begin dan bij de serie waar hij bij hoort.
+    if (startOpnieuw && ronde === 0 && !volgende.length) {
+      const m = knopen.get(startId), ouder = m && m.relations.edges.find(e => e.relationType === 'PARENT' && e.node.type === 'ANIME');
+      if (ouder) { startOpnieuw = false; knopen.clear(); zij.clear(); rand = [ouder.node.id]; continue; }
+    }
+    rand = volgende; ronde++;
+  }
+  // Wat alleen via een zijverhaal binnenkomt, is altijd een extra (ook als het een serie is)
+  const viaZij = new Set([...zij.keys()].filter(id => !knopen.has(id)));
+  zij.forEach((n, id) => { if (!knopen.has(id)) knopen.set(id, n); });
+  const telt = m => !viaZij.has(m.id) && isSeizoen(m);
+  const alle = [...knopen.values()].filter(m => m.format && m.format !== 'MUSIC').sort((a, b) => datumWaarde(a) - datumWaarde(b));
+  const seizoenen = alle.filter(telt);
+  const eerste = seizoenen[0] || alle[0];
+  const basis = basisNaam(eerste);
+  return { basis, plaatje: (eerste.coverImage || {}).large || '', eerste,
+    delen: alle.map(m => ({ m, soort: telt(m) ? 'seizoen' : 'extra', naam: m === eerste ? '' : kortNaam(mediaNaam(m), basis), alt: alt.has(m.id) && knopen.has(alt.get(m.id)) ? alt.get(m.id) : '' })) };
+}
+const deelUitMedia = (titelId, x, positie) => ({
+  id: 'd' + nieuwId(), titelId, soort: x.soort, positie, naam: x.naam, bronId: x.m.id, formaat: x.m.format || '',
+  jaar: (x.m.startDate || {}).year || '', afleveringen: x.m.episodes || '', uitgezonden: x.m.nextAiringEpisode ? x.m.nextAiringEpisode.episode - 1 : '',
+  gezien: 0, bronStatus: x.m.status || '', alt: x.alt || '', gecheckt: Date.now() });
+const inLijst = id => D().delen.find(d => String(d.bronId) === String(id));
+
+/* ================= Vensters ================= */
+const SKELET_RIJEN = n => '<div class="skelet" style="height:var(--rij)"></div>'.repeat(n);
+function openSheet(html, zoeken) {
+  $('#venster-inhoud').innerHTML = html;
+  $('#venster .venster').classList.toggle('zoeken', !!zoeken);
+  $('#venster').hidden = false;
+  const s = $('#venster .venster'); s.scrollTop = 0; s.focus();
+}
+function sluitSheet() { $('#venster').hidden = true; S.zoekDoel = null; }
+function bevestig(tekst, knop = 'Verwijder', gevaar = true) {
+  return new Promise(klaar => {
+    const w = $('#bevestig');
+    w.innerHTML = `<div class="venster-bg" data-bv="0"></div>
+      <div class="venster bevestig" role="alertdialog" aria-modal="true" aria-label="${esc(tekst)}">
+        <h2>${esc(tekst)}</h2>
+        <button type="button" class="knop${gevaar ? ' gevaar' : ''}" data-bv="1">${esc(knop)}</button>
+        <button type="button" class="knop zacht" data-bv="0">Annuleer</button>
+      </div>`;
+    w.hidden = false;
+    w.onclick = e => { const b = e.target.closest('[data-bv]'); if (!b) return; w.hidden = true; w.innerHTML = ''; klaar(b.dataset.bv === '1'); };
+    $('[data-bv="1"]', w).focus();
+  });
+}
+function vraagTekst(titelTekst, waarde, placeholder = '') {
+  return new Promise(klaar => {
+    const w = $('#bevestig');
+    w.innerHTML = `<div class="venster-bg" data-bv="0"></div>
+      <div class="venster bevestig" role="dialog" aria-modal="true" aria-label="${esc(titelTekst)}">
+        <h2>${esc(titelTekst)}</h2>
+        <input class="veld" id="bv-invoer" value="${esc(waarde || '')}" placeholder="${esc(placeholder)}" autocomplete="off" enterkeyhint="done">
+        <button type="button" class="knop" data-bv="1">Opslaan</button>
+        <button type="button" class="knop zacht" data-bv="0">Annuleer</button>
+      </div>`;
+    w.hidden = false;
+    const inp = $('#bv-invoer');
+    const sluit = ok => { const v = inp.value.trim(); w.hidden = true; w.innerHTML = ''; klaar(ok ? v : null); };
+    w.onclick = e => { const b = e.target.closest('[data-bv]'); if (b) sluit(b.dataset.bv === '1'); };
+    inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); sluit(true); } };
+    inp.focus(); inp.select();
+  });
+}
+let toastTimer, toastActie;
+function melding(tekst, knop, actie) {
+  $('#toast-text').textContent = tekst;
+  const b = $('#toast-btn');
+  b.hidden = !knop; b.textContent = knop || '';
+  toastActie = actie || null;
+  $('#toast').classList.add('toon');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { $('#toast').classList.remove('toon'); toastActie = null; }, knop ? 5000 : 3500);
+}
+$('#toast-btn').onclick = () => { const a = toastActie; toastActie = null; $('#toast').classList.remove('toon'); if (a) a(); };
+
+/* ---------- Zoeken en toevoegen ---------- */
+function openZoeken(doelTitelId) {
+  S.zoekDoel = doelTitelId || null;
+  S.zoekQ = '';
+  openSheet(`<h2>${doelTitelId ? 'Seizoen of film toevoegen' : 'Anime toevoegen'}</h2>
+    <input class="veld" type="search" id="al-zoek" placeholder="Zoek op AniList" autocomplete="off" enterkeyhint="search" aria-label="Zoek op AniList">
+    <div id="ac">${zelfRij()}</div>`, true);
+}
+const zelfRij = () => `<div class="groep" style="margin-top:var(--ruimte-3)"><button type="button" class="rij" data-act="zelf-open"><span class="rij-ico">${ico('plus')}</span><span class="naam">Zelf toevoegen</span></button></div>`;
+let zoekTimer;
+function zoekInvoer(q) {
+  clearTimeout(zoekTimer);
+  S.zoekQ = q.trim();
+  if (!S.zoekQ) { $('#ac').innerHTML = zelfRij(); return; }
+  zoekTimer = setTimeout(async () => {
+    const vraag = S.zoekQ;
+    $('#ac').innerHTML = `<p class="ac-leeg">Zoeken…</p>`;
+    try {
+      const d = await anilist(`query($s:String){Page(perPage:15){media(search:$s,type:ANIME,sort:SEARCH_MATCH){${MEDIA}}}}`, { s: vraag });
+      if (vraag !== S.zoekQ || !$('#ac')) return;
+      const r = d.Page.media.filter(m => m.format !== 'MUSIC');
+      $('#ac').innerHTML = (r.length ? `<div class="groep">${r.map(m => {
+        const al = inLijst(m.id), t = al && titel(al.titelId);
+        const meta = [(m.startDate || {}).year, FORMATEN[m.format], m.episodes ? m.episodes + ' afl.' : ''].filter(Boolean).join(' · ');
+        return `<button type="button" class="rij" data-act="kies-media" data-id="${m.id}">
+          ${posterHtml({ naam: mediaNaam(m), plaatje: (m.coverImage || {}).medium }, 'mini')}
+          <span class="rij-tekst"><span class="naam">${esc(mediaNaam(m))}</span><span class="bijregel">${esc(meta)}</span></span>
+          ${t ? `<span class="chip kleur" style="--c:${stKleur(t.status)}">${esc(statusNaam(t.status))}</span>` : ''}</button>`;
+      }).join('')}</div>` : `<p class="ac-leeg">Niets gevonden voor “${esc(vraag)}”.</p>`) + zelfRij();
+      S.zoekMedia = r;
+    } catch (e) {
+      if (vraag === S.zoekQ && $('#ac')) $('#ac').innerHTML = `<p class="ac-leeg">AniList is even niet bereikbaar.</p>` + zelfRij();
+    }
+  }, 350);
+}
+/** Een resultaat gekozen: bij een nieuwe titel de hele reeks laten zien, bij een bestaande titel één deel toevoegen. */
+async function kiesMedia(id) {
+  const al = inLijst(id);
+  if (S.zoekDoel) {
+    const t = titel(S.zoekDoel);
+    if (al) return melding(al.titelId === t.id ? 'Staat al bij deze titel.' : `Staat al bij ${titel(al.titelId).naam}.`);
+    const m = (S.zoekMedia || []).find(x => x.id === id);
+    const x = { m, soort: isSeizoen(m) ? 'seizoen' : 'extra', naam: kortNaam(mediaNaam(m), t.naam), alt: '' };
+    const pos = Math.max(0, ...delenVan(t.id).map(d => getal(d.positie))) + 1;
+    sluitSheet();
+    bewaar('delen', [deelUitMedia(t.id, x, pos)]);
+    bewaar('titels', [{ id: t.id, status: nieuweStatus(t), gewijzigd: Date.now() }]);
+    return melding(`${x.naam || mediaNaam(m)} toegevoegd.`);
+  }
+  if (al) { sluitSheet(); openTitel(al.titelId); return melding('Staat al in je lijst.'); }
+  $('#venster .venster').classList.remove('zoeken');
+  $('#venster-inhoud').innerHTML = `<h2>Reeks zoeken…</h2>${SKELET_RIJEN(4)}`;
+  try {
+    const r = await haalReeks(id);
+    S.reeks = r;
+    toonReeks(r);
+  } catch (e) {
+    $('#venster-inhoud').innerHTML = `<h2>Dat lukte niet</h2><p class="ac-leeg">AniList is even niet bereikbaar. Probeer het zo opnieuw.</p>`;
+  }
+}
+/** Keuzelijst met alle seizoenen en extra's; seizoenen en films staan aan, OVA's en specials uit. */
+function toonReeks(r, titelId) {
+  const rij = (x, k) => {
+    const al = inLijst(x.m.id);
+    const aan = !al && (x.soort === 'seizoen' || x.m.format === 'MOVIE');
+    const meta = [(x.m.startDate || {}).year, FORMATEN[x.m.format], x.m.episodes ? x.m.episodes + ' afl.' : (x.m.status === 'NOT_YET_RELEASED' ? 'nog niet uit' : ''), al ? 'staat al bij ' + titel(al.titelId).naam : ''].filter(Boolean).join(' · ');
+    return `<button type="button" class="rij${aan ? ' on' : ''}" data-act="reeks-vink" data-k="${k}"${al ? ' disabled' : ''}>
+      <span class="vink" aria-pressed="${aan}">${ico('vinkje')}</span>
+      <span class="rij-tekst"><span class="naam">${esc(x.naam || (x.m === r.eerste ? 'Seizoen 1' : mediaNaam(x.m)))}</span><span class="bijregel">${esc(meta)}</span></span></button>`;
+  };
+  const lijst = r.delen.map((x, k) => ({ x, k })).filter(({ x }) => !titelId || !inLijst(x.m.id));
+  const sz = lijst.filter(({ x }) => x.soort === 'seizoen'), ex = lijst.filter(({ x }) => x.soort === 'extra');
+  $('#venster-inhoud').innerHTML = `<h2>${titelId ? 'Nieuwe delen' : esc(r.basis)}</h2>
+    ${titelId ? '' : `<label class="label" for="rk-naam">Naam</label><input class="veld" id="rk-naam" value="${esc(r.basis)}" autocomplete="off">`}
+    ${sz.length ? `<div class="kopje">Seizoenen</div><div class="groep">${sz.map(({ x, k }) => rij(x, k)).join('')}</div>` : ''}
+    ${ex.length ? `<div class="kopje">Films &amp; extra's</div><div class="groep">${ex.map(({ x, k }) => rij(x, k)).join('')}</div>` : ''}
+    <button type="button" class="knop breed" data-act="reeks-bewaar" data-id="${titelId || ''}">Toevoegen</button>`;
+}
+function bewaarReeks(titelId) {
+  const r = S.reeks;
+  const gekozen = $$('#venster-inhoud .rij.on').map(b => r.delen[Number(b.dataset.k)]);
+  if (!gekozen.length) return melding('Kies minstens één deel.');
+  if (titelId) {
+    const t = titel(titelId);
+    let pos = Math.max(0, ...delenVan(t.id).map(d => getal(d.positie)));
+    const nieuw = gekozen.map(x => deelUitMedia(t.id, Object.assign({}, x, { naam: x.naam || kortNaam(mediaNaam(x.m), t.naam) }), ++pos));
+    sluitSheet();
+    bewaar('delen', nieuw);
+    bewaar('titels', [{ id: t.id, status: nieuweStatus(t), gewijzigd: Date.now() }]);
+    return melding(nieuw.length === 1 ? '1 deel toegevoegd.' : `${nieuw.length} delen toegevoegd.`);
+  }
+  const naam = ($('#rk-naam').value || '').trim() || r.basis;
+  const id = 't' + nieuwId();
+  // Het eerste seizoen in de lijst heet "Seizoen 1": geen eigen naam nodig
+  const eersteSeizoen = gekozen.find(x => x.soort === 'seizoen');
+  const delen = gekozen.map((x, k) => deelUitMedia(id, Object.assign({}, x, { naam: x === eersteSeizoen && x.m === r.eerste ? '' : (x.naam || mediaNaam(x.m)) }), k + 1));
+  const t = { id, soort: 'anime', naam, plaatje: r.plaatje, status: 'towatch', rating: '', toegevoegd: Date.now(), gewijzigd: Date.now() };
+  sluitSheet();
+  D().delen.push(...delen);
+  bel('bewaar', 'delen', delen);
+  bewaar('titels', [t]);
+  S.status = 'towatch';
+  openTitel(id);
+  melding(`${naam} toegevoegd.`);
+}
+/* Zelf toevoegen, als AniList hem niet heeft */
+const soortKeuze = () => `<div class="keuze" id="zf-soort">${[['seizoen', 'Seizoen'], ['extra', 'Film of extra']].map(([id, n]) => `<button type="button" aria-pressed="${S.zelfSoort === id}" data-act="zf-soort" data-id="${id}">${n}</button>`).join('')}</div>`;
+function openZelf() {
+  const doel = S.zoekDoel && titel(S.zoekDoel);
+  S.zelfSoort = 'seizoen';
+  $('#venster .venster').classList.remove('zoeken');
+  $('#venster-inhoud').innerHTML = `<h2>Zelf toevoegen</h2>
+    <label class="label" for="zf-naam">Naam</label><input class="veld" id="zf-naam" value="${esc(doel ? '' : S.zoekQ || '')}" autocomplete="off" placeholder="${doel ? 'Bijvoorbeeld Seizoen 2' : ''}">
+    ${doel ? `<div class="label">Soort</div>${soortKeuze()}`
+      : `<label class="label" for="zf-plaatje">Plaatje (link, mag leeg)</label><input class="veld" id="zf-plaatje" type="url" autocomplete="off" placeholder="https://">`}
+    <label class="label" for="zf-afl">Afleveringen</label><input class="veld" id="zf-afl" type="number" inputmode="numeric" min="0" value="${doel ? '' : 12}">
+    <button type="button" class="knop breed" data-act="zelf-bewaar">Toevoegen</button>`;
+  $('#zf-naam').focus();
+}
+function bewaarZelf() {
+  const doel = S.zoekDoel && titel(S.zoekDoel);
+  const naam = $('#zf-naam').value.trim(), afl = Math.max(0, Math.round(getal($('#zf-afl').value)));
+  if (!doel && !naam) return melding('Vul een naam in.');
+  if (doel) {
+    const pos = Math.max(0, ...delenVan(doel.id).map(d => getal(d.positie))) + 1;
+    const d = { id: 'd' + nieuwId(), titelId: doel.id, soort: S.zelfSoort, positie: pos, naam, bronId: '', formaat: S.zelfSoort === 'extra' ? 'MOVIE' : 'TV', jaar: '', afleveringen: afl || 1, uitgezonden: '', gezien: 0, bronStatus: '', alt: '', gecheckt: '' };
+    sluitSheet();
+    bewaar('delen', [d]);
+    bewaar('titels', [{ id: doel.id, status: nieuweStatus(doel), gewijzigd: Date.now() }]);
+    return melding(`${naam || 'Seizoen'} toegevoegd.`);
+  }
+  const id = 't' + nieuwId();
+  const d = { id: 'd' + nieuwId(), titelId: id, soort: 'seizoen', positie: 1, naam: '', bronId: '', formaat: 'TV', jaar: '', afleveringen: afl, uitgezonden: '', gezien: 0, bronStatus: '', alt: '', gecheckt: '' };
+  sluitSheet();
+  D().delen.push(d);
+  bel('bewaar', 'delen', [d]);
+  bewaar('titels', [{ id, soort: 'anime', naam, plaatje: ($('#zf-plaatje') || {}).value || '', status: 'towatch', rating: '', toegevoegd: Date.now(), gewijzigd: Date.now() }]);
+  S.status = 'towatch';
+  openTitel(id);
+  melding(`${naam} toegevoegd.`);
+}
+/* Cijfer: hele cijfers en een decimaal, elke tik slaat meteen op */
+function openRating(id) {
+  S.ratingVoor = id;
+  tekenRating();
+}
+function tekenRating() {
+  const t = titel(S.ratingVoor), r = t.rating === '' || t.rating == null ? null : Number(t.rating);
+  const heel = r == null ? null : Math.floor(r + 1e-9), dec = r == null ? null : Math.round((r - heel) * 10);
+  const html = `<h2>Jouw cijfer</h2>
+    <p class="rating-groot${r == null ? ' geen' : ''}">${r == null ? '–' : cijferTekst(r)}</p>
+    <div class="keuze raster">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button type="button" aria-pressed="${heel === n}" data-act="rating-heel" data-id="${n}">${n}</button>`).join('')}</div>
+    <div class="keuze raster">${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button type="button" aria-pressed="${dec === n && r != null}" data-act="rating-dec" data-id="${n}"${r == null || heel === 10 ? ' disabled' : ''}>,${n}</button>`).join('')}</div>
+    <button type="button" class="knop zacht breed" data-act="rating-wis"${r == null ? ' disabled' : ''}>Wis cijfer</button>`;
+  if ($('#venster').hidden) openSheet(html); else $('#venster-inhoud').innerHTML = html;
+}
+function zetRating(waarde) {
+  bewaar('titels', [{ id: S.ratingVoor, rating: waarde }]);
+  tekenRating();
+}
+function openDeelWijzig(id) {
+  const d = D().delen.find(x => x.id === id);
+  S.wijzigDeel = id; S.zelfSoort = d.soort === 'extra' ? 'extra' : 'seizoen';
+  openSheet(`<h2>Wijzigen</h2>
+    <label class="label" for="dw-naam">Naam</label><input class="veld" id="dw-naam" value="${esc(d.naam)}" autocomplete="off" placeholder="${esc(deelNaam(Object.assign({}, d, { naam: '' }), seizoenenVan(d.titelId).indexOf(d)))}">
+    <div class="label">Soort</div>${soortKeuze()}
+    <label class="label" for="dw-afl">Afleveringen</label><input class="veld" id="dw-afl" type="number" inputmode="numeric" min="0" value="${esc(d.afleveringen || beschikbaar(d) || '')}">
+    <button type="button" class="knop breed" data-act="deel-bewaar">Opslaan</button>`);
+}
+
+
+/* ---------- Navigatie ---------- */
+function openTitel(id) {
+  S.tab = 'anime'; S.titelOpen = id; S.swipeOpen = null;
+  teken();
+  $('#scroller').scrollTop = 0;
+}
+
+/* ================= Acties ================= */
+const ACTIES = {
+  tab: b => { sluitVeeg(); S.status = S.status || 'watching'; wissel(b.dataset.tab); },
+  terug: () => { const t = titel(S.titelOpen); if (t) S.status = t.status; S.titelOpen = null; teken(); $('#scroller').scrollTop = 0; },
+  sluit: sluitSheet,
+  'status-tab': (b, id) => { S.status = id; try { localStorage.setItem('kollectie-status', id); } catch (e) {} teken(); $('#scroller').scrollTop = 0; },
+  'toevoeg-open': () => openZoeken(),
+  'titel-open': (b, id) => openTitel(id),
+  'titel-naam': async (b, id) => { sluitVeeg(); const t = titel(id); const n = await vraagTekst('Naam wijzigen', t.naam); if (n) bewaar('titels', [{ id, naam: n }]); },
+  'titel-plaatje': async (b, id) => { const t = titel(id); const n = await vraagTekst('Link naar plaatje', t.plaatje, 'https://'); if (n !== null) bewaar('titels', [{ id, plaatje: n }]); },
+  'titel-weg': async (b, id) => {
+    sluitVeeg(); const t = titel(id);
+    if (!(await bevestig(`${t.naam} verwijderen? Ook alles wat je hebt afgevinkt is dan weg.`))) return;
+    const ids = delenVan(id).map(d => d.id);
+    S.titelOpen = null;
+    bel('verwijder', 'delen', ids); D().delen = D().delen.filter(d => !ids.includes(d.id));
+    verwijder('titels', [id]);
+    melding(`${t.naam} verwijderd.`);
+  },
+  'titel-nieuw': async (b, id) => {
+    const start = seizoenenVan(id).find(d => d.bronId) || delenVan(id).find(d => d.bronId);
+    openSheet(`<h2>Nieuwe delen zoeken…</h2>${SKELET_RIJEN(3)}`);
+    try {
+      const r = await haalReeks(Number(start.bronId));
+      S.reeks = r;
+      if (!r.delen.some(x => !inLijst(x.m.id))) { sluitSheet(); return melding('Geen nieuwe delen gevonden.'); }
+      toonReeks(r, id);
+    } catch (e) { sluitSheet(); melding('AniList is even niet bereikbaar.'); }
+  },
+  'status-zet': (b, id) => { bewaar('titels', [{ id: S.titelOpen, status: id, gewijzigd: Date.now() }]); },
+  'rating-open': (b, id) => openRating(id),
+  'rating-heel': (b, n) => { const t = titel(S.ratingVoor), r = getal(t.rating); const dec = t.rating === '' ? 0 : Math.round((r - Math.floor(r + 1e-9)) * 10); zetRating(Number(n) === 10 ? 10 : Number(n) + dec / 10); },
+  'rating-dec': (b, n) => { const r = getal(titel(S.ratingVoor).rating); zetRating(Math.floor(r + 1e-9) + Number(n) / 10); },
+  'rating-wis': () => zetRating(''),
+  'deel-klap': (b, id) => { const t = S.titelOpen; S.uitklap[t] = openSeizoen(t) === id ? null : id; teken(); },
+  'deel-vink': (b, id) => {
+    const d = D().delen.find(x => x.id === id), max = beschikbaar(d), oud = getal(d.gezien);
+    if (!max) return;
+    const nieuw = oud >= max ? 0 : max;
+    bewaarDelen(d.titelId, [{ id, gezien: nieuw }], d.soort === 'extra' ? null : () => bewaarDelen(d.titelId, [{ id, gezien: oud }]));
+  },
+  afl: (b, id) => {
+    const d = D().delen.find(x => x.id === id), n = Number(b.dataset.n);
+    bewaarDelen(d.titelId, [{ id, gezien: getal(d.gezien) === n ? n - 1 : n }]);
+  },
+  'afl-stap': (b, id) => {
+    const d = D().delen.find(x => x.id === id);
+    const n = Math.min(beschikbaar(d), Math.max(0, getal(d.gezien) + Number(b.dataset.stap)));
+    bewaarDelen(d.titelId, [{ id, gezien: n }]);
+  },
+  'deel-toevoegen': (b, id) => openZoeken(id),
+  'deel-wijzig': (b, id) => { sluitVeeg(); openDeelWijzig(id); },
+  'deel-bewaar': () => {
+    const d = D().delen.find(x => x.id === S.wijzigDeel);
+    const afl = Math.max(0, Math.round(getal($('#dw-afl').value)));
+    sluitSheet();
+    bewaarDelen(d.titelId, [{ id: d.id, naam: $('#dw-naam').value.trim(), soort: S.zelfSoort, afleveringen: afl || '', uitgezonden: '', gezien: Math.min(getal(d.gezien), afl || getal(d.gezien)) }]);
+  },
+  'deel-weg': async (b, id) => {
+    sluitVeeg(); const d = D().delen.find(x => x.id === id);
+    if (!(await bevestig(`${deelNaam(d, seizoenenVan(d.titelId).indexOf(d))} verwijderen?`))) return;
+    verwijder('delen', [id]);
+  },
+  'kies-media': (b, id) => kiesMedia(Number(id)),
+  'reeks-vink': b => { const aan = b.classList.toggle('on'); $('.vink', b).setAttribute('aria-pressed', aan); },
+  'reeks-bewaar': (b, id) => bewaarReeks(id || null),
+  'zelf-open': openZelf,
+  'zelf-bewaar': bewaarZelf,
+  'zf-soort': (b, id) => { S.zelfSoort = id; $$('#zf-soort button').forEach(x => x.setAttribute('aria-pressed', x === b)); },
+  taal: (b, id) => bewaar('instellingen', [{ id: 'taal', waarde: id }])
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b || b.disabled) return;
+  const f = ACTIES[b.dataset.act];
+  if (f) { e.preventDefault(); f(b, b.dataset.id); }
+});
+document.addEventListener('input', e => { if (e.target.id === 'al-zoek') zoekInvoer(e.target.value); });
+document.addEventListener('change', e => {
+  const id = e.target.dataset && e.target.dataset.aflInvoer;
+  if (!id) return;
+  const d = D().delen.find(x => x.id === id);
+  bewaarDelen(d.titelId, [{ id, gezien: Math.min(beschikbaar(d), Math.max(0, Math.round(getal(e.target.value)))) }]);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'al-zoek') { e.preventDefault(); e.target.blur(); }
+  if (e.key === 'Enter' && e.target.dataset && e.target.dataset.aflInvoer) e.target.blur();
+  if (e.key === 'Escape' && !$('#venster').hidden) sluitSheet();
+});
+
+/* ---------- Vegen naar links (Kage Syztem 5.11) ---------- */
+let veeg = null, klikOnderdrukken = false;
+const breedte = sw => [...$('.veeg-knoppen', sw).children].reduce((t, b) => t + b.offsetWidth, 0) || 72;
+function sluitVeeg() { if (!S.swipeOpen) return; S.swipeOpen = null; $$('.veeg.open').forEach(x => x.classList.remove('open')); }
+document.addEventListener('pointerdown', e => {
+  const sw = e.target.closest('.veeg');
+  if (e.target.closest('.veeg-knoppen')) return;
+  if (!sw) { sluitVeeg(); return; }
+  if (S.swipeOpen && S.swipeOpen !== sw.dataset.key) sluitVeeg();
+  veeg = { el: sw, kaart: $('.veeg-inhoud', sw), x: e.clientX, y: e.clientY, id: e.pointerId, start: sw.classList.contains('open') ? -breedte(sw) : 0, t: 0, actief: false };
+});
+document.addEventListener('pointermove', e => {
+  if (!veeg || e.pointerId !== veeg.id) return;
+  const dx = e.clientX - veeg.x, dy = e.clientY - veeg.y;
+  if (!veeg.actief) {
+    if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      veeg.actief = true; S.slepen = true;
+      veeg.el.classList.add('bezig');
+      veeg.kaart.style.transition = 'none';
+      try { veeg.el.setPointerCapture(e.pointerId); } catch (err) {}
+    } else if (Math.abs(dy) > 10) { veeg = null; return; }
+    else return;
+  }
+  let t = veeg.start + dx;
+  if (t > 0) t = t / 4;
+  t = Math.max(t, -veeg.el.offsetWidth);
+  veeg.t = t;
+  veeg.kaart.style.transform = `translateX(${t}px)`;
+});
+function eindVeeg(e) {
+  if (!veeg || e.pointerId !== veeg.id) return;
+  const v = veeg; veeg = null;
+  if (!v.actief) return;
+  S.slepen = false;
+  klikOnderdrukken = true; setTimeout(() => { klikOnderdrukken = false; }, 60);
+  v.kaart.style.transition = ''; v.kaart.style.transform = '';
+  v.el.classList.remove('bezig');
+  if (v.t < -breedte(v.el) / 2) { S.swipeOpen = v.el.dataset.key; v.el.classList.add('open'); }
+  else { if (S.swipeOpen === v.el.dataset.key) S.swipeOpen = null; v.el.classList.remove('open'); }
+  if (S.uitgesteld) { S.uitgesteld = false; teken(); }
+}
+document.addEventListener('pointerup', eindVeeg);
+document.addEventListener('pointercancel', eindVeeg);
+document.addEventListener('click', e => {
+  if (klikOnderdrukken) { e.preventDefault(); e.stopPropagation(); return; }
+  const sw = e.target.closest('.veeg.open');
+  if (sw && !e.target.closest('.veeg-knoppen')) { e.preventDefault(); e.stopPropagation(); sluitVeeg(); }
+}, true);
+
+/* ---------- Titel-schakelaar (Kage Syztem 5.1) ---------- */
+function menuOpen() { $('#schermmenu').hidden = false; $('#schakelaar').setAttribute('aria-expanded', 'true'); }
+function menuDicht() { $('#schermmenu').hidden = true; $('#schakelaar').setAttribute('aria-expanded', 'false'); }
+$('#schakelaar').addEventListener('click', () => { if ($('#schermmenu').hidden) menuOpen(); else menuDicht(); });
+document.addEventListener('click', e => { if (!$('#schermmenu').hidden && !e.target.closest('#schermmenu, #schakelaar')) menuDicht(); }, true);
+$('#scroller').addEventListener('scroll', () => { if (!$('#schermmenu').hidden) menuDicht(); }, { passive: true });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#schermmenu').hidden) menuDicht(); });
+
+/* ---------- Toetsenbord (iOS), zie Kage Syztem hoofdstuk 10 ---------- */
+function pasToetsenbordAan() {
+  const vv = window.visualViewport; if (!vv) return;
+  const kb = Math.max(0, Math.round(innerHeight - vv.height - vv.offsetTop));
+  document.documentElement.style.setProperty('--kb', kb + 'px');
+  document.body.classList.toggle('toetsenbord', kb > 80);
+  houdInBeeld();
+}
+function houdInBeeld() {
+  const el = document.activeElement, vv = window.visualViewport, sc = $('#scroller');
+  if (!vv || !el || !/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || !sc.contains(el)) return;
+  const r = el.getBoundingClientRect();
+  const boven = Math.max($('.kop-wrap').getBoundingClientRect().bottom, vv.offsetTop) + 8;
+  const onder = vv.offsetTop + vv.height - 16;
+  if (r.bottom > onder) sc.scrollBy(0, Math.min(r.bottom - onder, r.top - boven));
+  else if (r.top < boven) sc.scrollBy(0, r.top - boven);
+}
+if (window.visualViewport) { visualViewport.addEventListener('resize', pasToetsenbordAan); visualViewport.addEventListener('scroll', pasToetsenbordAan); }
+document.addEventListener('focusin', () => setTimeout(houdInBeeld, 350));
+
+laad();
+</script>
+</body>
+</html>
+
