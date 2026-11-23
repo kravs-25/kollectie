@@ -470,12 +470,12 @@ function tekenAnime() {
   }).join('')}</div>`;
   chipInBeeld($('#headerextra .chips'));
   const alles = S.status === 'alles';
-  // Klaar (Finished, Dropped): hoogste cijfer eerst, zonder cijfer onderaan. De rest: laatst gewijzigd eerst.
+  // Klaar (Waiting, Finished, Dropped): hoogste cijfer eerst, zonder cijfer onderaan. De rest: laatst gewijzigd eerst.
   const heeftCijfer = t => t.rating !== '' && t.rating != null;
   const opCijfer = (a, b) => (heeftCijfer(b) - heeftCijfer(a)) || (getal(b.rating) - getal(a.rating)) || opNaam(a, b);
   const opRecent = (a, b) => getal(b.gewijzigd) - getal(a.gewijzigd);
   const lijst = (alles ? ts : ts.filter(t => t.status === S.status))
-    .sort(['finished', 'dropped'].includes(S.status) ? opCijfer : opRecent);
+    .sort(['waiting', 'finished', 'dropped'].includes(S.status) ? opCijfer : opRecent);
   if (!lijst.length) {
     $('#main').innerHTML = alles
       ? `<div class="leeg"><strong>Nog niets in je lijst</strong>Tik onderin op Anime toevoegen.</div>`
