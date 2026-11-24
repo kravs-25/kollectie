@@ -22,6 +22,13 @@
 /* ================= Kollectie: onderdelen die alleen deze app heeft =================
    Alleen tokens uit basis.css en thema.css; geen losse kleuren of maten. */
 .kop-wrap{padding-top:var(--ruimte-3)}
+/* Onderkant viel weg op iOS (zelfde fix als Kravschappen): als web-app op het beginscherm
+   rekent iOS de statusbalk soms niet mee in de schermhoogte, dus de scroller hield te vroeg op.
+   Daarom is de pagina schermhoog plus de statusbalk en ligt de scroller vast over het hele scherm,
+   met onderin ruimte voor de veilige zone. */
+html.app-schil{height:calc(100% + env(safe-area-inset-top,0px))}
+html.app-schil #scroller{position:fixed;inset:0;height:auto;overflow-x:hidden}
+.scherm{padding-bottom:calc(var(--actie-ruimte) + env(safe-area-inset-bottom,0px))}
 #headerextra:empty{display:none}
 
 /* Plaatjes (staand, 5:7) */
