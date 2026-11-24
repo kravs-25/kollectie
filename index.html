@@ -348,8 +348,20 @@ const delenVan = id => D().delen.filter(d => d.titelId === id && zichtbaar(d)).s
 const seizoenenVan = id => delenVan(id).filter(d => d.soort !== 'extra');
 const extrasVan = id => delenVan(id).filter(d => d.soort === 'extra');
 const taal = () => ((D().instellingen || []).find(x => x.id === 'taal') || { waarde: 'engels' }).waarde;
+/** Verse AniList-gegevens van een deel (opgehaald bij het openen), of null. De Sheet is dan alleen nog reserve. */
+const bron = d => d.bronId && S.kal && S.kal.media ? S.kal.media.get(Number(d.bronId)) || null : null;
+const bronStatus = d => (bron(d) || {}).status || d.bronStatus;
+const nogBezig = d => NOG_BEZIG.includes(bronStatus(d));
 /** Hoeveel afleveringen er nu te kijken zijn: bij een lopende serie het aantal dat al is uitgezonden. */
-const beschikbaar = d => d.bronStatus === 'NOT_YET_RELEASED' ? 0 : (getal(d.uitgezonden) || getal(d.afleveringen));
+function beschikbaar(d) {
+  const m = bron(d);
+  if (!m) return d.bronStatus === 'NOT_YET_RELEASED' ? 0 : (getal(d.uitgezonden) || getal(d.afleveringen));
+  if (m.status === 'NOT_YET_RELEASED') return 0;
+  if (NOG_BEZIG.includes(m.status)) return m.nextAiringEpisode ? m.nextAiringEpisode.episode - 1 : (getal(d.uitgezonden) || getal(d.afleveringen) || getal(m.episodes));
+  return getal(d.afleveringen) || getal(m.episodes) || getal(d.uitgezonden);
+}
+/** Totaal aantal afleveringen van een deel (ook wat nog moet uitkomen), als dat bekend is. */
+const aflTotaal = d => getal(d.afleveringen) || getal((bron(d) || {}).episodes) || beschikbaar(d);
 const deelNaam = (d, k) => d.naam || (d.soort === 'extra' ? 'Film' : 'Seizoen ' + (k + 1));
 const posterHtml = (t, klasse = '') => t.plaatje
   ? `<img class="poster ${klasse}" src="${esc(t.plaatje)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
@@ -363,7 +375,7 @@ function tekenSkelet() { $('#main').innerHTML = '<div class="skelet"></div>'.rep
 function laad() {
   if (!S.data) { const l = leesLokaal(); if (l) { S.data = l; wissel(S.tab); } else tekenSkelet(); }
   LOKET('getState')
-    .then(s => { const eerste = !S.data; S.data = s; onthoudLokaal(s); if (eerste) wissel(S.tab); else if (!bezig) teken(); })
+    .then(s => { const eerste = !S.data; S.data = s; onthoudLokaal(s); if (eerste) wissel(S.tab); else if (!bezig) teken(); zetStatusOm(); haalKalender(); })
     .catch(e => { if (!S.data) $('#main').innerHTML = `<div class="leeg"><strong>Laden lukte niet</strong>${esc(e.message)}. Herlaad de pagina.</div>`; });
 }
 function bel(fn, ...args) {
@@ -393,28 +405,42 @@ function verwijder(tabel, ids) {
   bel('verwijder', tabel, ids);
 }
 
-/* ---------- Status automatisch ----------
-   Eerste vink: Watching. Alles gezien: Finished, of Waiting als er nog iets uitkomt.
-   Films tellen niet mee voor "alles gezien", wel voor "er komt nog iets". */
-function nieuweStatus(t) {
-  const sz = seizoenenVan(t.id), alle = delenVan(t.id);
-  const iets = alle.some(d => getal(d.gezien) > 0);
-  const telbaar = sz.filter(d => beschikbaar(d) > 0);
-  const klaar = telbaar.length > 0 && telbaar.every(d => getal(d.gezien) >= beschikbaar(d));
-  if (klaar) return alle.some(d => NOG_BEZIG.includes(d.bronStatus)) ? 'waiting' : 'finished';
-  if (iets && t.status !== 'watching') return 'watching';
-  return t.status;
+/* ---------- Status: berekend, alleen Gestopt kies je zelf ----------
+   Niets gezien: To watch. Iets gezien en er staat nog iets klaar: Watching.
+   Alles gezien wat er is en er komt nog iets: Waiting. Alles gezien en er komt niets meer: Finished.
+   Films tellen mee voor "er komt nog iets"; voor "alles gezien" alleen bij een titel zonder seizoenen. */
+const GESTOPT = 'dropped';
+const isGestopt = t => t.status === GESTOPT;
+function statusVan(t) {
+  if (isGestopt(t)) return GESTOPT;
+  const alle = delenVan(t.id), sz = seizoenenVan(t.id);
+  if (!alle.some(d => getal(d.gezien) > 0)) return 'towatch';
+  if ((sz.length ? sz : alle).some(d => getal(d.gezien) < beschikbaar(d))) return 'watching';
+  return alle.some(nogBezig) ? 'waiting' : 'finished';
+}
+/** Eenmalig: wat je vroeger zelf op Finished of Waiting zette zonder af te vinken, wordt afgevinkt.
+    Vanaf dan bepaalt alleen wat je afvinkt de status. */
+let omgezet = false;
+function zetStatusOm() {
+  if (omgezet || (D().instellingen || []).some(x => x.id === 'statusmodel')) return;
+  omgezet = true;
+  const oudMax = d => d.bronStatus === 'NOT_YET_RELEASED' ? 0 : (getal(d.uitgezonden) || getal(d.afleveringen));
+  const w = [];
+  D().titels.filter(t => t.status === 'finished' || t.status === 'waiting').forEach(t => {
+    const sz = seizoenenVan(t.id);
+    (sz.length ? sz : delenVan(t.id)).forEach(d => { const m = oudMax(d); if (getal(d.gezien) < m) w.push({ id: d.id, gezien: m }); });
+  });
+  if (w.length) bel('bewaar', 'delen', w.map(x => (Object.assign(D().delen.find(d => d.id === x.id), x), x)));
+  bewaar('instellingen', [{ id: 'statusmodel', waarde: '2' }]);
 }
 /** Bewaar gewijzigde delen en pas zo nodig de status van de titel aan. */
 function bewaarDelen(titelId, wijzigingen, undo) {
   const t = titel(titelId);
-  const oud = t.status;
+  const oud = statusVan(t);
   wijzigingen.forEach(w => Object.assign(D().delen.find(d => d.id === w.id), w));
-  const nieuw = nieuweStatus(t);
-  const tRij = { id: t.id, gewijzigd: Date.now() };
-  if (nieuw !== oud) tRij.status = nieuw;
+  const nieuw = statusVan(t);
   bel('bewaar', 'delen', wijzigingen);
-  bewaar('titels', [tRij]);
+  bewaar('titels', [{ id: t.id, gewijzigd: Date.now() }]);
   if (nieuw !== oud) melding(`Status: ${statusNaam(nieuw)}`, undo ? 'Ongedaan maken' : '', undo);
   else if (undo) melding('Seizoen bijgewerkt.', 'Ongedaan maken', undo);
 }
@@ -474,18 +500,19 @@ function voortgang(t) {
   const k = sz.findIndex(d => getal(d.gezien) < beschikbaar(d));
   if (k < 0) return null;
   const d = sz[k];
-  return { gezien: getal(d.gezien), tot: getal(d.afleveringen) || beschikbaar(d), seizoen: sz.length > 1 ? k + 1 : 0, lopend: !getal(d.afleveringen) };
+  return { gezien: getal(d.gezien), tot: aflTotaal(d), seizoen: sz.length > 1 ? k + 1 : 0, lopend: nogBezig(d) && !getal((bron(d) || {}).episodes) && !getal(d.afleveringen) };
 }
 /** Het grote getal rechts in een blok, met een woordje eronder. */
 function getalVan(t) {
-  if (t.status === 'watching') {
+  const st = statusVan(t);
+  if (st === 'watching') {
     const v = voortgang(t);
     if (v) return v.tot >= LANG_SEIZOEN || v.lopend ? [v.gezien, 'van ' + (v.tot || '?')] : [`${v.gezien}/${v.tot || '?'}`, v.seizoen ? 'seizoen ' + v.seizoen : 'afleveringen'];
   }
   const c = cijferTekst(t.rating);
   if (c) return [c, 'jouw cijfer'];
-  if (t.status === 'towatch') {
-    const n = seizoenenVan(t.id).reduce((s, d) => s + (getal(d.afleveringen) || beschikbaar(d)), 0);
+  if (st === 'towatch') {
+    const n = seizoenenVan(t.id).reduce((s, d) => s + aflTotaal(d), 0);
     if (n) return [n, 'afleveringen'];
   }
   return null;
@@ -523,7 +550,7 @@ function tekenAnime() {
   haalKalender();
   const ts = D().titels.filter(t => t.soort === 'anime');
   if (!ts.length) { $('#main').innerHTML = `<div class="leeg"><strong>Nog niets in je lijst</strong>Tik onderin op Anime toevoegen.</div>`; return; }
-  const van = s => ts.filter(t => t.status === s);
+  const van = s => ts.filter(t => statusVan(t) === s);
   const kopje = (tekst, n) => `<div class="kopje kop-n">${tekst}${n ? `<span>${n}</span>` : ''}</div>`;
   let h = '';
 
@@ -534,7 +561,7 @@ function tekenAnime() {
     h += bezig.map(t => {
       const v = volgende(t), vg = voortgang(t);
       const label = v ? [v.meer ? deelNaam(v.d, v.k) : '', `afl. ${v.n}`].filter(Boolean).join(' · ') : ((komtEraan(t) || {}).tekst || 'Bijgewerkt');
-      return veegTitel(t, `<div class="blok kleur verder" style="--c:${stKleur(t.status)}">
+      return veegTitel(t, `<div class="blok kleur verder" style="--c:${stKleur(statusVan(t))}">
         <button type="button" class="verder-open" data-act="titel-open" data-id="${t.id}">
           ${posterHtml(t, 'blok-plaatje')}
           <span class="blok-tekst"><span class="blok-label">${esc(label)}</span><span class="blok-naam">${esc(t.naam)}</span>${vg && vg.tot ? `<span class="voortgang"><i style="width:${Math.min(100, Math.round(vg.gezien / vg.tot * 100))}%"></i></span>` : ''}</span>
@@ -566,8 +593,8 @@ function tekenAnime() {
   if (straks.length) {
     h += kopje('Hierna beginnen', straks.length);
     h += `<div class="posterrij">${straks.map(t => {
-      const n = seizoenenVan(t.id).reduce((s, d) => s + (getal(d.afleveringen) || beschikbaar(d)), 0);
-      return `<button type="button" class="p" style="--c:${stKleur(t.status)}" data-act="titel-open" data-id="${t.id}">${posterHtml(t)}<span class="p-naam">${esc(t.naam)}</span>${n ? `<small>${n} afl.</small>` : ''}</button>`;
+      const n = seizoenenVan(t.id).reduce((s, d) => s + aflTotaal(d), 0);
+      return `<button type="button" class="p" style="--c:${stKleur(statusVan(t))}" data-act="titel-open" data-id="${t.id}">${posterHtml(t)}<span class="p-naam">${esc(t.naam)}</span>${n ? `<small>${n} afl.</small>` : ''}</button>`;
     }).join('')}</div>`;
   }
 
@@ -591,14 +618,14 @@ function tekenLijst() {
   const s = S.lijst, alles = s === 'alles';
   zetKop(statusNaam(s), 'Anime');
   $('#headerextra').innerHTML = '';
-  const lijst = D().titels.filter(t => t.soort === 'anime' && (alles || t.status === s))
+  const lijst = D().titels.filter(t => t.soort === 'anime' && (alles || statusVan(t) === s))
     .sort(alles ? opNaam : ['waiting', 'finished', 'dropped'].includes(s) ? opCijfer : opRecent);
   if (!lijst.length) { $('#main').innerHTML = `<div class="leeg"><strong>Nog niets bij ${statusNaam(s)}</strong>Zet een anime op ${statusNaam(s)} en hij staat hier.</div>`; return; }
   $('#main').innerHTML = lijst.map(t => {
-    const v = t.status === 'watching' ? voortgang(t) : null, g = getalVan(t);
-    return veegTitel(t, `<button type="button" class="blok kleur" style="--c:${stKleur(t.status)}" data-act="titel-open" data-id="${t.id}">
+    const v = statusVan(t) === 'watching' ? voortgang(t) : null, g = getalVan(t);
+    return veegTitel(t, `<button type="button" class="blok kleur" style="--c:${stKleur(statusVan(t))}" data-act="titel-open" data-id="${t.id}">
         ${posterHtml(t, 'blok-plaatje')}
-        <span class="blok-tekst">${alles ? `<span class="blok-label">${statusNaam(t.status)}</span>` : ''}<span class="blok-naam">${esc(t.naam)}</span>${v && v.tot ? `<span class="voortgang"><i style="width:${Math.min(100, Math.round(v.gezien / v.tot * 100))}%"></i></span>` : ''}</span>
+        <span class="blok-tekst">${alles ? `<span class="blok-label">${statusNaam(statusVan(t))}</span>` : ''}<span class="blok-naam">${esc(t.naam)}</span>${v && v.tot ? `<span class="voortgang"><i style="width:${Math.min(100, Math.round(v.gezien / v.tot * 100))}%"></i></span>` : ''}</span>
         ${g ? `<span class="getal">${esc(g[0])}<small>${esc(g[1])}</small></span>` : ''}
       </button>`);
   }).join('');
@@ -616,19 +643,21 @@ function tekenTitel() {
   zetKop(t.naam, S.lijst ? statusNaam(S.lijst) : VIEWS[S.tab].titel);
   $('#headerextra').innerHTML = '';
   const sz = seizoenenVan(t.id), ex = extrasVan(t.id);
-  const totaal = sz.reduce((s, d) => s + (getal(d.afleveringen) || beschikbaar(d)), 0);
+  const totaal = sz.reduce((s, d) => s + aflTotaal(d), 0);
   const gezien = sz.reduce((s, d) => s + getal(d.gezien), 0);
   const open = openSeizoen(t.id);
   const cijfer = cijferTekst(t.rating);
-  let h = `<div style="--st:${stKleur(t.status)}">`;
+  let h = `<div style="--st:${stKleur(statusVan(t))}">`;
   h += `<div class="hero"><button type="button" class="poster-knop" data-act="plaatje-kies" data-id="${t.id}" aria-label="Plaatje kiezen">${posterHtml(t, 'groot')}</button>
     <div class="hero-rechts">
       <button type="button" class="blok kleur cijfer-knop" style="--c:var(--st)" data-act="rating-open" data-id="${t.id}" aria-label="Jouw cijfer: ${cijfer || 'nog niet gegeven'}">
         <span class="blok-label">Jouw cijfer</span><b class="${cijfer ? '' : 'geen'}">${cijfer || '–'}</b></button>
       ${totaal ? `<div class="hero-voortgang">${gezien} van ${totaal} afleveringen<span class="voortgang"><i style="width:${Math.min(100, Math.round(gezien / totaal * 100))}%"></i></span></div>` : ''}
     </div></div>`;
+  const st = statusVan(t);
   h += `<div class="kopje">Status</div>
-    <div class="chips status">${STATUSSEN.map(s => `<button type="button" class="chip" style="--c:${stKleur(s.id)}" aria-pressed="${t.status === s.id}" data-act="status-zet" data-id="${s.id}"><span class="stip"></span>${s.naam}</button>`).join('')}</div>`;
+    <div class="chips status">${isGestopt(t) ? '' : `<span class="chip" style="--c:${stKleur(st)}" aria-pressed="true"><span class="stip"></span>${statusNaam(st)}</span>`}
+      <button type="button" class="chip" style="--c:${stKleur(GESTOPT)}" aria-pressed="${isGestopt(t)}" data-act="gestopt" data-id="${t.id}"><span class="stip"></span>Gestopt</button></div>`;
   h += `<div class="kopje">Seizoenen</div><div class="groep">`;
   sz.forEach((d, k) => { h += deelRij(d, k, open === d.id); });
   h += `<button type="button" class="rij" data-act="deel-toevoegen" data-id="${t.id}"><span class="plus-rond">${ico('plus')}</span><span class="naam">Seizoen of film toevoegen</span></button></div>`;
@@ -651,11 +680,11 @@ function openSeizoen(titelId) {
 }
 const navRij = (act, icoon, tekst, id, gevaar) => `<button type="button" class="rij${gevaar ? ' gevaar' : ''}" data-act="${act}" data-id="${id}"><span class="rij-ico">${ico(icoon)}</span><span class="naam">${tekst}</span>${gevaar ? '' : `<span class="pijltje rij-ico">${ico('pijl-rechts')}</span>`}</button>`;
 function deelRij(d, k, open) {
-  const max = beschikbaar(d), tot = getal(d.afleveringen) || max, g = getal(d.gezien);
+  const max = beschikbaar(d), tot = Math.max(aflTotaal(d), max), g = getal(d.gezien);
   const af = max > 0 && g >= max;
   const extra = d.soort === 'extra';
   let meta = '';
-  if (d.bronStatus === 'NOT_YET_RELEASED') meta = 'Nog niet uit';
+  if (bronStatus(d) === 'NOT_YET_RELEASED') meta = 'Nog niet uit';
   else if (d.alt) { const a = D().delen.find(x => x.titelId === d.titelId && String(x.bronId) === String(d.alt)); if (a) meta = 'Zelfde verhaal als ' + deelNaam(a, seizoenenVan(d.titelId).indexOf(a)); }
   const rechts = extra ? 'Film' : `${g}/${tot || '?'}`;
   const naam = deelNaam(d, k);
@@ -673,7 +702,7 @@ function deelRij(d, k, open) {
   return h;
 }
 function afleveringen(d) {
-  const max = beschikbaar(d), tot = getal(d.afleveringen) || max, g = getal(d.gezien);
+  const max = beschikbaar(d), tot = Math.max(aflTotaal(d), max), g = getal(d.gezien);
   if (tot > LANG_SEIZOEN) return `<div class="teller">
       <button type="button" class="rond-knop" data-act="afl-stap" data-id="${d.id}" data-stap="-1" aria-label="Eén aflevering terug">${ico('min')}</button>
       <input class="veld" type="number" inputmode="numeric" min="0" max="${max}" value="${g}" data-afl-invoer="${d.id}" aria-label="Gezien tot en met aflevering">
@@ -762,12 +791,19 @@ async function haalKalender() {
     const lopend = media.filter(m => NOG_BEZIG.includes(m.status)).map(m => m.id);
     const van = Math.floor(beginDag(new Date()) / 1000), tot = van + KAL_DAGEN * 86400;
     const uitz = lopend.length ? await allePaginas(`query($ids:[Int],$van:Int,$tot:Int,$p:Int){Page(page:$p,perPage:50){pageInfo{hasNextPage} airingSchedules(mediaId_in:$ids,airingAt_greater:$van,airingAt_lesser:$tot,sort:TIME){episode airingAt mediaId}}}`, { ids: lopend, van, tot }, P => P.airingSchedules) : [];
+    media.forEach(m => { delete m.relations; });
     S.kal = { tijd: Date.now(), sleutel, media: new Map(media.map(m => [m.id, m])), aank, uitz };
+    try { localStorage.setItem(BRON_KEY, JSON.stringify(Object.assign({}, S.kal, { media: [...S.kal.media.values()] }))); } catch (e) {}
   } catch (e) {
     S.kal = Object.assign({}, S.kal, { laden: false, tijd: Date.now(), fout: e.message });
   }
-  if (!S.titelOpen && (S.tab === 'kalender' || (S.tab === 'anime' && !S.lijst))) teken(); else zetMenu(S.tab);
+  // Verse gegevens kunnen statussen en aantallen veranderen: alles opnieuw tekenen
+  teken();
 }
+/* De laatste AniList-stand onthoudt de telefoon, zodat statussen meteen kloppen bij het openen */
+const BRON_KEY = 'kollectie-anilist';
+try { const b = JSON.parse(localStorage.getItem(BRON_KEY)); if (b && b.media) S.kal = Object.assign(b, { media: new Map(b.media.map(m => [m.id, m])), laden: false }); } catch (e) {}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.data) haalKalender(); });
 /** Waar een aangekondigd deel in de tijd valt: sorteersleutel, groep en korte datum. */
 function aankWanneer(m) {
   const s = m.startDate || {}, na = m.nextAiringEpisode && m.nextAiringEpisode.airingAt;
@@ -861,7 +897,7 @@ function kalToevoegen(id) {
   const naam = kortNaam(mediaNaam(m), t.naam);
   const pos = Math.max(0, ...delenVan(t.id).map(d => getal(d.positie))) + 1;
   bewaar('delen', [deelUitMedia(t.id, { m, soort: isSeizoen(m) ? 'seizoen' : 'extra', naam, alt: '' }, pos)]);
-  bewaar('titels', [{ id: t.id, status: nieuweStatus(t), gewijzigd: Date.now() }]);
+  bewaar('titels', [{ id: t.id, gewijzigd: Date.now() }]);
   melding(`${naam || mediaNaam(m)} toegevoegd aan ${t.naam}.`);
 }
 
@@ -1034,7 +1070,7 @@ function zoekInvoer(q) {
         return `<button type="button" class="rij" data-act="kies-media" data-id="${m.id}">
           ${posterHtml({ naam: mediaNaam(m), plaatje: (m.coverImage || {}).medium }, 'mini')}
           <span class="rij-tekst"><span class="naam">${esc(mediaNaam(m))}</span><span class="bijregel">${esc(meta)}</span></span>
-          ${t ? `<span class="chip kleur" style="--c:${stKleur(t.status)}">${esc(statusNaam(t.status))}</span>` : ''}</button>`;
+          ${t ? `<span class="chip kleur" style="--c:${stKleur(statusVan(t))}">${esc(statusNaam(statusVan(t)))}</span>` : ''}</button>`;
       }).join('')}</div>` : `<p class="ac-leeg">Niets gevonden voor “${esc(vraag)}”.</p>`) + zelfRij();
       S.zoekMedia = r;
     } catch (e) {
@@ -1053,7 +1089,7 @@ async function kiesMedia(id) {
     const pos = Math.max(0, ...delenVan(t.id).map(d => getal(d.positie))) + 1;
     sluitSheet();
     bewaar('delen', [deelUitMedia(t.id, x, pos)]);
-    bewaar('titels', [{ id: t.id, status: nieuweStatus(t), gewijzigd: Date.now() }]);
+    bewaar('titels', [{ id: t.id, gewijzigd: Date.now() }]);
     return melding(`${x.naam || mediaNaam(m)} toegevoegd.`);
   }
   if (al) { sluitSheet(); openTitel(al.titelId); return melding('Staat al in je lijst.'); }
@@ -1095,7 +1131,7 @@ function bewaarReeks(titelId) {
     const nieuw = gekozen.map(x => deelUitMedia(t.id, Object.assign({}, x, { naam: x.naam || kortNaam(mediaNaam(x.m), t.naam) }), ++pos));
     sluitSheet();
     bewaar('delen', nieuw);
-    bewaar('titels', [{ id: t.id, status: nieuweStatus(t), gewijzigd: Date.now() }]);
+    bewaar('titels', [{ id: t.id, gewijzigd: Date.now() }]);
     return melding(nieuw.length === 1 ? '1 deel toegevoegd.' : `${nieuw.length} delen toegevoegd.`);
   }
   const naam = ($('#rk-naam').value || '').trim() || r.basis;
@@ -1105,7 +1141,7 @@ function bewaarReeks(titelId) {
   const delen = gekozen.map((x, k) => deelUitMedia(id, Object.assign({}, x, { naam: x === eersteSeizoen && x.m === r.eerste ? '' : (x.naam || mediaNaam(x.m)) }), k + 1));
   // Plaatje van het eerste gekozen seizoen: vink je "Bleach" uit en houd je alleen TYBW, dan de poster van TYBW
   const plaatje = ((eersteSeizoen || gekozen[0]).m.coverImage || {}).large || r.plaatje;
-  const t = { id, soort: 'anime', naam, plaatje, status: 'towatch', rating: '', toegevoegd: Date.now(), gewijzigd: Date.now() };
+  const t = { id, soort: 'anime', naam, plaatje, status: '', rating: '', toegevoegd: Date.now(), gewijzigd: Date.now() };
   sluitSheet();
   D().delen.push(...delen);
   bel('bewaar', 'delen', delen);
@@ -1161,7 +1197,7 @@ function bewaarZelf() {
     const d = { id: 'd' + nieuwId(), titelId: doel.id, soort: S.zelfSoort, positie: pos, naam, bronId: '', formaat: S.zelfSoort === 'extra' ? 'MOVIE' : 'TV', jaar: '', afleveringen: afl || 1, uitgezonden: '', gezien: 0, bronStatus: '', alt: '', gecheckt: '' };
     sluitSheet();
     bewaar('delen', [d]);
-    bewaar('titels', [{ id: doel.id, status: nieuweStatus(doel), gewijzigd: Date.now() }]);
+    bewaar('titels', [{ id: doel.id, gewijzigd: Date.now() }]);
     return melding(`${naam || 'Seizoen'} toegevoegd.`);
   }
   const id = 't' + nieuwId();
@@ -1169,7 +1205,7 @@ function bewaarZelf() {
   sluitSheet();
   D().delen.push(d);
   bel('bewaar', 'delen', [d]);
-  bewaar('titels', [{ id, soort: 'anime', naam, plaatje: ($('#zf-plaatje') || {}).value || '', status: 'towatch', rating: '', toegevoegd: Date.now(), gewijzigd: Date.now() }]);
+  bewaar('titels', [{ id, soort: 'anime', naam, plaatje: ($('#zf-plaatje') || {}).value || '', status: '', rating: '', toegevoegd: Date.now(), gewijzigd: Date.now() }]);
   S.lijst = null;
   openTitel(id);
   melding(`${naam} toegevoegd.`);
@@ -1219,9 +1255,9 @@ const ACTIES = {
   'plus-een': (b, id) => {
     const d = D().delen.find(x => x.id === id), t = titel(d.titelId), oud = getal(d.gezien), n = Math.min(beschikbaar(d), oud + 1);
     if (n === oud) return;
-    const status = t.status;
+    const status = statusVan(t);
     bewaarDelen(d.titelId, [{ id, gezien: n }]);
-    if (titel(d.titelId).status === status) melding(`Afl. ${n} gezien.`, 'Ongedaan maken', () => bewaarDelen(d.titelId, [{ id, gezien: oud }]));
+    if (statusVan(titel(d.titelId)) === status) melding(`Afl. ${n} gezien.`, 'Ongedaan maken', () => bewaarDelen(d.titelId, [{ id, gezien: oud }]));
   },
   sluit: sluitSheet,
   'toevoeg-open': () => openZoeken(),
@@ -1251,7 +1287,11 @@ const ACTIES = {
       toonReeks(r, id);
     } catch (e) { sluitSheet(); melding('AniList is even niet bereikbaar.'); }
   },
-  'status-zet': (b, id) => { bewaar('titels', [{ id: S.titelOpen, status: id, gewijzigd: Date.now() }]); },
+  gestopt: (b, id) => {
+    const t = titel(id), was = isGestopt(t);
+    bewaar('titels', [{ id, status: was ? '' : GESTOPT, gewijzigd: Date.now() }]);
+    melding(was ? `Status: ${statusNaam(statusVan(t))}` : `${t.naam} op Gestopt gezet.`, 'Ongedaan maken', () => bewaar('titels', [{ id, status: was ? GESTOPT : '' }]));
+  },
   'rating-open': (b, id) => openRating(id),
   'rating-heel': (b, n) => { const t = titel(S.ratingVoor), r = getal(t.rating); const dec = t.rating === '' ? 0 : Math.round((r - Math.floor(r + 1e-9)) * 10); zetRating(Number(n) === 10 ? 10 : Number(n) + dec / 10); },
   'rating-dec': (b, n) => { const r = getal(titel(S.ratingVoor).rating); zetRating(Math.floor(r + 1e-9) + Number(n) / 10); },
