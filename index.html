@@ -111,6 +111,23 @@
 .rij .stipje{width:14px;height:14px;border-radius:50%;margin:0 4px}
 
 .kop-knoppen{display:flex;gap:var(--ruimte-2)}
+.tl-rij{display:grid;grid-template-columns:64px minmax(0,1fr);align-items:stretch}
+/* Alles lijnt uit op het midden van de kaart: de kaart heeft onder ruimte-2 marge, dus het midden ligt op 50% - ruimte-2/2 */
+.tl-datum{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right;padding:0 20px var(--ruimte-2) 0;border-right:6px solid var(--blok-2);line-height:1}
+.tl-datum b{display:block;font-size:30px;font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-titel)}
+.tl-datum i{display:block;font-style:normal;font-size:var(--fs-xs);font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);text-transform:uppercase;color:var(--mut);margin-top:3px;white-space:nowrap}
+.tl-datum.vaag{border-right-color:color-mix(in srgb,var(--blok-2) 30%,transparent)}
+.tl-datum.vaag b{font-size:var(--fs-l);letter-spacing:0}
+.tl-datum::after{content:"";position:absolute;right:-13px;top:calc(50% - var(--ruimte-2) / 2 - 10px);width:20px;height:20px;border-radius:50%;background:var(--blok-2);box-shadow:0 0 0 4px var(--bg)}
+.tl-datum.vaag::after{background:var(--bg);border:4px solid color-mix(in srgb,var(--blok-2) 60%,transparent)}
+.tl-rij:last-child .tl-datum{border-right-color:transparent}
+.tl-rij:last-child .tl-datum::before{content:"";position:absolute;right:-6px;top:0;width:6px;height:calc(50% - var(--ruimte-2) / 2);background:var(--blok-2)}
+.tl-rij:last-child .tl-datum.vaag::before{background:color-mix(in srgb,var(--blok-2) 30%,transparent)}
+.tl-kaart{display:flex;align-items:center;gap:var(--ruimte-3);min-width:0;background:var(--vlak);border-radius:var(--r-l);padding:var(--ruimte-2) var(--ruimte-3);margin:0 0 var(--ruimte-2) var(--ruimte-4);text-align:left}
+.tl-kaart:active{transform:scale(.98)}
+.tl-kaart .naam{font-weight:var(--gewicht-zwaar)}
+.tl-kaart.snel{background:var(--blok-2);color:var(--blok-ink)}
+.tl-kaart.snel .bijregel{color:color-mix(in srgb,var(--blok-ink) 65%,transparent)}
 .teller-stip{min-width:24px;height:24px;border-radius:var(--r-rond);background:var(--merk);color:var(--blok-ink);font-size:var(--fs-s);font-weight:var(--gewicht-zwaar);display:grid;place-items:center;padding:0 7px;flex:none}
 .cijfer-kop{display:flex;align-items:baseline;gap:var(--ruimte-2);font-size:var(--fs-xl);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-kop);margin:var(--ruimte-5) var(--ruimte-1) var(--ruimte-2)}
 .cijfer-kop:first-child{margin-top:var(--ruimte-2)}
@@ -514,15 +531,29 @@ function komtEraan(t) {
   let beste = null;
   delenVan(t.id).forEach(d => {
     const m = bron(d); if (!m) return;
+    const naam = deelNaam(d, d.soort === 'extra' ? extrasVan(t.id).indexOf(d) : seizoenenVan(t.id).indexOf(d));
     let x = null;
-    if (m.nextAiringEpisode && m.nextAiringEpisode.airingAt) x = { sl: m.nextAiringEpisode.airingAt, tekst: `afl. ${m.nextAiringEpisode.episode} · ${korteDatum(m.nextAiringEpisode.airingAt)}` };
-    else if (m.status === 'NOT_YET_RELEASED') {
-      const w = aankWanneer(m), naam = deelNaam(d, d.soort === 'extra' ? extrasVan(t.id).indexOf(d) : seizoenenVan(t.id).indexOf(d));
-      x = { sl: 1e10 + w.sl, tekst: `${naam} · ${w.kort || (w.groep === 'Nog geen datum' ? 'nog geen datum' : w.groep.toLowerCase())}` };
-    } else if (m.status === 'HIATUS') x = { sl: 1e12, tekst: 'Even op pauze' };
+    if (m.nextAiringEpisode && m.nextAiringEpisode.airingAt) x = { sl: m.nextAiringEpisode.airingAt, wat: `${seizoenenVan(t.id).length > 1 ? naam + ' · ' : ''}afl. ${m.nextAiringEpisode.episode}`, datum: datumDelen(m) };
+    else if (m.status === 'NOT_YET_RELEASED') x = { sl: 1e10 + aankWanneer(m).sl, wat: naam, datum: datumDelen(m) };
+    else if (m.status === 'HIATUS') x = { sl: 1e12, wat: naam, datum: { groot: '–', klein: 'pauze' } };
     if (x && (!beste || x.sl < beste.sl)) beste = x;
   });
   return beste;
+}
+/** Datum voor de tijdlijn: groot (dag, maand, seizoen of jaar), klein eronder, en of de dag precies bekend is. */
+function datumDelen(m) {
+  const ditJaar = new Date().getFullYear(), jr = j => j === ditJaar ? '' : `'${String(j).slice(2)}`;
+  const mnd = (j, i) => new Date(j, i, 1).toLocaleDateString('nl-NL', { month: 'short' }).replace('.', '');
+  const na = m.nextAiringEpisode && m.nextAiringEpisode.airingAt, s = m.startDate || {};
+  if (na || (s.year && s.month && s.day)) {
+    const d = na ? new Date(na * 1000) : new Date(s.year, s.month - 1, s.day);
+    return { groot: String(d.getDate()), klein: [mnd(d.getFullYear(), d.getMonth()), jr(d.getFullYear())].filter(Boolean).join(' '), exact: true, binnenkort: d - Date.now() < 7 * 864e5 };
+  }
+  if (s.year && s.month) return { groot: mnd(s.year, s.month - 1), klein: jr(s.year) };
+  const j = s.year || m.seasonYear;
+  if (j && m.season) return { groot: SEIZOEN_NAAM[m.season].toLowerCase(), klein: jr(j) };
+  if (j) return { groot: String(j), klein: '' };
+  return { groot: '?', klein: '' };
 }
 const veegTitel = (t, inhoud) => veegRij('t-' + t.id, [['wijzig', 'titel-naam', t.id, `${t.naam} hernoemen`], ['weg', 'titel-weg', t.id, `${t.naam} verwijderen`]], inhoud);
 /* Het Anime-scherm: de hoofdpagina toont wat nu speelt (Nieuw gevonden, Nu te kijken, Wachten).
@@ -580,9 +611,13 @@ function tekenAnime() {
   const wacht = van('waiting').map(t => ({ t, k: komtEraan(t) })).sort((a, b) => ((a.k || {}).sl || 1e13) - ((b.k || {}).sl || 1e13) || opCijfer(a.t, b.t));
   if (wacht.length) {
     h += kopjeN(statusNaam('waiting'), wacht.length);
-    h += `<div class="groep">${wacht.map(({ t, k }) => `<button type="button" class="rij" data-act="titel-open" data-id="${t.id}">${posterHtml(t, 'mini')}
-      <span class="rij-tekst"><span class="naam">${esc(t.naam)}</span>${k ? `<span class="bijregel">${esc(k.tekst)}</span>` : ''}</span>
-      ${heeftCijfer(t) ? `<span class="rechts">${cijferTekst(t.rating)}</span>` : ''}</button>`).join('')}</div>`;
+    // Tijdlijn: links groot de datum aan een lijn, rechts de titel; wat binnen een week komt is lavendel
+    h += `<div class="tijdlijn">${wacht.map(({ t, k }) => {
+      const dt = (k && k.datum) || { groot: '?', klein: '' };
+      return `<div class="tl-rij"><div class="tl-datum${dt.exact ? '' : ' vaag'}"><b>${esc(dt.groot)}</b>${dt.klein ? `<i>${esc(dt.klein)}</i>` : ''}</div>
+        <button type="button" class="tl-kaart${dt.binnenkort ? ' snel' : ''}" data-act="titel-open" data-id="${t.id}">${posterHtml(t, 'mini')}
+          <span class="rij-tekst"><span class="naam">${esc(t.naam)}</span>${k && k.wat ? `<span class="bijregel">${esc(k.wat)}</span>` : ''}</span></button></div>`;
+    }).join('')}</div>`;
   }
   if (!h) h = `<div class="leeg"><strong>Niets om nu te kijken</strong>Wat je gezien hebt staat onder ★, wat je wilt zien onder ${ico('bladwijzer', 'width="16" height="16" style="vertical-align:-2px"')}.</div>`;
   $('#main').innerHTML = h;
