@@ -99,6 +99,15 @@
 .code-kaart h2{margin:var(--ruimte-1) 0 0;font-size:var(--fs-xl);font-weight:var(--gewicht-zwaar)}
 .code-kaart p{margin:0 0 var(--ruimte-2);color:var(--mut)}
 
+/* Kalender */
+.kal-groep .groep-kop{font-size:var(--fs-l)}
+.kal-groep .rechts{font-variant-numeric:tabular-nums;flex:none}
+.kal-groep .rechts.uit{color:var(--blok-3)}
+.kal-groep .rij .chip{flex:none;gap:var(--ruimte-1)}
+.kal-groep .rij .chip svg{width:var(--icoon-s);height:var(--icoon-s)}
+.kal-leeg{margin:0 var(--ruimte-2);color:var(--mut);font-size:var(--fs-m)}
+.kal-voet{margin:var(--ruimte-5) var(--ruimte-2) var(--ruimte-6);color:var(--mut);font-size:var(--fs-xs)}
+
 /* Preview-label */
 #preview-pill{position:fixed;left:var(--ruimte-2);bottom:calc(var(--ruimte-2) + env(safe-area-inset-bottom,0px));z-index:var(--z-actie);background:var(--tint);color:var(--mut);font-size:var(--fs-xs);font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);border-radius:var(--r-rond);padding:var(--ruimte-1) var(--ruimte-2)}
 </style>
@@ -272,6 +281,7 @@ const ICONEN = {
   'pijl-onder': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
   'vinkje': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   'kruis': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  'kalender': '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><rect x="6.4" y="1.8" width="2.8" height="5" rx="1.4"/><rect x="14.8" y="1.8" width="2.8" height="5" rx="1.4"/><path d="M7 4.2h10a4 4 0 0 1 4 4V17a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8.2a4 4 0 0 1 4-4zM5.6 10.4V17A1.4 1.4 0 0 0 7 18.4h10a1.4 1.4 0 0 0 1.4-1.4v-6.6z"/></svg>',
   'vakjes': '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2.4"/><rect x="13" y="3" width="8" height="8" rx="2.4"/><rect x="3" y="13" width="8" height="8" rx="2.4"/><rect x="13" y="13" width="8" height="8" rx="2.4"/></svg>'
 };
 const ico = (naam, attrs = '') => attrs ? ICONEN[naam].replace('<svg ', `<svg ${attrs} `) : ICONEN[naam];
@@ -397,13 +407,14 @@ const stKleur = id => `var(--blok-${STATUS_KLEUR[id] || 8})`;
 /* ---------- Weergaven ---------- */
 const VIEWS = {
   anime: { titel: 'Anime', teken: tekenAnime },
+  kalender: { titel: 'Kalender', teken: tekenKalender },
   instellingen: { titel: 'Instellingen', teken: tekenInst }
 };
 /** Het schermmenu onder de titel (titel-schakelaar). */
 function zetMenu(tab) {
   const n = D() ? D().titels.filter(t => t.soort === 'anime').length : '';
   const knop = (id, icoon, naam, aantal) => `<button type="button" role="menuitem" data-act="tab" data-tab="${id}"${tab === id ? ' aria-current="page"' : ''}>${ico(icoon)}${naam}<span class="n">${aantal}</span></button>`;
-  $('#schermmenu').innerHTML = knop('anime', 'tv', 'Anime', n) + '<hr>' + knop('instellingen', 'schuifjes', 'Instellingen', '');
+  $('#schermmenu').innerHTML = knop('anime', 'tv', 'Anime', n) + knop('kalender', 'kalender', 'Kalender', kalDezeWeek()) + '<hr>' + knop('instellingen', 'schuifjes', 'Instellingen', '');
 }
 function wissel(tab) {
   S.tab = tab;
@@ -417,7 +428,7 @@ function teken() {
   if (S.slepen) { S.uitgesteld = true; return; }
   if (S.titelOpen && !titel(S.titelOpen)) S.titelOpen = null;
   zetMenu(S.tab);
-  if (S.tab === 'anime' && S.titelOpen) tekenTitel();
+  if (S.titelOpen && VIEWS[S.tab].titels !== false) tekenTitel();
   else VIEWS[S.tab].teken();
 }
 /** Kop: op een hoofdscherm is de titel de schakelaar, op een subpagina staat er "‹ Terug" boven. */
@@ -506,7 +517,7 @@ function veegRij(key, acties, inhoud) {
 /* ---------- Titelpagina ---------- */
 function tekenTitel() {
   const t = titel(S.titelOpen);
-  zetKop(t.naam, 'Anime');
+  zetKop(t.naam, VIEWS[S.tab].titel);
   $('#headerextra').innerHTML = '';
   const sz = seizoenenVan(t.id), ex = extrasVan(t.id);
   const totaal = sz.reduce((s, d) => s + (getal(d.afleveringen) || beschikbaar(d)), 0);
@@ -596,6 +607,166 @@ function tekenInst() {
   $('#headerextra').innerHTML = '';
   $('#main').innerHTML = `<div class="kopje">Namen bij toevoegen</div>
     <div class="keuze">${[['engels', 'Engels'], ['romaji', 'Japans (romaji)']].map(([id, n]) => `<button type="button" aria-pressed="${taal() === id}" data-act="taal" data-id="${id}">${n}</button>`).join('')}</div>`;
+}
+
+/* ---------- Kalender ----------
+   Alles van AniList, niets in de Sheet: komende afleveringen (4 weken) en aangekondigde seizoenen en films.
+   Alle titels behalve Dropped. Opgehaald bij openen, hoogstens één keer per half uur. */
+const KAL_DAGEN = 28;
+const SEIZOEN_NAAM = { WINTER: 'Winter', SPRING: 'Lente', SUMMER: 'Zomer', FALL: 'Herfst' };
+const SEIZOEN_MAAND = { WINTER: 1, SPRING: 4, SUMMER: 7, FALL: 10 };
+const beginDag = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+const hoofdletter = s => s.charAt(0).toUpperCase() + s.slice(1);
+const klokTijd = s => new Date(s * 1000).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+/** Delen met een AniList-id, van alle titels behalve Dropped. */
+function kalDelen() {
+  const tIds = new Set(D().titels.filter(t => t.soort === 'anime' && t.status !== 'dropped').map(t => t.id));
+  return D().delen.filter(d => d.bronId && tIds.has(d.titelId) && zichtbaar(d));
+}
+const kalDeel = id => kalDelen().find(d => Number(d.bronId) === Number(id));
+/** Aantal afleveringen in de komende 7 dagen (voor het schermmenu). */
+function kalDezeWeek() {
+  if (!S.kal || !S.kal.uitz) return '';
+  const nu = Date.now() / 1000;
+  return S.kal.uitz.filter(u => u.airingAt > nu && u.airingAt < nu + 7 * 86400).length || '';
+}
+async function allePaginas(query, vars, pak) {
+  const uit = [];
+  for (let p = 1; p <= 10; p++) {
+    const d = await anilist(query, Object.assign({ p }, vars));
+    uit.push(...pak(d.Page));
+    if (!d.Page.pageInfo.hasNextPage) break;
+  }
+  return uit;
+}
+async function haalKalender() {
+  const delen = kalDelen();
+  const sleutel = [...new Set(delen.map(d => Number(d.bronId)))].sort((a, b) => a - b).join(',');
+  const k = S.kal;
+  if (k && (k.laden || (k.sleutel === sleutel && Date.now() - k.tijd < 30 * 6e4))) return;
+  S.kal = Object.assign({}, k, { laden: true, sleutel });
+  try {
+    const ids = sleutel ? sleutel.split(',').map(Number) : [];
+    const MK = MEDIA.replace('nextAiringEpisode{episode}', 'nextAiringEpisode{episode airingAt}') + ' season seasonYear';
+    const media = ids.length ? await allePaginas(`query($ids:[Int],$p:Int){Page(page:$p,perPage:25){pageInfo{hasNextPage} media(id_in:$ids,type:ANIME){${MK} relations{edges{relationType node{${MK} type}}}}}}`, { ids }, P => P.media) : [];
+    // Aangekondigd: delen in je lijst die nog niet uit zijn, plus vervolgen die nog niet in je lijst staan
+    const aank = [], al = new Set();
+    media.forEach(m => {
+      const d = delen.find(x => Number(x.bronId) === m.id);
+      if (!d) return;
+      if (m.status === 'NOT_YET_RELEASED' && !al.has(m.id)) { al.add(m.id); aank.push({ m, titelId: d.titelId }); }
+      m.relations.edges.forEach(e => {
+        const n = e.node;
+        if (n.type !== 'ANIME' || n.status !== 'NOT_YET_RELEASED' || al.has(n.id) || !telt(n)) return;
+        if (!((e.relationType === 'SEQUEL' && !andereSerie(m, n)) || (e.relationType === 'SIDE_STORY' && n.format === 'MOVIE'))) return;
+        al.add(n.id); aank.push({ m: n, titelId: d.titelId });
+      });
+    });
+    // Komende afleveringen van alles wat loopt of nog moet beginnen (vanaf het begin van vandaag)
+    const lopend = media.filter(m => NOG_BEZIG.includes(m.status)).map(m => m.id);
+    const van = Math.floor(beginDag(new Date()) / 1000), tot = van + KAL_DAGEN * 86400;
+    const uitz = lopend.length ? await allePaginas(`query($ids:[Int],$van:Int,$tot:Int,$p:Int){Page(page:$p,perPage:50){pageInfo{hasNextPage} airingSchedules(mediaId_in:$ids,airingAt_greater:$van,airingAt_lesser:$tot,sort:TIME){episode airingAt mediaId}}}`, { ids: lopend, van, tot }, P => P.airingSchedules) : [];
+    S.kal = { tijd: Date.now(), sleutel, media: new Map(media.map(m => [m.id, m])), aank, uitz };
+  } catch (e) {
+    S.kal = Object.assign({}, S.kal, { laden: false, tijd: Date.now(), fout: e.message });
+  }
+  if (S.tab === 'kalender' && !S.titelOpen) teken(); else zetMenu(S.tab);
+}
+/** Waar een aangekondigd deel in de tijd valt: sorteersleutel, groep en korte datum. */
+function aankWanneer(m) {
+  const s = m.startDate || {}, na = m.nextAiringEpisode && m.nextAiringEpisode.airingAt;
+  const maandNaam = (j, mnd) => hoofdletter(new Date(j, mnd - 1, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }));
+  if (na) { const d = new Date(na * 1000); return { sl: d.getFullYear() * 1e4 + (d.getMonth() + 1) * 100 + d.getDate(), groep: maandNaam(d.getFullYear(), d.getMonth() + 1), kort: d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) }; }
+  if (s.year && s.month) return { sl: s.year * 1e4 + s.month * 100 + (s.day || 32), groep: maandNaam(s.year, s.month), kort: s.day ? new Date(s.year, s.month - 1, s.day).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : '' };
+  const j = s.year || m.seasonYear;
+  if (j && m.season) return { sl: j * 1e4 + SEIZOEN_MAAND[m.season] * 100 + 33, groep: `${SEIZOEN_NAAM[m.season]} ${j}`, kort: '' };
+  if (j) return { sl: j * 1e4 + 1300, groep: String(j), kort: '' };
+  return { sl: 1e9, groep: 'Nog geen datum', kort: '' };
+}
+function tekenKalender() {
+  zetKop('Kalender');
+  $('#headerextra').innerHTML = '';
+  haalKalender();
+  const k = S.kal;
+  if (!k || !k.uitz) {
+    $('#main').innerHTML = k && k.fout
+      ? `<div class="leeg"><strong>AniList is even niet bereikbaar</strong>Probeer het zo opnieuw.<br><button type="button" class="knop" data-act="kal-opnieuw">Opnieuw</button></div>`
+      : '<div class="skelet"></div>'.repeat(5);
+    return;
+  }
+  if (!kalDelen().length) { $('#main').innerHTML = `<div class="leeg"><strong>Nog niets te plannen</strong>Voeg anime toe via AniList en hier zie je wanneer er iets nieuws uitkomt.</div>`; return; }
+  const nu = Date.now() / 1000, vandaag = beginDag(new Date());
+  let h = '<div class="kopje">Afleveringen</div>';
+
+  // Per dag, en per serie: twee afleveringen op één dag worden "afl. 7–8"
+  const dagen = new Map();
+  k.uitz.forEach(u => {
+    const d = kalDeel(u.mediaId); if (!d || !titel(d.titelId)) return;
+    const dag = beginDag(new Date(u.airingAt * 1000));
+    if (!dagen.has(dag)) dagen.set(dag, new Map());
+    const per = dagen.get(dag);
+    if (per.has(u.mediaId)) per.get(u.mediaId).tot = u.episode;
+    else per.set(u.mediaId, { d, van: u.episode, tot: u.episode, at: u.airingAt });
+  });
+  if (!dagen.size) h += `<p class="kal-leeg">Geen afleveringen in de komende ${KAL_DAGEN / 7} weken.</p>`;
+  dagen.forEach((per, dag) => {
+    const verschil = Math.round((dag - vandaag) / 864e5);
+    const naam = verschil === 0 ? 'Vandaag' : verschil === 1 ? 'Morgen' : hoofdletter(new Date(dag).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }));
+    h += `<div class="groep kal-groep"><div class="groep-kop">${naam}</div>`;
+    per.forEach(x => {
+      const t = titel(x.d.titelId), m = k.media.get(Number(x.d.bronId)) || {};
+      const sz = seizoenenVan(t.id), totaal = m.episodes;
+      const afl = x.van === x.tot ? `afl. ${x.van}` : `afl. ${x.van}–${x.tot}`;
+      const bij = [
+        sz.length > 1 || x.d.soort === 'extra' ? deelNaam(x.d, x.d.soort === 'extra' ? extrasVan(t.id).indexOf(x.d) : sz.indexOf(x.d)) : '',
+        x.van === 1 ? afl + ' · première' : totaal && x.tot === totaal ? afl + ' · finale' : totaal ? `${afl} van ${totaal}` : afl
+      ].filter(Boolean).join(' · ');
+      const uit = x.at <= nu;
+      h += `<button type="button" class="rij" data-act="titel-open" data-id="${t.id}">
+        ${posterHtml(t, 'mini')}
+        <span class="rij-tekst"><span class="naam">${esc(t.naam)}</span><span class="bijregel">${esc(bij)}</span></span>
+        <span class="rechts${uit ? ' uit' : ''}">${uit ? 'Uit' : klokTijd(x.at)}</span></button>`;
+    });
+    h += '</div>';
+  });
+
+  // Aangekondigd: wat al in de lijst met afleveringen staat, hoeft hier niet nog eens
+  const inAgenda = new Set(k.uitz.map(u => u.mediaId));
+  const aank = k.aank.filter(a => !inAgenda.has(a.m.id) && titel(a.titelId) && titel(a.titelId).status !== 'dropped')
+    .map(a => Object.assign({ w: aankWanneer(a.m) }, a)).sort((a, b) => a.w.sl - b.w.sl);
+  h += '<div class="kopje">Aangekondigd</div>';
+  if (!aank.length) h += '<p class="kal-leeg">Niets aangekondigd voor je titels.</p>';
+  const groepen = new Map();
+  aank.forEach(a => { if (!groepen.has(a.w.groep)) groepen.set(a.w.groep, []); groepen.get(a.w.groep).push(a); });
+  groepen.forEach((lijst, naam) => {
+    h += `<div class="groep kal-groep"><div class="groep-kop">${esc(naam)}</div>`;
+    lijst.forEach(a => {
+      const t = titel(a.titelId), d = inLijst(a.m.id);
+      const poster = posterHtml({ naam: t.naam, plaatje: (a.m.coverImage || {}).medium || t.plaatje }, 'mini');
+      const deel = d ? deelNaam(d, d.soort === 'extra' ? extrasVan(t.id).indexOf(d) : seizoenenVan(t.id).indexOf(d)) : (kortNaam(mediaNaam(a.m), t.naam) || mediaNaam(a.m));
+      const bij = [deel, FORMATEN[a.m.format] === 'Film' && !/film|movie/i.test(deel) ? 'Film' : '', a.w.kort].filter(Boolean).join(' · ');
+      const tekst = `${poster}<span class="rij-tekst"><span class="naam">${esc(t.naam)}</span><span class="bijregel">${esc(bij)}</span></span>`;
+      h += d
+        ? `<button type="button" class="rij" data-act="titel-open" data-id="${t.id}">${tekst}</button>`
+        : `<div class="rij"><button type="button" class="deel-knop" data-act="titel-open" data-id="${t.id}">${tekst}</button>
+            <button type="button" class="chip" data-act="kal-toevoeg" data-id="${a.m.id}" aria-label="${esc(deel)} toevoegen aan ${esc(t.naam)}">${ico('plus')}Voeg toe</button></div>`;
+    });
+    h += '</div>';
+  });
+  h += `<p class="kal-voet">Tijden zijn de uitzending in Japan, in jouw tijd. Op streamingdiensten vaak een paar uur later.${k.fout ? ' Bijwerken lukte niet, dit is de laatste stand.' : ''}</p>`;
+  $('#main').innerHTML = h;
+}
+/** Aangekondigd vervolg meteen als seizoen of film bij de titel zetten. */
+function kalToevoegen(id) {
+  const a = S.kal && S.kal.aank.find(x => x.m.id === id);
+  if (!a) return;
+  if (inLijst(id)) return melding('Staat al in je lijst.');
+  const t = titel(a.titelId), m = a.m;
+  const naam = kortNaam(mediaNaam(m), t.naam);
+  const pos = Math.max(0, ...delenVan(t.id).map(d => getal(d.positie))) + 1;
+  bewaar('delen', [deelUitMedia(t.id, { m, soort: isSeizoen(m) ? 'seizoen' : 'extra', naam, alt: '' }, pos)]);
+  bewaar('titels', [{ id: t.id, status: nieuweStatus(t), gewijzigd: Date.now() }]);
+  melding(`${naam || mediaNaam(m)} toegevoegd aan ${t.naam}.`);
 }
 
 
@@ -951,7 +1122,9 @@ const ACTIES = {
   sluit: sluitSheet,
   'status-tab': (b, id) => { S.status = id; try { localStorage.setItem('kollectie-status', id); } catch (e) {} teken(); $('#scroller').scrollTop = 0; },
   'toevoeg-open': () => openZoeken(),
-  'titel-open': (b, id) => openTitel(id),
+  'titel-open': (b, id) => { S.titelOpen = id; S.swipeOpen = null; teken(); $('#scroller').scrollTop = 0; },
+  'kal-toevoeg': (b, id) => kalToevoegen(Number(id)),
+  'kal-opnieuw': () => { if (S.kal) S.kal.tijd = 0; teken(); },
   'titel-naam': async (b, id) => { sluitVeeg(); const t = titel(id); const n = await vraagTekst('Naam wijzigen', t.naam); if (n) bewaar('titels', [{ id, naam: n }]); },
   'plaatje-kies': (b, id) => openPlaatjes(id),
   'plaatje-zet': b => { const id = S.plaatjeVoor; sluitSheet(); bewaar('titels', [{ id, plaatje: b.dataset.url }]); melding('Plaatje gewijzigd.'); },
