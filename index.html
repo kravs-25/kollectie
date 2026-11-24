@@ -108,26 +108,23 @@
 .plus-een{flex:none;width:64px;margin:var(--ruimte-3) var(--ruimte-3) var(--ruimte-3) 0;border-radius:var(--r-l);background:rgba(0,0,0,.14);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:var(--gewicht-zwaar);font-size:var(--fs-xl);line-height:1;transition:transform var(--duur-snel)}
 .plus-een:active{transform:scale(.92)}
 .plus-een small{font-size:10px;font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);text-transform:uppercase;opacity:.7}
-.plus-een.leeg-knop{background:none;opacity:.5}
-.plus-een.leeg-knop svg{width:var(--icoon-m);height:var(--icoon-m)}
-.posterrij{display:flex;gap:var(--ruimte-3);overflow-x:auto;margin:0 calc(var(--rand) * -1);padding:var(--ruimte-1) var(--rand) var(--ruimte-2);scrollbar-width:none}
-.posterrij::-webkit-scrollbar{display:none}
-.posterrij .p{width:104px;flex:none;font-size:var(--fs-s);font-weight:var(--gewicht-vet);line-height:1.2;text-align:left;display:block}
-.posterrij .p .poster{width:104px;height:146px;border-radius:var(--r-l);margin-bottom:var(--ruimte-2);box-shadow:0 0 0 3px var(--c);font-size:var(--fs-titel)}
-.posterrij .p:active .poster{transform:scale(.97)}
-.posterrij .p-naam{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.posterrij .p small{display:block;font-weight:var(--gewicht-naam);color:var(--mut);margin-top:2px}
-.dag{width:64px;flex:none;font-size:var(--fs-xs);font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);text-transform:uppercase;color:var(--mut)}
 .rij .stipje{width:14px;height:14px;border-radius:50%;margin:0 4px}
 
-/* Kalender */
-.kal-groep .groep-kop{font-size:var(--fs-l)}
-.kal-groep .rechts{font-variant-numeric:tabular-nums;flex:none}
-.kal-groep .rechts.uit{color:var(--blok-3)}
-.kal-groep .rij .chip{flex:none;gap:var(--ruimte-1)}
-.kal-groep .rij .chip svg{width:var(--icoon-s);height:var(--icoon-s)}
-.kal-leeg{margin:0 var(--ruimte-2);color:var(--mut);font-size:var(--fs-m)}
-.kal-voet{margin:var(--ruimte-5) var(--ruimte-2) var(--ruimte-6);color:var(--mut);font-size:var(--fs-xs)}
+.kop-knoppen{display:flex;gap:var(--ruimte-2)}
+.teller-stip{min-width:24px;height:24px;border-radius:var(--r-rond);background:var(--merk);color:var(--blok-ink);font-size:var(--fs-s);font-weight:var(--gewicht-zwaar);display:grid;place-items:center;padding:0 7px;flex:none}
+.cijfer-kop{display:flex;align-items:baseline;gap:var(--ruimte-2);font-size:var(--fs-xl);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-kop);margin:var(--ruimte-5) var(--ruimte-1) var(--ruimte-2)}
+.cijfer-kop:first-child{margin-top:var(--ruimte-2)}
+.cijfer-kop small{font-size:var(--fs-s);color:var(--mut);font-weight:var(--gewicht-vet);letter-spacing:0}
+.muur{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ruimte-4) var(--ruimte-3);margin-top:var(--ruimte-2)}
+.muur .p{display:block;text-align:left;font-size:var(--fs-s);font-weight:var(--gewicht-vet);line-height:1.2;min-width:0}
+.muur .p .poster{width:100%;height:auto;aspect-ratio:5/7;border-radius:var(--r-l);margin-bottom:var(--ruimte-2);font-size:var(--fs-titel)}
+.muur .p:active .poster{transform:scale(.97)}
+.muur .p-naam{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.muur .p small{display:block;font-weight:var(--gewicht-naam);color:var(--mut);margin-top:2px}
+.vondst{gap:var(--ruimte-2)}
+.vondst .rond-knop svg{width:var(--icoon-s);height:var(--icoon-s)}
+.vondst .rond-knop.toevoeg{background:var(--actie);color:var(--actie-ink)}
+.vondst .rond-knop{width:36px;height:36px;flex:none}
 
 /* Preview-label */
 #preview-pill{position:fixed;left:var(--ruimte-2);bottom:calc(var(--ruimte-2) + env(safe-area-inset-bottom,0px));z-index:var(--z-actie);background:var(--tint);color:var(--mut);font-size:var(--fs-xs);font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);border-radius:var(--r-rond);padding:var(--ruimte-1) var(--ruimte-2)}
@@ -302,7 +299,8 @@ const ICONEN = {
   'pijl-onder': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
   'vinkje': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   'kruis': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
-  'kalender': '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><rect x="6.4" y="1.8" width="2.8" height="5" rx="1.4"/><rect x="14.8" y="1.8" width="2.8" height="5" rx="1.4"/><path d="M7 4.2h10a4 4 0 0 1 4 4V17a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8.2a4 4 0 0 1 4-4zM5.6 10.4V17A1.4 1.4 0 0 0 7 18.4h10a1.4 1.4 0 0 0 1.4-1.4v-6.6z"/></svg>',
+  'bladwijzer': '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2.5h10a2 2 0 0 1 2 2V21l-7-4.2L5 21V4.5a2 2 0 0 1 2-2z"/></svg>',
+  'vonk': '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/><circle cx="19" cy="19" r="2.2"/></svg>',
   'vakjes': '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2.4"/><rect x="13" y="3" width="8" height="8" rx="2.4"/><rect x="3" y="13" width="8" height="8" rx="2.4"/><rect x="13" y="13" width="8" height="8" rx="2.4"/></svg>'
 };
 const ico = (naam, attrs = '') => attrs ? ICONEN[naam].replace('<svg ', `<svg ${attrs} `) : ICONEN[naam];
@@ -313,11 +311,11 @@ document.querySelectorAll('svg[data-icoon]').forEach(el => {
 
 /* ---------- Vaste waarden ---------- */
 const STATUSSEN = [
-  { id: 'watching', naam: 'Watching' },
-  { id: 'towatch',  naam: 'To watch' },
-  { id: 'waiting',  naam: 'Waiting' },
-  { id: 'finished', naam: 'Finished' },
-  { id: 'dropped',  naam: 'Dropped' }
+  { id: 'watching', naam: 'Nu te kijken' },
+  { id: 'towatch',  naam: 'Wil ik zien' },
+  { id: 'waiting',  naam: 'Wachten' },
+  { id: 'finished', naam: 'Gezien' },
+  { id: 'dropped',  naam: 'Gestopt' }
 ];
 const statusNaam = id => id === 'alles' ? 'Alles' : (STATUSSEN.find(s => s.id === id) || STATUSSEN[1]).naam;
 const FORMATEN = { TV: 'TV', TV_SHORT: 'Kort', ONA: 'ONA', OVA: 'OVA', MOVIE: 'Film', SPECIAL: 'Special', MUSIC: 'Muziek' };
@@ -349,7 +347,7 @@ const seizoenenVan = id => delenVan(id).filter(d => d.soort !== 'extra');
 const extrasVan = id => delenVan(id).filter(d => d.soort === 'extra');
 const taal = () => ((D().instellingen || []).find(x => x.id === 'taal') || { waarde: 'engels' }).waarde;
 /** Verse AniList-gegevens van een deel (opgehaald bij het openen), of null. De Sheet is dan alleen nog reserve. */
-const bron = d => d.bronId && S.kal && S.kal.media ? S.kal.media.get(Number(d.bronId)) || null : null;
+const bron = d => d.bronId && S.bron && S.bron.media ? S.bron.media.get(Number(d.bronId)) || null : null;
 const bronStatus = d => (bron(d) || {}).status || d.bronStatus;
 const nogBezig = d => NOG_BEZIG.includes(bronStatus(d));
 /** Hoeveel afleveringen er nu te kijken zijn: bij een lopende serie het aantal dat al is uitgezonden. */
@@ -375,7 +373,7 @@ function tekenSkelet() { $('#main').innerHTML = '<div class="skelet"></div>'.rep
 function laad() {
   if (!S.data) { const l = leesLokaal(); if (l) { S.data = l; wissel(S.tab); } else tekenSkelet(); }
   LOKET('getState')
-    .then(s => { const eerste = !S.data; S.data = s; onthoudLokaal(s); if (eerste) wissel(S.tab); else if (!bezig) teken(); zetStatusOm(); haalKalender(); })
+    .then(s => { const eerste = !S.data; S.data = s; onthoudLokaal(s); if (eerste) wissel(S.tab); else if (!bezig) teken(); zetStatusOm(); haalBron(); })
     .catch(e => { if (!S.data) $('#main').innerHTML = `<div class="leeg"><strong>Laden lukte niet</strong>${esc(e.message)}. Herlaad de pagina.</div>`; });
 }
 function bel(fn, ...args) {
@@ -453,14 +451,13 @@ const stKleur = id => `var(--blok-${STATUS_KLEUR[id] || 8})`;
 /* ---------- Weergaven ---------- */
 const VIEWS = {
   anime: { titel: 'Anime', teken: tekenAnime },
-  kalender: { titel: 'Kalender', teken: tekenKalender },
   instellingen: { titel: 'Instellingen', teken: tekenInst }
 };
 /** Het schermmenu onder de titel (titel-schakelaar). */
 function zetMenu(tab) {
   const n = D() ? D().titels.filter(t => t.soort === 'anime').length : '';
   const knop = (id, icoon, naam, aantal) => `<button type="button" role="menuitem" data-act="tab" data-tab="${id}"${tab === id ? ' aria-current="page"' : ''}>${ico(icoon)}${naam}<span class="n">${aantal}</span></button>`;
-  $('#schermmenu').innerHTML = knop('anime', 'tv', 'Anime', n) + knop('kalender', 'kalender', 'Kalender', kalDezeWeek()) + '<hr>' + knop('instellingen', 'schuifjes', 'Instellingen', '');
+  $('#schermmenu').innerHTML = knop('anime', 'tv', 'Anime', n) + '<hr>' + knop('instellingen', 'schuifjes', 'Instellingen', '');
 }
 function wissel(tab) {
   S.tab = tab;
@@ -486,6 +483,7 @@ function zetKop(tekst, terug) {
   $('#terug').hidden = !terug;
   if (terug) $('#terug-tekst').textContent = terug;
   $('#actieknop').hidden = true;
+  $('#topextra').innerHTML = '';
 }
 /** Houd de gekozen chip in beeld. */
 function chipInBeeld(rij) {
@@ -502,23 +500,6 @@ function voortgang(t) {
   const d = sz[k];
   return { gezien: getal(d.gezien), tot: aflTotaal(d), seizoen: sz.length > 1 ? k + 1 : 0, lopend: nogBezig(d) && !getal((bron(d) || {}).episodes) && !getal(d.afleveringen) };
 }
-/** Het grote getal rechts in een blok, met een woordje eronder. */
-function getalVan(t) {
-  const st = statusVan(t);
-  if (st === 'watching') {
-    const v = voortgang(t);
-    if (v) return v.tot >= LANG_SEIZOEN || v.lopend ? [v.gezien, 'van ' + (v.tot || '?')] : [`${v.gezien}/${v.tot || '?'}`, v.seizoen ? 'seizoen ' + v.seizoen : 'afleveringen'];
-  }
-  const c = cijferTekst(t.rating);
-  if (c) return [c, 'jouw cijfer'];
-  if (st === 'towatch') {
-    const n = seizoenenVan(t.id).reduce((s, d) => s + aflTotaal(d), 0);
-    if (n) return [n, 'afleveringen'];
-  }
-  return null;
-}
-/* Het beginscherm: geen filters, maar secties op volgorde van wat je nu doet.
-   Verder kijken (+1), Deze week (kalender), Hierna beginnen, Wacht op nieuw, en de rest achter een rij. */
 const heeftCijfer = t => t.rating !== '' && t.rating != null;
 const opCijfer = (a, b) => (heeftCijfer(b) - heeftCijfer(a)) || (getal(b.rating) - getal(a.rating)) || opNaam(a, b);
 const opRecent = (a, b) => getal(b.gewijzigd) - getal(a.gewijzigd);
@@ -528,107 +509,132 @@ function volgende(t) {
   const k = sz.findIndex(d => getal(d.gezien) < beschikbaar(d));
   return k < 0 ? null : { d: sz[k], k, n: getal(sz[k].gezien) + 1, meer: sz.length > 1 };
 }
-/** Eerstvolgende uitzending of aankondiging van een titel, uit de kalender. */
+/** Eén regel over wat er voor een titel aankomt: de volgende aflevering of een aangekondigd deel. */
 function komtEraan(t) {
-  const k = S.kal; if (!k || !k.uitz) return '';
-  const ids = new Set(delenVan(t.id).filter(d => d.bronId).map(d => Number(d.bronId)));
-  const nu = Date.now() / 1000;
-  const u = k.uitz.find(x => ids.has(x.mediaId) && x.airingAt > nu);
-  if (u) return { sl: u.airingAt, tekst: `afl. ${u.episode} · ${new Date(u.airingAt * 1000).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })}` };
-  const a = k.aank.filter(x => x.titelId === t.id).map(x => Object.assign({ w: aankWanneer(x.m) }, x)).sort((p, q) => p.w.sl - q.w.sl)[0];
-  if (!a) return { sl: 1e12, tekst: 'Niets aangekondigd' };
-  const d = inLijst(a.m.id);
-  const naam = d ? deelNaam(d, d.soort === 'extra' ? extrasVan(t.id).indexOf(d) : seizoenenVan(t.id).indexOf(d)) : (kortNaam(mediaNaam(a.m), t.naam) || mediaNaam(a.m));
-  return { sl: 1e11 + a.w.sl, tekst: `${naam} · ${a.w.kort || a.w.groep.toLowerCase()}` };
+  let beste = null;
+  delenVan(t.id).forEach(d => {
+    const m = bron(d); if (!m) return;
+    let x = null;
+    if (m.nextAiringEpisode && m.nextAiringEpisode.airingAt) x = { sl: m.nextAiringEpisode.airingAt, tekst: `afl. ${m.nextAiringEpisode.episode} · ${korteDatum(m.nextAiringEpisode.airingAt)}` };
+    else if (m.status === 'NOT_YET_RELEASED') {
+      const w = aankWanneer(m), naam = deelNaam(d, d.soort === 'extra' ? extrasVan(t.id).indexOf(d) : seizoenenVan(t.id).indexOf(d));
+      x = { sl: 1e10 + w.sl, tekst: `${naam} · ${w.kort || (w.groep === 'Nog geen datum' ? 'nog geen datum' : w.groep.toLowerCase())}` };
+    } else if (m.status === 'HIATUS') x = { sl: 1e12, tekst: 'Even op pauze' };
+    if (x && (!beste || x.sl < beste.sl)) beste = x;
+  });
+  return beste;
 }
 const veegTitel = (t, inhoud) => veegRij('t-' + t.id, [['wijzig', 'titel-naam', t.id, `${t.naam} hernoemen`], ['weg', 'titel-weg', t.id, `${t.naam} verwijderen`]], inhoud);
+/* Het Anime-scherm: de hoofdpagina toont wat nu speelt (Nieuw gevonden, Nu te kijken, Wachten).
+   Rechtsboven twee knoppen: ★ Collectie (verleden: Gezien op cijfer, en Gestopt) en 🔖 Wil ik zien (toekomst). */
+const LIJSTEN = {
+  collectie: { naam: 'Collectie', teken: tekenCollectie },
+  towatch:   { naam: 'Wil ik zien', teken: tekenWilZien },
+  nieuw:     { naam: 'Nieuw gevonden', teken: tekenNieuw },
+  dropped:   { naam: 'Gestopt', teken: tekenGestopt, ouder: 'collectie' }
+};
+const lijstNaam = id => (LIJSTEN[id] || {}).naam || 'Anime';
+const animeTitels = () => D().titels.filter(t => t.soort === 'anime');
+const kopjeN = (tekst, n) => `<div class="kopje kop-n">${tekst}${n ? `<span>${n}</span>` : ''}</div>`;
 function tekenAnime() {
-  if (S.lijst) return tekenLijst();
+  haalBron();
+  if (S.lijst && LIJSTEN[S.lijst]) {
+    const l = LIJSTEN[S.lijst];
+    zetKop(l.naam, lijstNaam(l.ouder));
+    $('#headerextra').innerHTML = '';
+    return l.teken();
+  }
   zetKop('Anime');
   $('#actieknop').hidden = false;
   $('#headerextra').innerHTML = '';
-  haalKalender();
-  const ts = D().titels.filter(t => t.soort === 'anime');
+  $('#topextra').innerHTML = `<div class="kop-knoppen">
+    <button type="button" class="rond-knop" data-act="lijst-open" data-id="collectie" aria-label="Collectie: gezien en gestopt">${ico('ster')}</button>
+    <button type="button" class="rond-knop" data-act="lijst-open" data-id="towatch" aria-label="Wil ik zien">${ico('bladwijzer')}</button></div>`;
+  const ts = animeTitels();
   if (!ts.length) { $('#main').innerHTML = `<div class="leeg"><strong>Nog niets in je lijst</strong>Tik onderin op Anime toevoegen.</div>`; return; }
   const van = s => ts.filter(t => statusVan(t) === s);
-  const kopje = (tekst, n) => `<div class="kopje kop-n">${tekst}${n ? `<span>${n}</span>` : ''}</div>`;
   let h = '';
 
-  // Verder kijken: per serie de volgende aflevering, met +1
+  // Nieuw gevonden: één rij, alleen als er iets is
+  const vs = vondstenNu();
+  if (vs.length) h += `<div class="groep"><button type="button" class="rij" data-act="lijst-open" data-id="nieuw"><span class="rij-ico">${ico('vonk')}</span><span class="naam">Nieuw gevonden</span><span class="teller-stip">${vs.length}</span><span class="pijltje rij-ico">${ico('pijl-rechts')}</span></button></div>`;
+
+  // Nu te kijken: per serie de volgende aflevering, met +1
   const bezig = van('watching').sort(opRecent);
   if (bezig.length) {
-    h += kopje('Verder kijken', bezig.length);
+    h += kopjeN(statusNaam('watching'), bezig.length);
     h += bezig.map(t => {
       const v = volgende(t), vg = voortgang(t);
-      const label = v ? [v.meer ? deelNaam(v.d, v.k) : '', `afl. ${v.n}`].filter(Boolean).join(' · ') : ((komtEraan(t) || {}).tekst || 'Bijgewerkt');
-      return veegTitel(t, `<div class="blok kleur verder" style="--c:${stKleur(statusVan(t))}">
+      const label = v ? [v.meer ? deelNaam(v.d, v.k) : '', `afl. ${v.n}`].filter(Boolean).join(' · ') : '';
+      return veegTitel(t, `<div class="blok kleur verder" style="--c:${stKleur('watching')}">
         <button type="button" class="verder-open" data-act="titel-open" data-id="${t.id}">
           ${posterHtml(t, 'blok-plaatje')}
-          <span class="blok-tekst"><span class="blok-label">${esc(label)}</span><span class="blok-naam">${esc(t.naam)}</span>${vg && vg.tot ? `<span class="voortgang"><i style="width:${Math.min(100, Math.round(vg.gezien / vg.tot * 100))}%"></i></span>` : ''}</span>
+          <span class="blok-tekst">${label ? `<span class="blok-label">${esc(label)}</span>` : ''}<span class="blok-naam">${esc(t.naam)}</span>${vg && vg.tot ? `<span class="voortgang"><i style="width:${Math.min(100, Math.round(vg.gezien / vg.tot * 100))}%"></i></span>` : ''}</span>
         </button>
-        ${v ? `<button type="button" class="plus-een" data-act="plus-een" data-id="${v.d.id}" aria-label="Aflevering ${v.n} van ${esc(t.naam)} gezien"><small>gezien</small>+1</button>`
-            : `<span class="plus-een leeg-knop" aria-hidden="true">${ico('vinkje')}</span>`}
+        ${v ? `<button type="button" class="plus-een" data-act="plus-een" data-id="${v.d.id}" aria-label="Aflevering ${v.n} van ${esc(t.naam)} gezien"><small>gezien</small>+1</button>` : ''}
       </div>`);
     }).join('');
   }
 
-  // Deze week: komende 7 dagen uit de kalender
-  if (S.kal && S.kal.uitz) {
-    const nu = Date.now() / 1000, vandaag = beginDag(new Date());
-    const week = S.kal.uitz.filter(u => u.airingAt < nu + 7 * 86400 && kalDeel(u.mediaId)).filter((u, i, a) => a.findIndex(x => x.mediaId === u.mediaId && beginDag(new Date(x.airingAt * 1000)) === beginDag(new Date(u.airingAt * 1000))) === i);
-    if (week.length) {
-      h += kopje('Deze week');
-      h += `<div class="groep">${week.slice(0, 5).map(u => {
-        const t = titel(kalDeel(u.mediaId).titelId), dag = beginDag(new Date(u.airingAt * 1000)), vs = Math.round((dag - vandaag) / 864e5);
-        const dagTekst = vs === 0 ? 'Vandaag' : vs === 1 ? 'Morgen' : new Date(dag).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric' });
-        return `<button type="button" class="rij" data-act="titel-open" data-id="${t.id}"><span class="dag">${esc(dagTekst)}</span>
-          <span class="rij-tekst"><span class="naam">${esc(t.naam)}</span><span class="bijregel">afl. ${u.episode} · ${u.airingAt <= nu ? 'uit' : klokTijd(u.airingAt)}</span></span></button>`;
-      }).join('')}
-      <button type="button" class="rij" data-act="tab" data-tab="kalender"><span class="rij-ico">${ico('kalender')}</span><span class="naam">Hele kalender</span><span class="pijltje rij-ico">${ico('pijl-rechts')}</span></button></div>`;
-    }
-  }
-
-  // Hierna beginnen: To watch als rij posters
-  const straks = van('towatch').sort(opRecent);
-  if (straks.length) {
-    h += kopje('Hierna beginnen', straks.length);
-    h += `<div class="posterrij">${straks.map(t => {
-      const n = seizoenenVan(t.id).reduce((s, d) => s + aflTotaal(d), 0);
-      return `<button type="button" class="p" style="--c:${stKleur(statusVan(t))}" data-act="titel-open" data-id="${t.id}">${posterHtml(t)}<span class="p-naam">${esc(t.naam)}</span>${n ? `<small>${n} afl.</small>` : ''}</button>`;
-    }).join('')}</div>`;
-  }
-
-  // Wacht op nieuw: wat er aankomt, eerstvolgende bovenaan
+  // Wachten: wat er aankomt, eerstvolgende bovenaan
   const wacht = van('waiting').map(t => ({ t, k: komtEraan(t) })).sort((a, b) => ((a.k || {}).sl || 1e13) - ((b.k || {}).sl || 1e13) || opCijfer(a.t, b.t));
   if (wacht.length) {
-    h += kopje('Wacht op nieuw', wacht.length);
+    h += kopjeN(statusNaam('waiting'), wacht.length);
     h += `<div class="groep">${wacht.map(({ t, k }) => `<button type="button" class="rij" data-act="titel-open" data-id="${t.id}">${posterHtml(t, 'mini')}
       <span class="rij-tekst"><span class="naam">${esc(t.naam)}</span>${k ? `<span class="bijregel">${esc(k.tekst)}</span>` : ''}</span>
       ${heeftCijfer(t) ? `<span class="rechts">${cijferTekst(t.rating)}</span>` : ''}</button>`).join('')}</div>`;
   }
-
-  // De rest: achter een rij
-  h += kopje('Collectie');
-  h += `<div class="groep">${['finished', 'dropped'].map(s => `<button type="button" class="rij" data-act="lijst-open" data-id="${s}"><span class="stipje" style="--c:${stKleur(s)}"></span><span class="naam">${statusNaam(s)}</span><span class="rechts">${van(s).length}</span><span class="pijltje rij-ico">${ico('pijl-rechts')}</span></button>`).join('')}
-    <button type="button" class="rij" data-act="lijst-open" data-id="alles"><span class="rij-ico">${ico('vakjes')}</span><span class="naam">Alles</span><span class="rechts">${ts.length}</span><span class="pijltje rij-ico">${ico('pijl-rechts')}</span></button></div>`;
+  if (!h) h = `<div class="leeg"><strong>Niets om nu te kijken</strong>Wat je gezien hebt staat onder ★, wat je wilt zien onder ${ico('bladwijzer', 'width="16" height="16" style="vertical-align:-2px"')}.</div>`;
   $('#main').innerHTML = h;
 }
-/** Lijst van één status (of alles): de blokken zoals voorheen. */
-function tekenLijst() {
-  const s = S.lijst, alles = s === 'alles';
-  zetKop(statusNaam(s), 'Anime');
-  $('#headerextra').innerHTML = '';
-  const lijst = D().titels.filter(t => t.soort === 'anime' && (alles || statusVan(t) === s))
-    .sort(alles ? opNaam : ['waiting', 'finished', 'dropped'].includes(s) ? opCijfer : opRecent);
-  if (!lijst.length) { $('#main').innerHTML = `<div class="leeg"><strong>Nog niets bij ${statusNaam(s)}</strong>Zet een anime op ${statusNaam(s)} en hij staat hier.</div>`; return; }
-  $('#main').innerHTML = lijst.map(t => {
-    const v = statusVan(t) === 'watching' ? voortgang(t) : null, g = getalVan(t);
-    return veegTitel(t, `<button type="button" class="blok kleur" style="--c:${stKleur(statusVan(t))}" data-act="titel-open" data-id="${t.id}">
-        ${posterHtml(t, 'blok-plaatje')}
-        <span class="blok-tekst">${alles ? `<span class="blok-label">${statusNaam(statusVan(t))}</span>` : ''}<span class="blok-naam">${esc(t.naam)}</span>${v && v.tot ? `<span class="voortgang"><i style="width:${Math.min(100, Math.round(v.gezien / v.tot * 100))}%"></i></span>` : ''}</span>
-        ${g ? `<span class="getal">${esc(g[0])}<small>${esc(g[1])}</small></span>` : ''}
-      </button>`);
-  }).join('');
+const rijTitel = (t, rechts) => `<button type="button" class="rij" data-act="titel-open" data-id="${t.id}">${posterHtml(t, 'mini')}<span class="naam">${esc(t.naam)}</span><span class="rechts">${rechts}</span></button>`;
+/** ★ Collectie: wat je gezien hebt, per heel cijfer, en onderaan Gestopt. */
+function tekenCollectie() {
+  const ts = animeTitels(), gezien = ts.filter(t => statusVan(t) === 'finished').sort(opCijfer);
+  const gestopt = ts.filter(isGestopt);
+  const groepen = new Map();
+  gezien.forEach(t => {
+    const k = heeftCijfer(t) ? String(Math.floor(getal(t.rating) + 1e-9)) : 'geen';
+    if (!groepen.has(k)) groepen.set(k, []);
+    groepen.get(k).push(t);
+  });
+  let h = '';
+  if (!gezien.length) h += `<div class="leeg"><strong>Nog niets gezien</strong>Wat je helemaal hebt gezien en waar niets meer van komt, staat hier.</div>`;
+  groepen.forEach((lijst, k) => {
+    h += `<div class="cijfer-kop">${k === 'geen' ? 'Nog geen cijfer' : k}<small>${lijst.length} ${lijst.length === 1 ? 'titel' : 'titels'}</small></div>`;
+    h += `<div class="groep">${lijst.map(t => rijTitel(t, heeftCijfer(t) ? cijferTekst(t.rating) : '–')).join('')}</div>`;
+  });
+  if (gestopt.length) h += `<div class="groep" style="margin-top:var(--ruimte-6)"><button type="button" class="rij" data-act="lijst-open" data-id="dropped"><span class="stipje" style="--c:${stKleur(GESTOPT)}"></span><span class="naam">Gestopt</span><span class="rechts">${gestopt.length}</span><span class="pijltje rij-ico">${ico('pijl-rechts')}</span></button></div>`;
+  $('#main').innerHTML = h;
+}
+/** 🔖 Wil ik zien: postermuur, laatst toegevoegd eerst. */
+function tekenWilZien() {
+  const lijst = animeTitels().filter(t => statusVan(t) === 'towatch').sort(opRecent);
+  if (!lijst.length) { $('#main').innerHTML = `<div class="leeg"><strong>Niets op je lijstje</strong>Voeg een anime toe en hij staat hier tot je begint.</div>`; return; }
+  $('#main').innerHTML = `<div class="muur">${lijst.map(t => {
+    const n = seizoenenVan(t.id).reduce((s, d) => s + aflTotaal(d), 0);
+    return `<button type="button" class="p" data-act="titel-open" data-id="${t.id}">${posterHtml(t)}<span class="p-naam">${esc(t.naam)}</span>${n ? `<small>${n} afl.</small>` : ''}</button>`;
+  }).join('')}</div>`;
+}
+/** Gestopt: lijst, hoogste cijfer eerst. */
+function tekenGestopt() {
+  const lijst = animeTitels().filter(isGestopt).sort(opCijfer);
+  $('#main').innerHTML = lijst.length ? `<div class="groep">${lijst.map(t => rijTitel(t, heeftCijfer(t) ? cijferTekst(t.rating) : '')).join('')}</div>`
+    : `<div class="leeg"><strong>Nergens mee gestopt</strong>Zet een titel op Gestopt en hij staat hier.</div>`;
+}
+/** Nieuw gevonden: vervolgen die je nog niet hebt, met toevoegen en negeren. */
+function tekenNieuw() {
+  const vs = vondstenNu();
+  if (!vs.length) { $('#main').innerHTML = `<div class="leeg"><strong>Niets nieuws</strong>Komt er een vervolg van iets in je lijst, dan zie je het hier.</div>`; return; }
+  $('#main').innerHTML = `<div class="groep">${vs.map(({ m, titelId }) => {
+    const t = titel(titelId), deel = kortNaam(mediaNaam(m), t.naam) || mediaNaam(m);
+    return `<div class="rij vondst">
+      <button type="button" class="deel-knop" data-act="titel-open" data-id="${t.id}">${posterHtml({ naam: t.naam, plaatje: (m.coverImage || {}).medium || t.plaatje }, 'mini')}
+        <span class="rij-tekst"><span class="naam">${esc(t.naam)}</span><span class="bijregel">${esc(deel)} · ${esc(vondstWanneer(m))}</span></span></button>
+      <button type="button" class="rond-knop toevoeg" data-act="vondst-toevoeg" data-id="${m.id}" aria-label="${esc(deel)} toevoegen aan ${esc(t.naam)}">${ico('plus')}</button>
+      <button type="button" class="rond-knop" data-act="vondst-negeer" data-id="${m.id}" aria-label="${esc(deel)} negeren">${ico('kruis')}</button>
+    </div>`;
+  }).join('')}</div>`;
 }
 /** Blok of rij die je naar links veegt voor acties met alleen iconen. */
 function veegRij(key, acties, inhoud) {
@@ -640,7 +646,7 @@ function veegRij(key, acties, inhoud) {
 /* ---------- Titelpagina ---------- */
 function tekenTitel() {
   const t = titel(S.titelOpen);
-  zetKop(t.naam, S.lijst ? statusNaam(S.lijst) : VIEWS[S.tab].titel);
+  zetKop(t.naam, S.lijst ? lijstNaam(S.lijst) : VIEWS[S.tab].titel);
   $('#headerextra').innerHTML = '';
   const sz = seizoenenVan(t.id), ex = extrasVan(t.id);
   const totaal = sz.reduce((s, d) => s + aflTotaal(d), 0);
@@ -734,26 +740,17 @@ function tekenInst() {
     <div class="keuze">${[['engels', 'Engels'], ['romaji', 'Japans (romaji)']].map(([id, n]) => `<button type="button" aria-pressed="${taal() === id}" data-act="taal" data-id="${id}">${n}</button>`).join('')}</div>`;
 }
 
-/* ---------- Kalender ----------
-   Alles van AniList, niets in de Sheet: komende afleveringen (4 weken) en aangekondigde seizoenen en films.
-   Alle titels behalve Dropped. Opgehaald bij openen, hoogstens één keer per half uur. */
-const KAL_DAGEN = 28;
+/* ---------- Verse AniList-gegevens ----------
+   Bij het openen alle delen met een AniList-id (behalve van Gestopt) in één keer ophalen, met hun vervolgen.
+   Hoogstens één keer per half uur; de telefoon onthoudt de laatste stand. Niets hiervan gaat naar de Sheet. */
 const SEIZOEN_NAAM = { WINTER: 'Winter', SPRING: 'Lente', SUMMER: 'Zomer', FALL: 'Herfst' };
 const SEIZOEN_MAAND = { WINTER: 1, SPRING: 4, SUMMER: 7, FALL: 10 };
-const beginDag = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 const hoofdletter = s => s.charAt(0).toUpperCase() + s.slice(1);
-const klokTijd = s => new Date(s * 1000).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-/** Delen met een AniList-id, van alle titels behalve Dropped. */
-function kalDelen() {
-  const tIds = new Set(D().titels.filter(t => t.soort === 'anime' && t.status !== 'dropped').map(t => t.id));
+const korteDatum = s => new Date(s * 1000).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
+/** Delen met een AniList-id, van alle titels behalve Gestopt. */
+function bronDelen() {
+  const tIds = new Set(D().titels.filter(t => t.soort === 'anime' && !isGestopt(t)).map(t => t.id));
   return D().delen.filter(d => d.bronId && tIds.has(d.titelId) && zichtbaar(d));
-}
-const kalDeel = id => kalDelen().find(d => Number(d.bronId) === Number(id));
-/** Aantal afleveringen in de komende 7 dagen (voor het schermmenu). */
-function kalDezeWeek() {
-  if (!S.kal || !S.kal.uitz) return '';
-  const nu = Date.now() / 1000;
-  return S.kal.uitz.filter(u => u.airingAt > nu && u.airingAt < nu + 7 * 86400).length || '';
 }
 async function allePaginas(query, vars, pak) {
   const uit = [];
@@ -764,47 +761,46 @@ async function allePaginas(query, vars, pak) {
   }
   return uit;
 }
-async function haalKalender() {
-  const delen = kalDelen();
+async function haalBron() {
+  const delen = bronDelen();
   const sleutel = [...new Set(delen.map(d => Number(d.bronId)))].sort((a, b) => a - b).join(',');
-  const k = S.kal;
+  const k = S.bron;
   if (k && (k.laden || (k.sleutel === sleutel && Date.now() - k.tijd < 30 * 6e4))) return;
-  S.kal = Object.assign({}, k, { laden: true, sleutel });
+  S.bron = Object.assign({}, k, { laden: true, sleutel });
   try {
     const ids = sleutel ? sleutel.split(',').map(Number) : [];
     const MK = MEDIA.replace('nextAiringEpisode{episode}', 'nextAiringEpisode{episode airingAt}') + ' season seasonYear';
     const media = ids.length ? await allePaginas(`query($ids:[Int],$p:Int){Page(page:$p,perPage:25){pageInfo{hasNextPage} media(id_in:$ids,type:ANIME){${MK} relations{edges{relationType node{${MK} type}}}}}}`, { ids }, P => P.media) : [];
-    // Aangekondigd: delen in je lijst die nog niet uit zijn, plus vervolgen die nog niet in je lijst staan
-    const aank = [], al = new Set();
+    // Vondsten: vervolgen die nog niet in je lijst staan (al uit, nu bezig of aangekondigd),
+    // en films die nog moeten komen. Een vervolg dat een andere serie is (zie andereSerie) telt niet.
+    const vondsten = [], al = new Set();
     media.forEach(m => {
       const d = delen.find(x => Number(x.bronId) === m.id);
       if (!d) return;
-      if (m.status === 'NOT_YET_RELEASED' && !al.has(m.id)) { al.add(m.id); aank.push({ m, titelId: d.titelId }); }
       m.relations.edges.forEach(e => {
         const n = e.node;
-        if (n.type !== 'ANIME' || n.status !== 'NOT_YET_RELEASED' || al.has(n.id) || !telt(n)) return;
-        if (!((e.relationType === 'SEQUEL' && !andereSerie(m, n)) || (e.relationType === 'SIDE_STORY' && n.format === 'MOVIE'))) return;
-        al.add(n.id); aank.push({ m: n, titelId: d.titelId });
+        if (n.type !== 'ANIME' || al.has(n.id) || !telt(n) || inLijst(n.id)) return;
+        const vervolg = e.relationType === 'SEQUEL' && !andereSerie(m, n);
+        const film = e.relationType === 'SIDE_STORY' && n.format === 'MOVIE' && NOG_BEZIG.includes(n.status);
+        if (!vervolg && !film) return;
+        al.add(n.id); vondsten.push({ m: n, titelId: d.titelId });
       });
+      delete m.relations;
     });
-    // Komende afleveringen van alles wat loopt of nog moet beginnen (vanaf het begin van vandaag)
-    const lopend = media.filter(m => NOG_BEZIG.includes(m.status)).map(m => m.id);
-    const van = Math.floor(beginDag(new Date()) / 1000), tot = van + KAL_DAGEN * 86400;
-    const uitz = lopend.length ? await allePaginas(`query($ids:[Int],$van:Int,$tot:Int,$p:Int){Page(page:$p,perPage:50){pageInfo{hasNextPage} airingSchedules(mediaId_in:$ids,airingAt_greater:$van,airingAt_lesser:$tot,sort:TIME){episode airingAt mediaId}}}`, { ids: lopend, van, tot }, P => P.airingSchedules) : [];
-    media.forEach(m => { delete m.relations; });
-    S.kal = { tijd: Date.now(), sleutel, media: new Map(media.map(m => [m.id, m])), aank, uitz };
-    try { localStorage.setItem(BRON_KEY, JSON.stringify(Object.assign({}, S.kal, { media: [...S.kal.media.values()] }))); } catch (e) {}
+    S.bron = { tijd: Date.now(), sleutel, media: new Map(media.map(m => [m.id, m])), vondsten };
+    try { localStorage.setItem(BRON_KEY, JSON.stringify(Object.assign({}, S.bron, { media: [...S.bron.media.values()] }))); } catch (e) {}
   } catch (e) {
-    S.kal = Object.assign({}, S.kal, { laden: false, tijd: Date.now(), fout: e.message });
+    S.bron = Object.assign({}, S.bron, { laden: false, tijd: Date.now(), fout: e.message });
   }
   // Verse gegevens kunnen statussen en aantallen veranderen: alles opnieuw tekenen
   teken();
 }
-/* De laatste AniList-stand onthoudt de telefoon, zodat statussen meteen kloppen bij het openen */
-const BRON_KEY = 'kollectie-anilist';
-try { const b = JSON.parse(localStorage.getItem(BRON_KEY)); if (b && b.media) S.kal = Object.assign(b, { media: new Map(b.media.map(m => [m.id, m])), laden: false }); } catch (e) {}
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.data) haalKalender(); });
-/** Waar een aangekondigd deel in de tijd valt: sorteersleutel, groep en korte datum. */
+const BRON_KEY = 'kollectie-anilist-2';
+try { localStorage.removeItem('kollectie-anilist'); } catch (e) {} // oude kalender-stand
+try { const b = JSON.parse(localStorage.getItem(BRON_KEY)); if (b && b.media) S.bron = Object.assign(b, { media: new Map(b.media.map(m => [m.id, m])), laden: false }); } catch (e) {}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.data) haalBron(); });
+
+/** Wanneer iets uitkomt: sorteersleutel, groep ("Zomer 2027") en korte datum, als die bekend is. */
 function aankWanneer(m) {
   const s = m.startDate || {}, na = m.nextAiringEpisode && m.nextAiringEpisode.airingAt;
   const maandNaam = (j, mnd) => hoofdletter(new Date(j, mnd - 1, 1).toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' }));
@@ -815,90 +811,34 @@ function aankWanneer(m) {
   if (j) return { sl: j * 1e4 + 1300, groep: String(j), kort: '' };
   return { sl: 1e9, groep: 'Nog geen datum', kort: '' };
 }
-function tekenKalender() {
-  zetKop('Kalender');
-  $('#headerextra').innerHTML = '';
-  haalKalender();
-  const k = S.kal;
-  if (!k || !k.uitz) {
-    $('#main').innerHTML = k && k.fout
-      ? `<div class="leeg"><strong>AniList is even niet bereikbaar</strong>Probeer het zo opnieuw.<br><button type="button" class="knop" data-act="kal-opnieuw">Opnieuw</button></div>`
-      : '<div class="skelet"></div>'.repeat(5);
-    return;
-  }
-  if (!kalDelen().length) { $('#main').innerHTML = `<div class="leeg"><strong>Nog niets te plannen</strong>Voeg anime toe via AniList en hier zie je wanneer er iets nieuws uitkomt.</div>`; return; }
-  const nu = Date.now() / 1000, vandaag = beginDag(new Date());
-  let h = '<div class="kopje">Afleveringen</div>';
-
-  // Per dag, en per serie: twee afleveringen op één dag worden "afl. 7–8"
-  const dagen = new Map();
-  k.uitz.forEach(u => {
-    const d = kalDeel(u.mediaId); if (!d || !titel(d.titelId)) return;
-    const dag = beginDag(new Date(u.airingAt * 1000));
-    if (!dagen.has(dag)) dagen.set(dag, new Map());
-    const per = dagen.get(dag);
-    if (per.has(u.mediaId)) per.get(u.mediaId).tot = u.episode;
-    else per.set(u.mediaId, { d, van: u.episode, tot: u.episode, at: u.airingAt });
-  });
-  if (!dagen.size) h += `<p class="kal-leeg">Geen afleveringen in de komende ${KAL_DAGEN / 7} weken.</p>`;
-  dagen.forEach((per, dag) => {
-    const verschil = Math.round((dag - vandaag) / 864e5);
-    const naam = verschil === 0 ? 'Vandaag' : verschil === 1 ? 'Morgen' : hoofdletter(new Date(dag).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' }));
-    h += `<div class="groep kal-groep"><div class="groep-kop">${naam}</div>`;
-    per.forEach(x => {
-      const t = titel(x.d.titelId), m = k.media.get(Number(x.d.bronId)) || {};
-      const sz = seizoenenVan(t.id), totaal = m.episodes;
-      const afl = x.van === x.tot ? `afl. ${x.van}` : `afl. ${x.van}–${x.tot}`;
-      const bij = [
-        sz.length > 1 || x.d.soort === 'extra' ? deelNaam(x.d, x.d.soort === 'extra' ? extrasVan(t.id).indexOf(x.d) : sz.indexOf(x.d)) : '',
-        x.van === 1 ? afl + ' · première' : totaal && x.tot === totaal ? afl + ' · finale' : totaal ? `${afl} van ${totaal}` : afl
-      ].filter(Boolean).join(' · ');
-      const uit = x.at <= nu;
-      h += `<button type="button" class="rij" data-act="titel-open" data-id="${t.id}">
-        ${posterHtml(t, 'mini')}
-        <span class="rij-tekst"><span class="naam">${esc(t.naam)}</span><span class="bijregel">${esc(bij)}</span></span>
-        <span class="rechts${uit ? ' uit' : ''}">${uit ? 'Uit' : klokTijd(x.at)}</span></button>`;
-    });
-    h += '</div>';
-  });
-
-  // Aangekondigd: wat al in de lijst met afleveringen staat, hoeft hier niet nog eens
-  const inAgenda = new Set(k.uitz.map(u => u.mediaId));
-  const aank = k.aank.filter(a => !inAgenda.has(a.m.id) && titel(a.titelId) && titel(a.titelId).status !== 'dropped')
-    .map(a => Object.assign({ w: aankWanneer(a.m) }, a)).sort((a, b) => a.w.sl - b.w.sl);
-  h += '<div class="kopje">Aangekondigd</div>';
-  if (!aank.length) h += '<p class="kal-leeg">Niets aangekondigd voor je titels.</p>';
-  const groepen = new Map();
-  aank.forEach(a => { if (!groepen.has(a.w.groep)) groepen.set(a.w.groep, []); groepen.get(a.w.groep).push(a); });
-  groepen.forEach((lijst, naam) => {
-    h += `<div class="groep kal-groep"><div class="groep-kop">${esc(naam)}</div>`;
-    lijst.forEach(a => {
-      const t = titel(a.titelId), d = inLijst(a.m.id);
-      const poster = posterHtml({ naam: t.naam, plaatje: (a.m.coverImage || {}).medium || t.plaatje }, 'mini');
-      const deel = d ? deelNaam(d, d.soort === 'extra' ? extrasVan(t.id).indexOf(d) : seizoenenVan(t.id).indexOf(d)) : (kortNaam(mediaNaam(a.m), t.naam) || mediaNaam(a.m));
-      const bij = [deel, FORMATEN[a.m.format] === 'Film' && !/film|movie/i.test(deel) ? 'Film' : '', a.w.kort].filter(Boolean).join(' · ');
-      const tekst = `${poster}<span class="rij-tekst"><span class="naam">${esc(t.naam)}</span><span class="bijregel">${esc(bij)}</span></span>`;
-      h += d
-        ? `<button type="button" class="rij" data-act="titel-open" data-id="${t.id}">${tekst}</button>`
-        : `<div class="rij"><button type="button" class="deel-knop" data-act="titel-open" data-id="${t.id}">${tekst}</button>
-            <button type="button" class="chip" data-act="kal-toevoeg" data-id="${a.m.id}" aria-label="${esc(deel)} toevoegen aan ${esc(t.naam)}">${ico('plus')}Voeg toe</button></div>`;
-    });
-    h += '</div>';
-  });
-  h += `<p class="kal-voet">Tijden zijn de uitzending in Japan, in jouw tijd. Op streamingdiensten vaak een paar uur later.${k.fout ? ' Bijwerken lukte niet, dit is de laatste stand.' : ''}</p>`;
-  $('#main').innerHTML = h;
+/** Genegeerde vondsten (AniList-id's), bewaard in Instellingen. */
+const genegeerd = () => new Set(String(((D().instellingen || []).find(x => x.id === 'genegeerd') || {}).waarde || '').split(',').filter(Boolean).map(Number));
+/** Vondsten die nu nog tellen: niet toegevoegd, niet genegeerd, titel niet gestopt. */
+function vondstenNu() {
+  const weg = genegeerd();
+  return ((S.bron || {}).vondsten || []).filter(v => !inLijst(v.m.id) && !weg.has(v.m.id) && titel(v.titelId) && !isGestopt(titel(v.titelId)));
 }
-/** Aangekondigd vervolg meteen als seizoen of film bij de titel zetten. */
-function kalToevoegen(id) {
-  const a = S.kal && S.kal.aank.find(x => x.m.id === id);
+/** Wat een vondst is: "staat klaar", "loopt nu" of wanneer hij komt. */
+function vondstWanneer(m) {
+  if (m.status === 'NOT_YET_RELEASED') { const w = aankWanneer(m); return w.kort || (w.groep === 'Nog geen datum' ? 'aangekondigd' : w.groep.toLowerCase()); }
+  if (NOG_BEZIG.includes(m.status)) return 'loopt nu';
+  return 'staat klaar' + (m.episodes ? ` · ${m.episodes} afl.` : '');
+}
+function voegVondstToe(id) {
+  const a = vondstenNu().find(x => x.m.id === id);
   if (!a) return;
-  if (inLijst(id)) return melding('Staat al in je lijst.');
   const t = titel(a.titelId), m = a.m;
   const naam = kortNaam(mediaNaam(m), t.naam);
   const pos = Math.max(0, ...delenVan(t.id).map(d => getal(d.positie))) + 1;
   bewaar('delen', [deelUitMedia(t.id, { m, soort: isSeizoen(m) ? 'seizoen' : 'extra', naam, alt: '' }, pos)]);
   bewaar('titels', [{ id: t.id, gewijzigd: Date.now() }]);
   melding(`${naam || mediaNaam(m)} toegevoegd aan ${t.naam}.`);
+}
+function negeerVondst(id) {
+  const zet = ids => bewaar('instellingen', [{ id: 'genegeerd', waarde: [...ids].join(',') }]);
+  const oud = genegeerd(), nieuw = new Set(oud); nieuw.add(id);
+  zet(nieuw);
+  melding('Genegeerd.', 'Ongedaan maken', () => zet(oud));
 }
 
 
@@ -1250,7 +1190,7 @@ function openTitel(id) {
 /* ================= Acties ================= */
 const ACTIES = {
   tab: b => { sluitVeeg(); wissel(b.dataset.tab); },
-  terug: () => { if (S.titelOpen) S.titelOpen = null; else S.lijst = null; teken(); $('#scroller').scrollTop = 0; },
+  terug: () => { if (S.titelOpen) S.titelOpen = null; else S.lijst = (LIJSTEN[S.lijst] || {}).ouder || null; teken(); $('#scroller').scrollTop = 0; },
   'lijst-open': (b, id) => { S.lijst = id; teken(); $('#scroller').scrollTop = 0; },
   'plus-een': (b, id) => {
     const d = D().delen.find(x => x.id === id), t = titel(d.titelId), oud = getal(d.gezien), n = Math.min(beschikbaar(d), oud + 1);
@@ -1262,8 +1202,8 @@ const ACTIES = {
   sluit: sluitSheet,
   'toevoeg-open': () => openZoeken(),
   'titel-open': (b, id) => { S.titelOpen = id; S.swipeOpen = null; teken(); $('#scroller').scrollTop = 0; },
-  'kal-toevoeg': (b, id) => kalToevoegen(Number(id)),
-  'kal-opnieuw': () => { if (S.kal) S.kal.tijd = 0; teken(); },
+  'vondst-toevoeg': (b, id) => voegVondstToe(Number(id)),
+  'vondst-negeer': (b, id) => negeerVondst(Number(id)),
   'titel-naam': async (b, id) => { sluitVeeg(); const t = titel(id); const n = await vraagTekst('Naam wijzigen', t.naam); if (n) bewaar('titels', [{ id, naam: n }]); },
   'plaatje-kies': (b, id) => openPlaatjes(id),
   'plaatje-zet': b => { const id = S.plaatjeVoor; sluitSheet(); bewaar('titels', [{ id, plaatje: b.dataset.url }]); melding('Plaatje gewijzigd.'); },
