@@ -112,9 +112,19 @@ html.app-schil #scroller{position:fixed;inset:0;height:auto;overflow-x:hidden}
 .blok.verder{align-items:stretch;padding:0;gap:0}
 .verder-open{flex:1;min-width:0;display:flex;align-items:center;gap:var(--ruimte-3);padding:var(--ruimte-3);text-align:left}
 .verder-open .blok-tekst{display:flex;flex-direction:column}
-.plus-een{flex:none;width:64px;margin:var(--ruimte-3) var(--ruimte-3) var(--ruimte-3) 0;border-radius:var(--r-l);background:rgba(0,0,0,.14);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:var(--gewicht-zwaar);font-size:var(--fs-xl);line-height:1;transition:transform var(--duur-snel)}
-.plus-een:active{transform:scale(.92)}
-.plus-een small{font-size:10px;font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);text-transform:uppercase;opacity:.7}
+/* Voortgang in lagen: donker = gezien, licht = al uitgezonden, spoor = totaal */
+.lagen{position:relative;display:block;height:8px;border-radius:var(--r-rond);background:rgba(0,0,0,.15);overflow:hidden;margin-top:var(--ruimte-2)}
+.lagen i{position:absolute;left:0;top:0;bottom:0;border-radius:inherit;background:currentColor}
+.lagen i.uit{opacity:.3}
+.lagen i.af{opacity:.75;transition:width var(--duur) var(--veer)}
+.stand{display:block;font-size:var(--fs-s);font-weight:var(--gewicht-zwaar);margin-top:var(--ruimte-1);font-variant-numeric:tabular-nums;white-space:nowrap}
+.stand span{opacity:.6}
+/* +1: klein rondje zoals het afvinkrondje bij Boodschappen; tikvlak blijft --tik */
+.plus-een{flex:none;align-self:center;width:var(--tik);height:var(--tik);margin-right:var(--ruimte-2);display:grid;place-items:center;border-radius:var(--r-rond)}
+.plus-een span{width:30px;height:30px;border-radius:50%;border:2.6px solid currentColor;display:grid;place-items:center;opacity:.8;transition:transform var(--duur-snel),background var(--duur-snel)}
+.plus-een svg{width:16px;height:16px}
+.plus-een:active span{transform:scale(.88)}
+.plus-een.getikt span{background:var(--blok-ink);border-color:var(--blok-ink);color:var(--c);opacity:1}
 .rij .stipje{width:14px;height:14px;border-radius:50%;margin:0 4px}
 
 .kop-knoppen{display:flex;gap:var(--ruimte-2)}
@@ -136,10 +146,9 @@ html.app-schil #scroller{position:fixed;inset:0;height:auto;overflow-x:hidden}
 .tl-kaart.snel{background:var(--blok-2);color:var(--blok-ink)}
 .tl-kaart.snel .bijregel{color:color-mix(in srgb,var(--blok-ink) 65%,transparent)}
 .teller-stip{min-width:24px;height:24px;border-radius:var(--r-rond);background:var(--merk);color:var(--blok-ink);font-size:var(--fs-s);font-weight:var(--gewicht-zwaar);display:grid;place-items:center;padding:0 7px;flex:none}
-/* Cijferpil op een rij (Syztem-pil, kleur = status) */
+/* Cijferpil op een rij (Syztem-pil): altijd de kleur van de status */
 .pil{flex:none;min-width:46px;height:30px;padding:0 var(--ruimte-3);border-radius:var(--r-rond);background:var(--tint);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;font-size:var(--fs-m);font-weight:var(--gewicht-zwaar);font-variant-numeric:tabular-nums}
 .pil.vol{background:var(--c);color:var(--blok-ink)}
-.pil.half{background:color-mix(in srgb,var(--c) 60%,var(--vlak));color:var(--blok-ink)}
 .pil.leeg{color:var(--mut)}
 /* Collectie: vier getallen twee bij twee; kleur alleen voor een status */
 .keuze .n{opacity:.6}
@@ -149,7 +158,6 @@ html.app-schil #scroller{position:fixed;inset:0;height:auto;overflow-x:hidden}
 .tegel b{display:block;font-size:30px;font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-titel);white-space:nowrap}
 .tegel b small{font-size:var(--fs-l);letter-spacing:0}
 .tegel i{display:block;font-style:normal;font-size:var(--fs-xs);font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);text-transform:uppercase;opacity:.7;margin-top:6px}
-.bijregel.gestopt{color:var(--blok-5)}  /* kleur van Gestopt */
 .muur{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ruimte-4) var(--ruimte-3);margin-top:var(--ruimte-2)}
 .muur .p{display:block;text-align:left;font-size:var(--fs-s);font-weight:var(--gewicht-vet);line-height:1.2;min-width:0}
 .muur .p .poster{width:100%;height:auto;aspect-ratio:5/7;border-radius:var(--r-l);margin-bottom:var(--ruimte-2);font-size:var(--fs-titel)}
@@ -613,13 +621,17 @@ function tekenAnime() {
     h += kopjeN(statusNaam('watching'), bezig.length);
     h += bezig.map(t => {
       const v = volgende(t), vg = voortgang(t);
-      const label = v ? [v.meer ? deelNaam(v.d, v.k) : '', `afl. ${v.n}`].filter(Boolean).join(' · ') : '';
+      const label = v && v.meer ? deelNaam(v.d, v.k) : '';
+      const uit = v ? beschikbaar(v.d) : 0, eind = (vg && vg.tot) || uit, pr = n => Math.min(100, Math.round(n / eind * 100));
+      const balk = vg && eind ? `<span class="lagen"><i class="uit" style="width:${pr(uit)}%"></i><i class="af" style="width:${pr(vg.gezien)}%"></i></span>
+        <span class="stand">${vg.gezien.toLocaleString('nl-NL')} <span>van ${eind.toLocaleString('nl-NL')}</span></span>` : '';
+      const getikt = S.netGetikt === t.id;
       return veegTitel(t, `<div class="blok kleur verder" style="--c:${stKleur('watching')}">
         <button type="button" class="verder-open" data-act="titel-open" data-id="${t.id}">
           ${posterHtml(t, 'blok-plaatje')}
-          <span class="blok-tekst">${label ? `<span class="blok-label">${esc(label)}</span>` : ''}<span class="blok-naam">${esc(t.naam)}</span>${vg && vg.tot ? `<span class="voortgang"><i style="width:${Math.min(100, Math.round(vg.gezien / vg.tot * 100))}%"></i></span>` : ''}</span>
+          <span class="blok-tekst">${label ? `<span class="blok-label">${esc(label)}</span>` : ''}<span class="blok-naam">${esc(t.naam)}</span>${balk}</span>
         </button>
-        ${v ? `<button type="button" class="plus-een" data-act="plus-een" data-id="${v.d.id}" aria-label="Aflevering ${v.n} van ${esc(t.naam)} gezien"><small>gezien</small>+1</button>` : ''}
+        ${v ? `<button type="button" class="plus-een${getikt ? ' getikt' : ''}" data-act="plus-een" data-id="${v.d.id}" aria-label="Aflevering ${v.n} van ${esc(t.naam)} gezien"><span>${ico(getikt ? 'vinkje' : 'plus')}</span></button>` : ''}
       </div>`);
     }).join('');
   }
@@ -639,39 +651,35 @@ function tekenAnime() {
   if (!h) h = `<div class="leeg"><strong>Niets om nu te kijken</strong>Wat je gezien hebt staat onder ★, wat je wilt zien onder ${ico('bladwijzer', 'width="16" height="16" style="vertical-align:-2px"')}.</div>`;
   $('#main').innerHTML = h;
 }
-/** Cijfer als pil in de kleur van de status: 9+ vol, 8 zachter, lager neutraal, geen cijfer een streepje. */
-const cijferPil = t => {
-  if (!heeftCijfer(t)) return `<span class="pil leeg">–</span>`;
-  const r = getal(t.rating), sterkte = r >= 9 ? ' vol' : r >= 8 ? ' half' : '';
-  return `<span class="pil${sterkte}" style="--c:${stKleur(statusVan(t))}">${cijferTekst(t.rating)}</span>`;
-};
-/** ★ Collectie: wat achter je ligt (Gezien en Gestopt), met een filter, vier getallen en één lijst op cijfer. */
-const COLL_FILTERS = [['alles', 'Alles'], ['gezien', 'Gezien'], ['gestopt', 'Gestopt']];
+/** Cijfer als pil in de kleur van de status (Gezien salie, Nu te kijken mosterd, Wachten lavendel, Gestopt roze); geen cijfer een grijs streepje. */
+const cijferPil = t => heeftCijfer(t)
+  ? `<span class="pil vol" style="--c:${stKleur(statusVan(t))}">${cijferTekst(t.rating)}</span>`
+  : `<span class="pil leeg">–</span>`;
+/** ★ Collectie: alles waar je aan begonnen bent (Gezien, Loopt = Nu te kijken of Wachten, Gestopt), met een filter, vier getallen en één lijst op cijfer. */
+const COLL_FILTERS = [['alles', 'Alles'], ['gezien', 'Gezien'], ['loopt', 'Loopt'], ['gestopt', 'Gestopt']];
 const aflGezien = t => delenVan(t.id).reduce((s, d) => s + getal(d.gezien), 0);
 /** Minuten gekeken: per deel de AniList-duur per aflevering, anders 24 minuten. */
 const minutenGezien = t => delenVan(t.id).reduce((s, d) => s + getal(d.gezien) * (getal((bron(d) || {}).duration) || 24), 0);
-const collBijregel = t => {
-  const n = aflGezien(t), sz = seizoenenVan(t.id).length;
-  if (isGestopt(t)) return `<span class="bijregel gestopt">Gestopt${n ? ` na ${n} afl.` : ''}</span>`;
-  return `<span class="bijregel">${sz > 1 ? `${sz} seizoenen · ` : ''}${n} afl.</span>`;
-};
 function tekenCollectie() {
   const ts = animeTitels(), gezien = ts.filter(t => statusVan(t) === 'finished'), gestopt = ts.filter(isGestopt);
-  const f = COLL_FILTERS.some(([id]) => id === S.collFilter) ? S.collFilter : 'alles';
-  const aantal = { alles: gezien.length + gestopt.length, gezien: gezien.length, gestopt: gestopt.length };
-  const lijst = (f === 'gezien' ? gezien : f === 'gestopt' ? gestopt : gezien.concat(gestopt)).slice().sort(opCijfer);
-  let h = `<div class="keuze">${COLL_FILTERS.map(([id, n]) => `<button type="button" aria-pressed="${id === f}" data-act="coll-filter" data-id="${id}">${n} <span class="n">${aantal[id]}</span></button>`).join('')}</div>`;
+  const loopt = ts.filter(t => ['watching', 'waiting'].includes(statusVan(t)));
+  const groep = { alles: gezien.concat(loopt, gestopt), gezien, loopt, gestopt };
+  const f = groep[S.collFilter] ? S.collFilter : 'alles';
+  const aantal = id => groep[id].length;
+  const lijst = groep[f].slice().sort(opCijfer);
+  let h = `<div class="keuze">${COLL_FILTERS.map(([id, n]) => `<button type="button" aria-pressed="${id === f}" data-act="coll-filter" data-id="${id}">${n} <span class="n">${aantal(id)}</span></button>`).join('')}</div>`;
   if (!lijst.length) {
     h += f === 'gestopt' ? `<div class="leeg"><strong>Nergens mee gestopt</strong>Zet een titel op Gestopt en hij staat hier.</div>`
+      : f === 'loopt' ? `<div class="leeg"><strong>Niets dat loopt</strong>Wat je aan het kijken bent of waar je op wacht, staat hier.</div>`
       : `<div class="leeg"><strong>Nog niets gezien</strong>Wat je helemaal hebt gezien en waar niets meer van komt, staat hier.</div>`;
     $('#main').innerHTML = h; return;
   }
   const metCijfer = lijst.filter(heeftCijfer), gem = metCijfer.length ? cijferTekst(metCijfer.reduce((s, t) => s + getal(t.rating), 0) / metCijfer.length) : '–';
   const afl = lijst.reduce((s, t) => s + aflGezien(t), 0), uren = Math.round(lijst.reduce((s, t) => s + minutenGezien(t), 0) / 60);
   const tegel = (b, i, c) => `<div class="tegel"${c ? ` style="--c:${c}"` : ''}><b>${b}</b><i>${i}</i></div>`;
-  const eerste = f === 'gestopt' ? tegel(gestopt.length, 'gestopt', stKleur(GESTOPT)) : tegel(gezien.length, 'gezien', stKleur('finished'));
+  const eerste = f === 'gestopt' ? tegel(gestopt.length, 'gestopt', stKleur(GESTOPT)) : f === 'loopt' ? tegel(loopt.length, 'loopt', stKleur('watching')) : tegel(gezien.length, 'gezien', stKleur('finished'));
   h += `<div class="tegels">${eerste}${tegel(gem, 'gemiddeld')}${tegel(afl.toLocaleString('nl-NL'), 'afleveringen')}${tegel(uren.toLocaleString('nl-NL') + '<small> u</small>', 'gekeken')}</div>`;
-  h += `<div class="groep">${lijst.map(t => `<button type="button" class="rij" data-act="titel-open" data-id="${t.id}">${posterHtml(t, 'mini')}<span class="rij-tekst"><span class="naam">${esc(t.naam)}</span>${collBijregel(t)}</span>${cijferPil(t)}</button>`).join('')}</div>`;
+  h += `<div class="groep">${lijst.map(t => `<button type="button" class="rij" data-act="titel-open" data-id="${t.id}">${posterHtml(t, 'mini')}<span class="naam">${esc(t.naam)}</span>${cijferPil(t)}</button>`).join('')}</div>`;
   $('#main').innerHTML = h;
 }
 /** 🔖 Wil ik zien: postermuur, laatst toegevoegd eerst. */
@@ -1257,6 +1265,9 @@ const ACTIES = {
     const d = D().delen.find(x => x.id === id), t = titel(d.titelId), oud = getal(d.gezien), n = Math.min(beschikbaar(d), oud + 1);
     if (n === oud) return;
     const status = statusVan(t);
+    // Even een gevuld rondje met vinkje, dan weer de plus
+    S.netGetikt = t.id; clearTimeout(S.getiktKlok);
+    S.getiktKlok = setTimeout(() => { S.netGetikt = null; teken(); }, 900);
     bewaarDelen(d.titelId, [{ id, gezien: n }]);
     if (statusVan(titel(d.titelId)) === status) melding(`Afl. ${n} gezien.`, 'Ongedaan maken', () => bewaarDelen(d.titelId, [{ id, gezien: oud }]));
   },
