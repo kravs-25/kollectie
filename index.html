@@ -419,7 +419,7 @@ function tekenSkelet() { $('#main').innerHTML = '<div class="skelet"></div>'.rep
 function laad() {
   if (!S.data) { const l = leesLokaal(); if (l) { S.data = l; wissel(S.tab); } else tekenSkelet(); }
   LOKET('getState')
-    .then(s => { const eerste = !S.data; S.data = s; onthoudLokaal(s); if (eerste) wissel(S.tab); else if (!bezig) teken(); zetStatusOm(); haalBron(); })
+    .then(s => { const eerste = !S.data, anders = !eerste && JSON.stringify(s) !== JSON.stringify(S.data); S.data = s; onthoudLokaal(s); if (eerste) wissel(S.tab); else if (!bezig && anders) teken(); zetStatusOm(); haalBron(); })
     .catch(e => { if (!S.data) $('#main').innerHTML = `<div class="leeg"><strong>Laden lukte niet</strong>${esc(e.message)}. Herlaad de pagina.</div>`; });
 }
 function bel(fn, ...args) {
@@ -431,7 +431,11 @@ function bel(fn, ...args) {
 function peil() {
   if (!S.data || bezig || document.visibilityState !== 'visible' || !window.API_MODUS) return;
   const t = teller;
-  LOKET('getState').then(s => { if (!bezig && t === teller) { S.data = s; onthoudLokaal(s); teken(); } }).catch(() => {});
+  // Alleen opnieuw tekenen als er echt iets veranderd is; anders knipperen de posters elke 15 seconden.
+  LOKET('getState').then(s => {
+    if (bezig || t !== teller || JSON.stringify(s) === JSON.stringify(S.data)) return;
+    S.data = s; onthoudLokaal(s); teken();
+  }).catch(() => {});
 }
 setInterval(peil, 15000);
 document.addEventListener('visibilitychange', peil);
