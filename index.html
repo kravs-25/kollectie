@@ -22,6 +22,9 @@
 /* ================= Kollectie: onderdelen die alleen deze app heeft =================
    Alleen tokens uit basis.css en thema.css; geen losse kleuren of maten. */
 .kop-wrap{padding-top:var(--ruimte-3)}
+/* Toevoegen: rond plusje, zelfde maat en hoogte als in Kravschappen (54 groot, 12 boven de veilige zone) */
+.actieknop{bottom:calc(var(--ruimte-3) + env(safe-area-inset-bottom,0px));width:var(--h-m);height:var(--h-m);padding:0;justify-content:center}
+.actieknop svg{width:var(--icoon-l);height:var(--icoon-l)}
 /* Onderkant viel weg op iOS (zelfde fix als Kravschappen): als web-app op het beginscherm
    rekent iOS de statusbalk soms niet mee in de schermhoogte, dus de scroller hield te vroeg op.
    Daarom is de pagina schermhoog plus de statusbalk en ligt de scroller vast over het hele scherm,
@@ -189,7 +192,7 @@ html.app-schil #scroller{position:fixed;inset:0;height:auto;overflow-x:hidden}
   <main id="main"></main>
 </div></div>
 
-<button type="button" class="actieknop" id="actieknop" data-act="toevoeg-open" hidden><svg data-icoon="plus" aria-hidden="true"></svg>Anime toevoegen</button>
+<button type="button" class="actieknop" id="actieknop" data-act="toevoeg-open" aria-label="Anime toevoegen" hidden><svg data-icoon="plus" aria-hidden="true"></svg></button>
 
 <div id="venster" class="venster-wrap" hidden>
   <div class="venster-bg" data-act="sluit"></div>
@@ -597,6 +600,7 @@ function tekenAnime() {
   if (S.lijst && LIJSTEN[S.lijst]) {
     const l = LIJSTEN[S.lijst];
     zetKop(l.naam, lijstNaam(l.ouder));
+    $('#actieknop').hidden = S.lijst !== 'towatch';   // ook toevoegen vanaf Wil ik zien
     $('#headerextra').innerHTML = '';
     return l.teken();
   }
