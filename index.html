@@ -100,7 +100,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzvZqn5IrCF5pv_YFCuuGQk
    Zoeken op AniList werkt ook in de preview. */
 (function () {
   if (window.LOKET) return;
-  const KEY = 'kollectie-preview-v1';
+  const KEY = 'kollectie-preview-v2';
   const CDN = 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/';
   function demo() {
     const nu = Date.now(), dag = 864e5;
@@ -139,6 +139,17 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzvZqn5IrCF5pv_YFCuuGQk
       deel('t6', 'seizoen', '', 140960, 'TV', 2022, 12, 5),
       deel('t7', 'seizoen', '', 20605, 'TV', 2014, 12, 12)
     ];
+    const W = 'https://upload.wikimedia.org/wikipedia/en/';
+    const G = [ // id, naam, plaatje, afloop, cijfer, platform, jaar, notitie
+      ['g1', 'Astro Bot', W + 'a/a9/Astro_Bot_cover_art.jpg', 'finished', 9.2, 'PlayStation', 2024, 'Elke wereld een nieuw idee. Pure vreugde.'],
+      ['g2', 'Elden Ring', W + 'b/b9/Elden_Ring_Box_art.jpg', 'finished', 9, 'PlayStation', 2022, ''],
+      ['g3', 'It Takes Two', W + 'a/aa/It_Takes_Two_cover_art.png', 'finished', 8, 'PlayStation', 2021, 'Samen gespeeld.'],
+      ['g4', 'The Legend of Zelda: Tears of the Kingdom', W + 'f/fb/The_Legend_of_Zelda_Tears_of_the_Kingdom_cover.jpg', 'finished', 9.5, 'Switch', 2023, ''],
+      ['g5', 'Hades', W + 'c/cc/Hades_cover_art.jpg', 'finished', 8.5, 'Switch', 2020, ''],
+      ['g6', 'Hollow Knight', W + 'd/de/Hollow_Knight_2026_cover_art.jpg', 'dropped', 7, 'Switch', 2017, 'Mooi, maar te moeilijk voor mij.'],
+      ['g7', 'Starfield', 'https://upload.wikimedia.org/wikipedia/commons/f/fb/Starfield_-_game_cover.png', 'dropped', '', 'Pc', 2023, '']
+    ];
+    G.forEach(([id, naam, plaatje, status, rating, platform, jaar, notitie], k) => titels.push({ id, soort: 'game', naam, plaatje, status, rating, platform, jaar, notitie, bronId: '', toegevoegd: nu - k * dag, gewijzigd: nu - k * dag }));
     return { titels, delen, instellingen: [{ id: 'taal', waarde: 'engels' }] };
   }
   let db = null;
@@ -185,6 +196,7 @@ const ICONEN = {
   'pijl-onder': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
   'vinkje': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   'kruis': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  'controller': '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><path d="M7.2 5.5h9.6a5 5 0 0 1 4.9 4.1l1 5.6a3.3 3.3 0 0 1-5.8 2.7l-1.4-1.6H8.5l-1.4 1.6a3.3 3.3 0 0 1-5.8-2.7l1-5.6a5 5 0 0 1 4.9-4.1zM6.6 9v1.7H4.9v2.2h1.7v1.7h2.2v-1.7h1.7v-2.2H8.8V9zm9.9.2a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6zm-1.9 2.6a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6zm3.8 0a1.3 1.3 0 1 0 0 2.6 1.3 1.3 0 0 0 0-2.6z"/></svg>',
   'bladwijzer': '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2.5h10a2 2 0 0 1 2 2V21l-7-4.2L5 21V4.5a2 2 0 0 1 2-2z"/></svg>',
   'vonk': '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/><circle cx="19" cy="19" r="2.2"/></svg>',
   'ontkoppel': '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><path d="M12 2.5a9.5 9.5 0 1 1 0 19 9.5 9.5 0 0 1 0-19zM7.4 10.7a1.3 1.3 0 0 0 0 2.6h9.2a1.3 1.3 0 0 0 0-2.6z"/></svg>',
@@ -311,6 +323,7 @@ const GESTOPT = 'dropped';
 const isGestopt = t => t.status === GESTOPT;
 function statusVan(t) {
   if (isGestopt(t)) return GESTOPT;
+  if (t.soort === 'game') return 'finished';   // een game is altijd afgerond: Uitgespeeld of Gestopt
   const alle = delenVan(t.id), sz = seizoenenVan(t.id);
   if (!alle.some(d => getal(d.gezien) > 0)) return 'towatch';
   if ((sz.length ? sz : alle).some(d => getal(d.gezien) < beschikbaar(d))) return 'watching';
@@ -350,13 +363,14 @@ const stKleur = id => `var(--status-${STATUSSEN.some(s => s.id === id) ? id : 't
 /* ---------- Weergaven ---------- */
 const VIEWS = {
   anime: { titel: 'Anime', teken: tekenAnime },
+  games: { titel: 'Games', teken: tekenGames, titels: false },
   instellingen: { titel: 'Instellingen', teken: tekenInst }
 };
 /** Het schermmenu onder de titel (titel-schakelaar). */
 function zetMenu(tab) {
-  const n = D() ? D().titels.filter(t => t.soort === 'anime').length : '';
+  const n = D() ? D().titels.filter(t => t.soort === 'anime').length : '', ng = D() ? D().titels.filter(t => t.soort === 'game').length : '';
   const knop = (id, icoon, naam, aantal) => `<button type="button" role="menuitem" data-act="tab" data-tab="${id}"${tab === id ? ' aria-current="page"' : ''}>${ico(icoon)}${naam}<span class="n">${aantal}</span></button>`;
-  $('#schermmenu').innerHTML = knop('anime', 'tv', 'Anime', n) + '<hr>' + knop('instellingen', 'schuifjes', 'Instellingen', '');
+  $('#schermmenu').innerHTML = knop('anime', 'tv', 'Anime', n) + knop('games', 'controller', 'Games', ng) + '<hr>' + knop('instellingen', 'schuifjes', 'Instellingen', '');
 }
 function wissel(tab) {
   S.tab = tab;
@@ -450,10 +464,11 @@ function tekenAnime() {
     const l = LIJSTEN[S.lijst];
     zetKop(l.naam, lijstNaam(l.ouder));
     $('#actieknop').hidden = S.lijst !== 'towatch';   // ook toevoegen vanaf Wil ik zien
+    $('#actieknop').setAttribute('aria-label', 'Anime toevoegen');
     return l.teken();
   }
   zetKop('Anime');
-  $('#actieknop').hidden = false;
+  $('#actieknop').hidden = false; $('#actieknop').setAttribute('aria-label', 'Anime toevoegen');
   $('#topextra').innerHTML = `<button type="button" class="round" data-act="lijst-open" data-id="collectie" aria-label="Collectie: gezien en gestopt">${ico('ster')}</button>
     <button type="button" class="round" data-act="lijst-open" data-id="towatch" aria-label="Wil ik zien">${ico('bladwijzer')}</button>`;
   const ts = animeTitels();
@@ -631,6 +646,191 @@ async function ververs(t) {
     bewaarDelen(t.id, w);
   } catch (e) { /* stil: probeer het de volgende keer opnieuw */ }
   S.ververs = null;
+}
+
+/* ---------- Games: logboek van afgeronde spellen ----------
+   Een game komt erin als je klaar bent: Uitgespeeld of Gestopt. Geen Wil ik spelen, geen voortgang.
+   Per platform (kopje), op cijfer. Zoeken via Wikipedia: geen account of sleutel nodig. */
+const PLATFORMEN = ['PlayStation', 'Switch', 'Xbox', 'Pc', 'Mobiel'];
+const AFLOPEN = [['finished', 'Uitgespeeld'], [GESTOPT, 'Gestopt']];
+const afloopNaam = id => (AFLOPEN.find(a => a[0] === id) || AFLOPEN[0])[1];
+const GAME_FILTERS = [['alles', 'Alles']].concat(AFLOPEN);
+const gameTitels = () => D().titels.filter(t => t.soort === 'game');
+/* Filter rechtsboven (Syztem K4): welke platforms (leeg = alle) en of de lijst per platform gegroepeerd is. Bewaard in Instellingen. */
+const gameInst = id => ((D().instellingen || []).find(x => x.id === id) || {}).waarde || '';
+const allePlatforms = () => PLATFORMEN.concat([...new Set(gameTitels().map(t => t.platform).filter(p => p && !PLATFORMEN.includes(p)))].sort());
+const gamePlatforms = () => gameInst('games-platforms').split(',').filter(p => p && allePlatforms().includes(p));
+const gameGroeperen = () => gameInst('games-groeperen') !== 'uit';
+const tekstMetRegels = s => esc(s).replace(/\n/g, '<br>');
+/** Keuzepil (Syztem O1) in een venster; zetGekozen wisselt de keuze zonder het venster opnieuw te tekenen. */
+const kiesPil = (act, opties, waarde, label) => `<div class="keuzepil in-venster" role="group" aria-label="${esc(label)}">${opties.map(([id, n]) => `<button type="button"${id === waarde ? ' class="gekozen"' : ''} aria-pressed="${id === waarde}" data-act="${act}" data-id="${esc(id)}">${esc(n)}</button>`).join('')}</div>`;
+const zetGekozen = b => [...b.parentNode.children].forEach(x => { x.classList.toggle('gekozen', x === b); x.setAttribute('aria-pressed', x === b); });
+function tekenGames() {
+  if (S.titelOpen) return tekenGame();
+  zetKop('Games');
+  $('#actieknop').hidden = false; $('#actieknop').setAttribute('aria-label', 'Game toevoegen');
+  const alle = gameTitels();
+  if (!alle.length) { $('#main').innerHTML = `<div class="empty"><strong>Nog geen games</strong>Tik onderin op + om een game toe te voegen die je hebt uitgespeeld of waarmee je bent gestopt.</div>`; return; }
+  const pf = gamePlatforms(), groeperen = gameGroeperen(), filterAan = pf.length > 0 || !groeperen;
+  $('#topextra').innerHTML = `<button type="button" class="round${filterAan ? ' aan' : ''}" data-act="game-filters" aria-label="Platforms en groeperen${filterAan ? ', filter staat aan' : ''}">${ico('schuifjes')}</button>`;
+  const ts = alle.filter(t => !pf.length || pf.includes(t.platform));
+  if (!ts.length) { $('#main').innerHTML = `<div class="empty"><strong>Geen games op ${pf.length === 1 ? esc(pf[0]) : 'deze platforms'}</strong>Kies rechtsboven andere platforms.<button type="button" class="btn" data-act="game-filter-wis">Alle platforms</button></div>`; return; }
+  const groep = { alles: ts, finished: ts.filter(t => !isGestopt(t)), [GESTOPT]: ts.filter(isGestopt) };
+  const f = groep[S.gameFilter] ? S.gameFilter : 'alles';
+  $('#headerextra').innerHTML = `<div class="keuzepil" role="group" aria-label="Filter">${GAME_FILTERS.map(([id, n]) => `<button type="button"${id === f ? ' class="gekozen"' : ''} aria-pressed="${id === f}" data-act="game-filter" data-id="${id}">${n} <span class="n${groep[id].length ? '' : ' leeg'}">${groep[id].length}</span></button>`).join('')}</div>`;
+  const lijst = groep[f];
+  if (!lijst.length) {
+    $('#main').innerHTML = f === GESTOPT ? `<div class="empty"><strong>Nergens mee gestopt</strong>Games waarmee je bent gestopt staan hier.</div>`
+      : `<div class="empty"><strong>Nog niets uitgespeeld</strong>Games die je hebt uitgespeeld staan hier.</div>`;
+    return;
+  }
+  const metCijfer = lijst.filter(heeftCijfer), gem = metCijfer.length ? cijferTekst(metCijfer.reduce((s, t) => s + getal(t.rating), 0) / metCijfer.length) : '–';
+  const kern = (b, i, c) => `<div><b>${b}</b><i>${c ? `<span class="bol" style="--c:${c}"></span>` : ''}${i}</i></div>`;
+  const eerste = f === 'alles' ? kern(lijst.length, 'games') : kern(lijst.length, afloopNaam(f).toLowerCase(), stKleur(f));
+  let h = `<div class="getallen">${eerste}${kern(gem, 'gemiddeld')}</div>`;
+  const rij = t => veegTitel(t, `<div class="check met-poster" data-act="titel-open" data-id="${t.id}">${posterHtml(t)}${rijTekst(t.naam, [f === 'alles' && isGestopt(t) ? 'Gestopt' : '', groeperen ? '' : t.platform].filter(Boolean).join(' · '))}${cijferChip(t)}</div>`);
+  if (!groeperen) { $('#main').innerHTML = h + `<h3 class="cat">Op cijfer</h3><div class="items">${lijst.slice().sort(opCijfer).map(rij).join('')}</div>`; return; }
+  // Kopjes per platform in vaste volgorde; een platform van buiten de lijst daarachter, zonder platform als laatste
+  const eigen = [...new Set(lijst.map(t => t.platform || ''))];
+  const volgorde = PLATFORMEN.filter(p => eigen.includes(p)).concat(eigen.filter(p => p && !PLATFORMEN.includes(p)).sort(), eigen.includes('') ? [''] : []);
+  volgorde.forEach(p => {
+    h += `<h3 class="cat">${esc(p || 'Zonder platform')}</h3><div class="items">${lijst.filter(t => (t.platform || '') === p).sort(opCijfer).map(rij).join('')}</div>`;
+  });
+  $('#main').innerHTML = h;
+}
+/** Filtervenster: groeperen aan/uit (Syztem A4) en platforms aanvinken met het tikrondje (Syztem A, zoals bij de reeks). Elke tik slaat meteen op. */
+function tekenGameFilters() {
+  const pf = gamePlatforms();
+  const html = `<h4>Filter</h4>
+    <label class="schakel"><span>Per platform groeperen</span><input type="checkbox" id="gf-groep"${gameGroeperen() ? ' checked' : ''}></label>
+    <h3 class="cat">Platforms</h3>
+    <div class="items">${allePlatforms().map(p => { const aan = pf.includes(p);
+      return `<button type="button" class="item${aan ? ' on' : ''}" data-act="game-pf" data-id="${esc(p)}" aria-pressed="${aan}"><span class="check"><span class="vinkknop">${PLUS_RONDJE()}</span><span class="pname">${esc(p)}</span></span></button>`; }).join('')}</div>
+    <p class="note">${pf.length ? `${pf.length} van ${allePlatforms().length} platforms aangevinkt.` : 'Niets aangevinkt: je ziet alle platforms.'}</p>`;
+  if ($('#venster').hidden) openSheet(html); else $('#venster-inhoud').innerHTML = html;
+}
+/** Detailpagina van een game: poster, afloop, cijfer, platform en wat je ervan vond. */
+function tekenGame() {
+  const t = titel(S.titelOpen), st = statusVan(t);
+  zetKop(t.naam, 'Games');
+  const meta = [t.platform, t.jaar].filter(Boolean).join(' · ');
+  let h = `<div class="titel-met-lead met-poster" style="--c:${stKleur(st)}"><button type="button" class="poster-knop" data-act="game-plaatje" data-id="${t.id}" aria-label="Plaatje kiezen">${posterHtml(t, 'groot')}</button>
+    <div><span class="chip">${afloopNaam(st)}</span>${meta ? `<span class="pmeta">${esc(meta)}</span>` : ''}</div></div>`;
+  h += `<div class="group">
+    <button type="button" class="item" data-act="rating-open" data-id="${t.id}"><span class="check zonder-voor"><span class="pname">Jouw cijfer</span>${cijferChip(t)}<span class="chevr"></span></span></button>
+    <button type="button" class="item" data-act="game-platform" data-id="${t.id}"><span class="check zonder-voor"><span class="pname">Platform</span><span class="getal">${esc(t.platform || '–')}</span><span class="chevr"></span></span></button>
+  </div>`;
+  h += `<h3 class="cat">Wat vond ik ervan</h3><div class="items">${t.notitie
+    ? `<button type="button" class="item" data-act="game-notitie" data-id="${t.id}"><span class="check zonder-voor tekst"><span class="rij-tekst">${tekstMetRegels(t.notitie)}</span></span></button>`
+    : actieRij('game-notitie', t.id, 'Notitie schrijven')}</div>`;
+  h += `<div class="group">
+    ${navRij('titel-naam', 'potlood', 'Naam wijzigen', t.id)}
+    ${navRij('game-plaatje', 'plaatje', 'Plaatje kiezen', t.id)}
+    ${isGestopt(t) ? navRij('game-afloop', 'vinkje', 'Toch uitgespeeld', t.id, false, stKleur('finished')) : navRij('game-afloop', 'ontkoppel', 'Zet op Gestopt', t.id, false, stKleur(GESTOPT))}
+    ${actieRij('titel-weg', t.id, 'Verwijder', true)}
+  </div>`;
+  $('#main').innerHTML = h;
+}
+/* Wikipedia (Engels): zoeken met covers, zonder account. Alleen pagina's die een game zijn, geen series of personages. */
+const WIKI = 'https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=15&prop=pageimages|description&piprop=thumbnail&pithumbsize=400&pilicense=any&gsrsearch=';
+const IS_GAME = /\bgame\b/i, GEEN_GAME = /series|franchise|developer|publisher|company|award|character|music|soundtrack|community|list|film|engine|console/i;
+async function zoekWikipedia(q) {
+  const r = await fetch(WIKI + encodeURIComponent(q + ' video game'));
+  if (!r.ok) throw new Error('Wikipedia ' + r.status);
+  const d = await r.json();
+  return Object.values((d.query || {}).pages || {}).sort((a, b) => a.index - b.index)
+    .filter(p => IS_GAME.test(p.description || '') && !GEEN_GAME.test(p.description || ''))
+    .map(p => ({ bronId: p.pageid, naam: p.title.replace(/\s*\((?:\d{4} )?video game\)$/i, ''), plaatje: ((p.thumbnail || {}).source || '').split('?')[0],
+      jaar: ((p.description || '').match(/\b(19|20)\d{2}\b/) || [''])[0], uitbreiding: /expansion/i.test(p.description || '') }));
+}
+const gameMetBron = id => gameTitels().find(t => String(t.bronId) === String(id));
+const gameZelfRij = (rijen = '') => `<div class="items">${rijen}${actieRij('game-zelf', '', 'Zelf toevoegen')}</div>`;
+function openGameZoeken() {
+  S.gameQ = '';
+  openSheet(`<h4>Game toevoegen</h4>
+    <input class="field" type="search" id="gm-zoek" placeholder="Zoek op Wikipedia" autocomplete="off" enterkeyhint="search" aria-label="Zoek op Wikipedia">
+    <div id="ac" class="scroll-lijst">${gameZelfRij()}</div>`, true);
+}
+let gameTimer;
+function zoekGameInvoer(q) {
+  clearTimeout(gameTimer);
+  S.gameQ = q.trim();
+  if (!S.gameQ) { $('#ac').innerHTML = gameZelfRij(); return; }
+  gameTimer = setTimeout(async () => {
+    const vraag = S.gameQ;
+    $('#ac').innerHTML = `<p class="note">Zoeken…</p>`;
+    try {
+      const r = await zoekWikipedia(vraag);
+      if (vraag !== S.gameQ || !$('#ac')) return;
+      S.gameResultaten = r;
+      $('#ac').innerHTML = (r.length ? '' : `<p class="note">Niets gevonden voor “${esc(vraag)}”.</p>`) + gameZelfRij(r.map(x => {
+        const al = gameMetBron(x.bronId);
+        return `<button type="button" class="item" data-act="game-kies" data-id="${x.bronId}"><span class="check met-poster">${posterHtml(x)}${rijTekst(x.naam, [x.jaar, x.uitbreiding ? 'uitbreiding' : ''].filter(Boolean).join(' · '))}
+          ${al ? `<span class="chip" style="--c:${stKleur(statusVan(al))}">${esc(afloopNaam(statusVan(al)))}</span>` : ''}</span></button>`;
+      }).join(''));
+    } catch (e) {
+      if (vraag === S.gameQ && $('#ac')) $('#ac').innerHTML = `<p class="note">Wikipedia is even niet bereikbaar.</p>` + gameZelfRij();
+    }
+  }, 350);
+}
+/** Cijfer kiezen (Syztem N): hele cijfers en een decimaal, net als bij anime. */
+function cijferRijen(r, act) {
+  const heel = r === '' || r == null ? null : Math.floor(Number(r) + 1e-9), dec = heel == null ? null : Math.round((Number(r) - heel) * 10);
+  const knop = (aan, a, n, tekst, uit) => `<button type="button"${aan ? ' class="gekozen"' : ''} aria-pressed="${aan}" data-act="${a}" data-id="${n}"${uit ? ' disabled' : ''}>${tekst}</button>`;
+  return `<div class="nummers vijf">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => knop(heel === n, act + '-heel', n, n)).join('')}</div>
+    <div class="nummers vijf">${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => knop(dec === n, act + '-dec', n, ',' + n, heel == null || heel === 10)).join('')}</div>`;
+}
+const nieuwCijfer = (oud, soort, n) => {
+  const r = getal(oud), heel = Math.floor(r + 1e-9);
+  if (soort === 'dec') return heel + n / 10;
+  return n === 10 ? 10 : n + (oud === '' || oud == null ? 0 : Math.round((r - heel) * 10)) / 10;
+};
+/** Afronden: in één venster de afloop, het platform, je cijfer en wat je ervan vond. x leeg = zelf toevoegen. */
+function openGameAfronden(x) {
+  const zelf = !x;
+  S.nieuwGame = Object.assign({ naam: '', plaatje: '', bronId: '', jaar: '', status: 'finished', platform: '', rating: '' }, x || {});
+  const g = S.nieuwGame;
+  $('#venster .sheet').classList.remove('vast');
+  $('#venster-inhoud').innerHTML = `<h4>${zelf ? 'Zelf toevoegen' : esc(g.naam)}</h4>
+    ${zelf ? `<label class="lbl"><span>Naam</span><input class="field" id="ga-naam" value="${esc(S.gameQ || '')}" autocomplete="off"></label>
+      <label class="lbl"><span>Plaatje (link, mag leeg)</span><input class="field" id="ga-plaatje" type="url" autocomplete="off" placeholder="https://"></label>` : ''}
+    <div class="lbl"><span>Afloop</span>${kiesPil('ga-afloop', AFLOPEN, g.status, 'Afloop')}</div>
+    <div class="lbl"><span>Platform</span>${kiesPil('ga-platform', PLATFORMEN.map(p => [p, p]), g.platform, 'Platform')}</div>
+    <div class="lbl"><span>Jouw cijfer</span><div id="ga-cijfer">${cijferRijen(g.rating, 'ga')}</div></div>
+    <label class="lbl"><span>Wat vond ik ervan (mag leeg)</span><textarea class="field" id="ga-notitie" rows="3"></textarea></label>
+    <div class="acts"><button type="button" class="btn wide" data-act="game-bewaar">Toevoegen</button></div>`;
+  $('#venster .sheet').scrollTop = 0;
+  if (zelf) $('#ga-naam').focus();
+}
+function bewaarGame() {
+  const g = S.nieuwGame;
+  if ($('#ga-naam')) { g.naam = $('#ga-naam').value.trim(); g.plaatje = $('#ga-plaatje').value.trim(); }
+  if (!g.naam) return melding('Vul een naam in.');
+  if (!g.platform) return melding('Kies een platform.');
+  const t = { id: 't' + nieuwId(), soort: 'game', naam: g.naam, plaatje: g.plaatje, status: g.status, rating: g.rating, platform: g.platform,
+    notitie: $('#ga-notitie').value.trim(), bronId: g.bronId, jaar: g.jaar, toegevoegd: Date.now(), gewijzigd: Date.now() };
+  sluitSheet();
+  S.titelOpen = t.id; S.swipeOpen = null;
+  bewaar('titels', [t]);
+  $('#scroller').scrollTop = 0;
+  melding(`${t.naam} toegevoegd.`);
+}
+/** Plaatje kiezen: de covers die Wikipedia bij deze naam vindt, of een eigen link. */
+async function openGamePlaatjes(id) {
+  const t = titel(id);
+  S.plaatjeVoor = id;
+  openSheet(`<h4>Plaatje kiezen</h4>
+    <div class="posters" id="plaatjes">${'<span class="skelet"></span>'.repeat(3)}</div>
+    <div class="group">${navRij('plaatje-link', 'plaatje', 'Eigen link plakken', id)}</div>`);
+  try {
+    const r = (await zoekWikipedia(t.naam)).filter(x => x.plaatje);
+    if (S.plaatjeVoor !== id || !$('#plaatjes')) return;
+    if (!r.length) { $('#plaatjes').outerHTML = '<p class="note">Geen covers gevonden op Wikipedia.</p>'; return; }
+    $('#plaatjes').innerHTML = r.slice(0, 9).map(x => `<button type="button" class="p${x.plaatje === t.plaatje ? ' gekozen' : ''}" data-act="plaatje-zet" data-url="${esc(x.plaatje)}" aria-pressed="${x.plaatje === t.plaatje}" aria-label="Cover van ${esc(x.naam)}">
+      <img class="poster" src="${esc(x.plaatje)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="p-naam">${esc(x.naam)}</span><span class="gekozen-vink">${ico('vinkje')}</span></button>`).join('');
+  } catch (e) {
+    if ($('#plaatjes')) $('#plaatjes').outerHTML = '<p class="note">Wikipedia is even niet bereikbaar. Probeer het zo opnieuw.</p>';
+  }
 }
 
 /* ---------- Instellingen ---------- */
@@ -1107,7 +1307,7 @@ const ACTIES = {
     if (statusVan(titel(d.titelId)) === status) melding(`Afl. ${n} gezien.`, 'Ongedaan maken', () => bewaarDelen(d.titelId, [{ id, gezien: oud }]));
   },
   sluit: sluitSheet,
-  'toevoeg-open': () => openZoeken(),
+  'toevoeg-open': () => S.tab === 'games' ? openGameZoeken() : openZoeken(),
   'titel-open': (b, id) => { S.titelOpen = id; S.swipeOpen = null; teken(); $('#scroller').scrollTop = 0; },
   'vondst-toevoeg': (b, id) => voegVondstToe(Number(id)),
   'vondst-negeer': (b, id) => negeerVondst(Number(id)),
@@ -1118,7 +1318,7 @@ const ACTIES = {
   'plaatje-link': async (b, id) => { const t = titel(id); const n = await vraagTekst('Link naar plaatje', t.plaatje, 'https://'); if (n === null) return; sluitSheet(); bewaar('titels', [{ id, plaatje: n }]); },
   'titel-weg': async (b, id) => {
     sluitVeeg(); const t = titel(id);
-    if (!(await bevestig(`${t.naam} verwijderen? Ook alles wat je hebt afgevinkt is dan weg.`))) return;
+    if (!(await bevestig(t.soort === 'game' ? `${t.naam} verwijderen?` : `${t.naam} verwijderen? Ook alles wat je hebt afgevinkt is dan weg.`))) return;
     const ids = delenVan(id).map(d => d.id);
     S.titelOpen = null;
     bel('verwijder', 'delen', ids); D().delen = D().delen.filter(d => !ids.includes(d.id));
@@ -1180,7 +1380,38 @@ const ACTIES = {
   'zelf-open': openZelf,
   'zelf-bewaar': bewaarZelf,
   'zf-soort': (b, id) => { S.zelfSoort = id; $$('#zf-soort button').forEach(x => { x.classList.toggle('gekozen', x === b); x.setAttribute('aria-pressed', x === b); }); },
-  taal: (b, id) => bewaar('instellingen', [{ id: 'taal', waarde: id }])
+  taal: (b, id) => bewaar('instellingen', [{ id: 'taal', waarde: id }]),
+  // Games
+  'game-filter': (b, id) => { S.gameFilter = id; teken(); },
+  'game-kies': (b, id) => {
+    const al = gameMetBron(id);
+    if (al) { sluitSheet(); S.titelOpen = al.id; teken(); return melding('Staat al in je lijst.'); }
+    openGameAfronden((S.gameResultaten || []).find(x => String(x.bronId) === id));
+  },
+  'game-zelf': () => openGameAfronden(null),
+  'ga-afloop': (b, id) => { S.nieuwGame.status = id; zetGekozen(b); },
+  'ga-platform': (b, id) => { S.nieuwGame.platform = id; zetGekozen(b); },
+  'ga-heel': (b, n) => { S.nieuwGame.rating = nieuwCijfer(S.nieuwGame.rating, 'heel', Number(n)); $('#ga-cijfer').innerHTML = cijferRijen(S.nieuwGame.rating, 'ga'); },
+  'ga-dec': (b, n) => { S.nieuwGame.rating = nieuwCijfer(S.nieuwGame.rating, 'dec', Number(n)); $('#ga-cijfer').innerHTML = cijferRijen(S.nieuwGame.rating, 'ga'); },
+  'game-bewaar': bewaarGame,
+  'game-filters': () => tekenGameFilters(),
+  'game-pf': (b, p) => {
+    const pf = gamePlatforms(), nieuw = pf.includes(p) ? pf.filter(x => x !== p) : pf.concat(p);
+    bewaar('instellingen', [{ id: 'games-platforms', waarde: allePlatforms().filter(x => nieuw.includes(x)).join(',') }]);
+    tekenGameFilters();
+  },
+  'game-filter-wis': () => bewaar('instellingen', [{ id: 'games-platforms', waarde: '' }]),
+  'game-plaatje': (b, id) => openGamePlaatjes(id),
+  'game-platform': (b, id) => { S.gameVoor = id; openSheet(`<h4>Platform</h4>${kiesPil('game-platform-zet', PLATFORMEN.map(p => [p, p]), titel(id).platform, 'Platform')}`); },
+  'game-platform-zet': (b, p) => { const id = S.gameVoor; sluitSheet(); bewaar('titels', [{ id, platform: p, gewijzigd: Date.now() }]); },
+  'game-notitie': (b, id) => { S.gameVoor = id; openSheet(`<h4>Wat vond ik ervan</h4><textarea class="field" id="gn-tekst" rows="6">${esc(titel(id).notitie)}</textarea>
+    <div class="acts"><button type="button" class="btn wide" data-act="game-notitie-bewaar">Opslaan</button></div>`); $('#gn-tekst').focus(); },
+  'game-notitie-bewaar': () => { const id = S.gameVoor, tekst = $('#gn-tekst').value.trim(); sluitSheet(); bewaar('titels', [{ id, notitie: tekst, gewijzigd: Date.now() }]); },
+  'game-afloop': (b, id) => {
+    const t = titel(id), was = isGestopt(t);
+    bewaar('titels', [{ id, status: was ? 'finished' : GESTOPT, gewijzigd: Date.now() }]);
+    melding(was ? `${t.naam} op Uitgespeeld gezet.` : `${t.naam} op Gestopt gezet.`, 'Ongedaan maken', () => bewaar('titels', [{ id, status: was ? GESTOPT : 'finished' }]));
+  }
 };
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]');
@@ -1188,15 +1419,16 @@ document.addEventListener('click', e => {
   const f = ACTIES[b.dataset.act];
   if (f) { e.preventDefault(); f(b, b.dataset.id); }
 });
-document.addEventListener('input', e => { if (e.target.id === 'al-zoek') zoekInvoer(e.target.value); });
+document.addEventListener('input', e => { if (e.target.id === 'al-zoek') zoekInvoer(e.target.value); if (e.target.id === 'gm-zoek') zoekGameInvoer(e.target.value); });
 document.addEventListener('change', e => {
   const id = e.target.dataset && e.target.dataset.aflInvoer;
   if (!id) return;
   const d = D().delen.find(x => x.id === id);
   bewaarDelen(d.titelId, [{ id, gezien: Math.min(beschikbaar(d), Math.max(0, Math.round(getal(e.target.value)))) }]);
 });
+document.addEventListener('change', e => { if (e.target.id === 'gf-groep') bewaar('instellingen', [{ id: 'games-groeperen', waarde: e.target.checked ? 'aan' : 'uit' }]); });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && e.target.id === 'al-zoek') { e.preventDefault(); e.target.blur(); }
+  if (e.key === 'Enter' && (e.target.id === 'al-zoek' || e.target.id === 'gm-zoek')) { e.preventDefault(); e.target.blur(); }
   if (e.key === 'Enter' && e.target.dataset && e.target.dataset.aflInvoer) e.target.blur();
   if (e.key === 'Escape' && !$('#venster').hidden) sluitSheet();
 });
