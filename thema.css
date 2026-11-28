@@ -1,15 +1,14 @@
 /* =====================================================================
-   Kage Syztem · thema Kollectie · voor basis 0.2
-   Kleur betekent: de status van een titel.
+   Kage Syztem · thema Kollectie · voor 1.2
+   Kleur betekent: de status van een titel. Zoals in Kravschappen is kleur
+   een accent: de statuschip, de voortgangsbalk, het rondje vooraan en het
+   gekozen segment in de keuzepil. Blokken zelf zijn neutraal.
    ===================================================================== */
 [data-thema="kollectie"]{
-  --blok-1:var(--mosterd);    /* Watching: bezig, valt op */
-  --blok-2:var(--lavendel);   /* Waiting: in de wacht */
-  --blok-3:var(--salie);      /* Finished: klaar */
-  --blok-4:var(--zeegroen);   /* To watch: nog te doen */
-  --blok-5:var(--roze);       /* Dropped: gestopt */
-  --blok-6:var(--terracotta); /* vrij */
-  --blok-7:var(--zand);       /* vrij */
-  --blok-8:var(--kiezel);     /* vrij */
-  --merk:var(--lavendel);
+  --status-watching:var(--mosterd);   /* bezig, valt op */
+  --status-waiting:var(--lavendel);   /* in de wacht */
+  --status-finished:var(--olijf);     /* klaar */
+  --status-towatch:var(--zeegroen);   /* nog te doen */
+  --status-dropped:var(--roze);       /* gestopt */
+  --merk:var(--lavendel);             /* app-icoon: televisie in --op-kleur op lavendel; ook theme_color */
 }

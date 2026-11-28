@@ -16,193 +16,32 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="basis.css">  <!-- Kage Syztem 0.3: niet aanpassen in deze app -->
+<link rel="stylesheet" href="syztem.css">  <!-- Kage Syztem 1.2: niet aanpassen in deze app -->
 <link rel="stylesheet" href="thema.css">  <!-- Kollectie: kleur = status -->
-<style>
-/* ================= Kollectie: onderdelen die alleen deze app heeft =================
-   Alleen tokens uit basis.css en thema.css; geen losse kleuren of maten. */
-.kop-wrap{padding-top:var(--ruimte-3)}
-/* Toevoegen: rond plusje, zelfde maat en hoogte als in Kravschappen (54 groot, 12 boven de veilige zone) */
-.actieknop{bottom:calc(var(--ruimte-3) + env(safe-area-inset-bottom,0px));width:var(--h-m);height:var(--h-m);padding:0;justify-content:center}
-.actieknop svg{width:var(--icoon-l);height:var(--icoon-l)}
-/* Onderkant viel weg op iOS (zelfde fix als Kravschappen): als web-app op het beginscherm
-   rekent iOS de statusbalk soms niet mee in de schermhoogte, dus de scroller hield te vroeg op.
-   Daarom is de pagina schermhoog plus de statusbalk en ligt de scroller vast over het hele scherm,
-   met onderin ruimte voor de veilige zone. */
-html.app-schil{height:calc(100% + env(safe-area-inset-top,0px))}
-html.app-schil #scroller{position:fixed;inset:0;height:auto;overflow-x:hidden}
-.scherm{padding-bottom:calc(var(--actie-ruimte) + env(safe-area-inset-bottom,0px))}
-#headerextra:empty{display:none}
-
-/* Plaatjes (staand, 5:7) */
-.poster{display:block;object-fit:cover;background:var(--tint);flex:none}
-.poster.zonder{display:grid;place-items:center;font-weight:var(--gewicht-zwaar);font-size:var(--fs-xl);color:color-mix(in srgb,currentColor 55%,transparent)}
-.poster.mini{width:36px;height:50px;border-radius:var(--r-s);font-size:var(--fs-m)}
-.poster.groot{width:120px;height:170px;border-radius:var(--r-l);font-size:var(--fs-titel);box-shadow:0 10px 24px var(--schaduw)}
-
-/* Titelpagina: plaatje met cijfer en voortgang */
-.hero{display:grid;grid-template-columns:auto 1fr;gap:var(--ruimte-3);align-items:end;margin:var(--ruimte-2) 0 var(--ruimte-2)}
-.hero-rechts{display:grid;gap:var(--ruimte-3);min-width:0}
-.cijfer-knop{flex-direction:column;align-items:flex-start;gap:var(--ruimte-1);margin:0;padding:var(--ruimte-3) var(--ruimte-4)}
-.cijfer-knop b{font-size:var(--fs-titel);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-titel);line-height:1;font-variant-numeric:tabular-nums}
-.cijfer-knop b.geen{opacity:.4}
-.hero-voortgang{font-size:var(--fs-s);font-weight:var(--gewicht-vet);color:var(--mut);padding:0 var(--ruimte-1)}
-.hero-voortgang .voortgang{background:var(--tint);color:var(--st)}
-
-/* Plaatje kiezen: tik op de poster, kies de poster van een seizoen */
-.poster-knop{display:block;flex:none;border-radius:var(--r-l)}
-.poster-knop:active{transform:scale(.97)}
-.plaatjes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ruimte-3);margin-top:var(--ruimte-3)}
-.plaatje-keuze{display:grid;gap:var(--ruimte-1);min-width:0;text-align:left;font-size:var(--fs-xs);font-weight:var(--gewicht-vet);color:var(--mut)}
-.plaatje-keuze img{display:block;width:100%;aspect-ratio:5/7;object-fit:cover;border-radius:var(--r-m);background:var(--tint);box-shadow:0 0 0 3px transparent;transition:box-shadow var(--duur-snel)}
-.plaatje-keuze span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.plaatje-keuze[aria-pressed="true"] img{box-shadow:0 0 0 3px var(--ink)}
-.plaatje-keuze[aria-pressed="true"] span{color:var(--ink)}
-.plaatjes .skelet{height:auto;aspect-ratio:5/7;margin:0;border-radius:var(--r-m)}
-
-/* Statuskeuze: de gekozen status in zijn eigen kleur */
-.chips.status .chip[aria-pressed="true"]{background:var(--c);color:var(--blok-ink)}
-.chips.status .chip[aria-pressed="true"] .stip{background:var(--blok-ink)}
-
-/* Seizoensrij: tik op de naam = afleveringen open- of dichtklappen */
-.deel-knop{flex:1;min-width:0;display:flex;align-items:center;gap:var(--ruimte-3);min-height:var(--rij);text-align:left}
-.deel-knop:disabled{cursor:default}
-.deel-knop .rechts{font-variant-numeric:tabular-nums}
-.klap{color:var(--mut);display:grid;place-items:center;transition:transform var(--duur) var(--veer)}
-.klap svg{width:var(--icoon-s);height:var(--icoon-s)}
-.klap.open{transform:rotate(180deg)}
-.rij.af .rechts{color:var(--st)}
-
-/* Afleveringen afvinken: rondjes met nummers, tik = tot en met deze gezien */
-.afl-paneel{padding:var(--ruimte-1) 0 var(--ruimte-4)}
-.afl{display:grid;grid-template-columns:repeat(auto-fill,minmax(36px,1fr));gap:var(--ruimte-2)}
-.afl-n{height:36px;border-radius:var(--r-rond);background:var(--tint);color:var(--mut);font-weight:var(--gewicht-vet);font-size:var(--fs-s);font-variant-numeric:tabular-nums;transition:background-color var(--duur-snel),transform var(--duur-snel)}
-.afl-n.gezien{background:var(--st);color:var(--blok-ink)}
-.afl-n:active{transform:scale(.88)}
-.afl-n:disabled{opacity:.35}
-.teller{display:flex;align-items:center;gap:var(--ruimte-2)}
-.teller .veld{width:104px;text-align:center;font-variant-numeric:tabular-nums;font-weight:var(--gewicht-vet);padding:0 var(--ruimte-2)}
-.teller .van{color:var(--mut);font-weight:var(--gewicht-vet);font-size:var(--fs-m)}
-.plus-rond{width:var(--vink);height:var(--vink);display:grid;place-items:center;flex:none;color:var(--mut)}
-.plus-rond svg{width:var(--icoon-m);height:var(--icoon-m)}
-
-/* Vensters */
-.venster:focus{outline:none}
-.venster.zoeken{height:86vh;display:flex;flex-direction:column}
-.venster.zoeken #venster-inhoud{display:flex;flex-direction:column;min-height:0;flex:1}
-.venster.zoeken #ac{flex:1;overflow-y:auto;margin:var(--ruimte-3) calc(var(--rand) * -1) 0;padding:0 var(--rand)}
-.venster .groep{background:color-mix(in srgb,var(--ink) 5%,var(--vlak))}
-.venster .groep .veeg-inhoud{background:inherit}
-.ac-leeg{margin:0;padding:var(--ruimte-4) var(--ruimte-1);color:var(--mut);font-size:var(--fs-m)}
-#al-zoek::-webkit-search-cancel-button,#al-zoek::-webkit-search-decoration{-webkit-appearance:none;appearance:none}
-.venster .label{margin-top:var(--ruimte-4)}
-.venster .knop.breed{margin-top:var(--ruimte-5)}
-#bevestig{z-index:var(--z-bevestig)}
-.venster.bevestig .veld{margin-bottom:var(--ruimte-2)}
-.rating-groot{font-size:var(--fs-titel);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-titel);text-align:center;margin:0 0 var(--ruimte-4);font-variant-numeric:tabular-nums}
-.rating-groot.geen{color:var(--mut)}
-
-/* Codescherm (eerste keer openen op een telefoon) */
-#code-scherm{position:fixed;inset:0;z-index:calc(var(--z-bevestig) + 10);background:var(--bg);display:grid;place-items:center;padding:var(--ruimte-5)}
-.code-kaart{width:100%;max-width:360px;display:grid;gap:var(--ruimte-3);text-align:center}
-.code-kaart img{justify-self:center;border-radius:var(--r-l)}
-.code-kaart h2{margin:var(--ruimte-1) 0 0;font-size:var(--fs-xl);font-weight:var(--gewicht-zwaar)}
-.code-kaart p{margin:0 0 var(--ruimte-2);color:var(--mut)}
-
-/* Beginscherm Anime */
-.kop-n{display:flex;justify-content:space-between;align-items:baseline}
-.kop-n span{opacity:.7}
-.blok.verder{align-items:stretch;padding:0;gap:0}
-.verder-open{flex:1;min-width:0;display:flex;align-items:center;gap:var(--ruimte-3);padding:var(--ruimte-3);text-align:left}
-.verder-open .blok-tekst{display:flex;flex-direction:column}
-/* Voortgang in lagen: donker = gezien, licht = al uitgezonden, spoor = totaal */
-.lagen{position:relative;display:block;height:8px;border-radius:var(--r-rond);background:rgba(0,0,0,.15);overflow:hidden;margin-top:var(--ruimte-2)}
-.lagen i{position:absolute;left:0;top:0;bottom:0;border-radius:inherit;background:currentColor}
-.lagen i.uit{opacity:.3}
-.lagen i.af{opacity:.75;transition:width var(--duur) var(--veer)}
-.stand{display:block;font-size:var(--fs-s);font-weight:var(--gewicht-zwaar);margin-top:var(--ruimte-1);font-variant-numeric:tabular-nums;white-space:nowrap}
-.stand span{opacity:.6}
-/* +1: klein rondje zoals het afvinkrondje bij Boodschappen; tikvlak blijft --tik */
-.plus-een{flex:none;align-self:center;width:var(--tik);height:var(--tik);margin-right:var(--ruimte-2);display:grid;place-items:center;border-radius:var(--r-rond)}
-.plus-een span{width:30px;height:30px;border-radius:50%;border:2.6px solid currentColor;display:grid;place-items:center;opacity:.8;transition:transform var(--duur-snel),background var(--duur-snel)}
-.plus-een svg{width:16px;height:16px}
-.plus-een:active span{transform:scale(.88)}
-.plus-een.getikt span{background:var(--blok-ink);border-color:var(--blok-ink);color:var(--c);opacity:1}
-.rij .stipje{width:14px;height:14px;border-radius:50%;margin:0 4px}
-
-.kop-knoppen{display:flex;gap:var(--ruimte-2)}
-.tl-rij{display:grid;grid-template-columns:64px minmax(0,1fr);align-items:stretch}
-/* Alles lijnt uit op het midden van de kaart: de kaart heeft onder ruimte-2 marge, dus het midden ligt op 50% - ruimte-2/2 */
-.tl-datum{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right;padding:0 20px var(--ruimte-2) 0;border-right:6px solid var(--blok-2);line-height:1}
-.tl-datum b{display:block;font-size:30px;font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-titel)}
-.tl-datum i{display:block;font-style:normal;font-size:var(--fs-xs);font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);text-transform:uppercase;color:var(--mut);margin-top:3px;white-space:nowrap}
-.tl-datum.vaag{border-right-color:color-mix(in srgb,var(--blok-2) 30%,transparent)}
-.tl-datum.vaag b{font-size:var(--fs-l);letter-spacing:0}
-.tl-datum::after{content:"";position:absolute;right:-13px;top:calc(50% - var(--ruimte-2) / 2 - 10px);width:20px;height:20px;border-radius:50%;background:var(--blok-2);box-shadow:0 0 0 4px var(--bg)}
-.tl-datum.vaag::after{background:var(--bg);border:4px solid color-mix(in srgb,var(--blok-2) 60%,transparent)}
-.tl-rij:last-child .tl-datum{border-right-color:transparent}
-.tl-rij:last-child .tl-datum::before{content:"";position:absolute;right:-6px;top:0;width:6px;height:calc(50% - var(--ruimte-2) / 2);background:var(--blok-2)}
-.tl-rij:last-child .tl-datum.vaag::before{background:color-mix(in srgb,var(--blok-2) 30%,transparent)}
-.tl-kaart{display:flex;align-items:center;gap:var(--ruimte-3);min-width:0;background:var(--vlak);border-radius:var(--r-l);padding:var(--ruimte-2) var(--ruimte-3);margin:0 0 var(--ruimte-2) var(--ruimte-4);text-align:left}
-.tl-kaart:active{transform:scale(.98)}
-.tl-kaart .naam{font-weight:var(--gewicht-zwaar)}
-.tl-kaart.snel{background:var(--blok-2);color:var(--blok-ink)}
-.tl-kaart.snel .bijregel{color:color-mix(in srgb,var(--blok-ink) 65%,transparent)}
-.teller-stip{min-width:24px;height:24px;border-radius:var(--r-rond);background:var(--merk);color:var(--blok-ink);font-size:var(--fs-s);font-weight:var(--gewicht-zwaar);display:grid;place-items:center;padding:0 7px;flex:none}
-/* Cijferpil op een rij (Syztem-pil): altijd de kleur van de status */
-.pil{flex:none;min-width:46px;height:30px;padding:0 var(--ruimte-3);border-radius:var(--r-rond);background:var(--tint);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;font-size:var(--fs-m);font-weight:var(--gewicht-zwaar);font-variant-numeric:tabular-nums}
-.pil.vol{background:var(--c);color:var(--blok-ink)}
-.pil.leeg{color:var(--mut)}
-/* Collectie: vier getallen twee bij twee; kleur alleen voor een status */
-.keuze .n{opacity:.6}
-.tegels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ruimte-2);margin-bottom:var(--ruimte-4)}
-.tegel{background:var(--c,var(--vlak));color:var(--ink);border-radius:var(--r-l);padding:var(--ruimte-3) var(--ruimte-4);line-height:1;min-width:0}
-.tegel[style]{color:var(--blok-ink)}
-.tegel b{display:block;font-size:30px;font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-titel);white-space:nowrap}
-.tegel b small{font-size:var(--fs-l);letter-spacing:0}
-.tegel i{display:block;font-style:normal;font-size:var(--fs-xs);font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);text-transform:uppercase;opacity:.7;margin-top:6px}
-.muur{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ruimte-4) var(--ruimte-3);margin-top:var(--ruimte-2)}
-.muur .p{display:block;text-align:left;font-size:var(--fs-s);font-weight:var(--gewicht-vet);line-height:1.2;min-width:0}
-.muur .p .poster{width:100%;height:auto;aspect-ratio:5/7;border-radius:var(--r-l);margin-bottom:var(--ruimte-2);font-size:var(--fs-titel)}
-.muur .p:active .poster{transform:scale(.97)}
-.muur .p-naam{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.muur .p small{display:block;font-weight:var(--gewicht-naam);color:var(--mut);margin-top:2px}
-.vondst{gap:var(--ruimte-2)}
-.vondst .rond-knop svg{width:var(--icoon-s);height:var(--icoon-s)}
-.vondst .rond-knop.toevoeg{background:var(--actie);color:var(--actie-ink)}
-.vondst .rond-knop{width:36px;height:36px;flex:none}
-
-/* Preview-label */
-#preview-pill{position:fixed;left:var(--ruimte-2);bottom:calc(var(--ruimte-2) + env(safe-area-inset-bottom,0px));z-index:var(--z-actie);background:var(--tint);color:var(--mut);font-size:var(--fs-xs);font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);border-radius:var(--r-rond);padding:var(--ruimte-1) var(--ruimte-2)}
-</style>
 </head>
 <body>
-<div id="scroller"><div class="scherm">
-  <header class="kop-wrap">
-    <button type="button" id="terug" class="terug" data-act="terug" hidden><svg data-icoon="pijl-links" width="18" height="18" aria-hidden="true"></svg><span id="terug-tekst">Anime</span></button>
-    <div class="kop">
-      <div class="kop-links">
-        <button type="button" class="schakelaar" id="schakelaar" aria-haspopup="menu" aria-expanded="false"><h1 class="titel" id="title">Anime</h1><span class="pijl"><svg data-icoon="pijl-onder" aria-hidden="true"></svg></span></button>
-        <div class="schermmenu" id="schermmenu" role="menu" hidden></div>
-      </div>
-      <div id="topextra"></div>
-    </div>
-    <div id="headerextra"></div>
-  </header>
+<div id="scroller"><div class="wrap">
+  <header class="top"><button type="button" id="terug" class="back" data-act="terug" hidden><svg data-icoon="pijl-links" aria-hidden="true"></svg><span id="terug-tekst">Anime</span></button>
+    <div class="toprow"><div>
+      <button type="button" class="schakelaar" id="schakelaar" aria-haspopup="menu" aria-expanded="false"><h1 id="schakel-titel">Anime</h1><span class="pijl"><svg data-icoon="pijl-onder" aria-hidden="true"></svg></span></button>
+      <h1 id="title" hidden>Anime</h1>
+      <div class="schermmenu" id="schermmenu" role="menu" hidden></div>
+    </div><div class="kop-knoppen" id="topextra"></div></div>
+    <div id="headerextra"></div></header>
   <main id="main"></main>
 </div></div>
 
 <button type="button" class="actieknop" id="actieknop" data-act="toevoeg-open" aria-label="Anime toevoegen" hidden><svg data-icoon="plus" aria-hidden="true"></svg></button>
 
-<div id="venster" class="venster-wrap" hidden>
-  <div class="venster-bg" data-act="sluit"></div>
-  <div class="venster" role="dialog" aria-modal="true" tabindex="-1">
-    <button type="button" class="rond-knop sluit" data-act="sluit" aria-label="Sluiten"><svg data-icoon="kruis" aria-hidden="true"></svg></button>
+<div id="venster" class="sheet-wrap" hidden>
+  <div class="sheet-bg" data-act="sluit"></div>
+  <div class="sheet" role="dialog" aria-modal="true" tabindex="-1">
+    <button type="button" class="close" data-act="sluit" aria-label="Sluiten"><svg data-icoon="kruis" aria-hidden="true"></svg></button>
     <div id="venster-inhoud"></div>
   </div>
 </div>
-<div id="bevestig" class="venster-wrap" hidden></div>
-<div class="melding" id="toast" role="status" aria-live="polite"><span id="toast-text"></span><button type="button" id="toast-btn" hidden></button></div>
+<div id="bevestig" class="sheet-wrap" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toast-text"></span><button type="button" id="toast-btn" hidden></button></div>
 
 <script>
 /* ================= Verbinding met het loket (Apps Script) =================
@@ -219,13 +58,13 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzvZqn5IrCF5pv_YFCuuGQk
     if (document.getElementById('code-scherm')) return;
     const toon = () => {
       const w = document.createElement('div');
-      w.id = 'code-scherm';
+      w.id = 'code-scherm'; w.className = 'codescherm';
       w.innerHTML = `<form class="code-kaart">
           <img src="icon-180.png" alt="" width="72" height="72">
           <h2>Kollectie</h2>
           <p>${melding || 'Voer de geheime code in.'}</p>
-          <input class="veld" id="code-invoer" type="password" autocomplete="current-password" placeholder="Geheime code" aria-label="Geheime code">
-          <button class="knop breed" type="submit">Openen</button>
+          <input class="field" id="code-invoer" type="password" autocomplete="current-password" placeholder="Geheime code" aria-label="Geheime code">
+          <button class="btn wide" type="submit">Openen</button>
         </form>`;
       document.body.appendChild(w);
       const inp = w.querySelector('#code-invoer');
@@ -320,7 +159,8 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbzvZqn5IrCF5pv_YFCuuGQk
   window.LOKET = (actie, ...args) => new Promise((ok, fout) => setTimeout(() => { try { ok(api[actie](...kopie(args))); } catch (e) { fout(e); } }, 120));
   document.addEventListener('DOMContentLoaded', () => {
     const b = document.createElement('button');
-    b.type = 'button'; b.id = 'preview-pill'; b.textContent = 'Preview';
+    document.body.classList.add('preview');
+    b.type = 'button'; b.id = 'preview-pill'; b.className = 'preview-pil'; b.textContent = 'Preview · tik om te resetten';
     b.onclick = () => bevestig('Voorbeelddata terugzetten naar het begin?', 'Terugzetten').then(ok => { if (ok) window.previewReset(); });
     document.body.appendChild(b);
   });
@@ -343,10 +183,11 @@ const ICONEN = {
   'plaatje': '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm-1.5 14.6V17a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5v-1.3l-3.6-3.6a1.3 1.3 0 0 0-1.8 0l-3.2 3.2-1.3-1.3a1.3 1.3 0 0 0-1.8 0zM9 10.8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>',
   'pijl-rechts': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
   'pijl-onder': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
-  'vinkje': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  'vinkje': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   'kruis': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   'bladwijzer': '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2.5h10a2 2 0 0 1 2 2V21l-7-4.2L5 21V4.5a2 2 0 0 1 2-2z"/></svg>',
   'vonk': '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/><circle cx="19" cy="19" r="2.2"/></svg>',
+  'ontkoppel': '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><path d="M12 2.5a9.5 9.5 0 1 1 0 19 9.5 9.5 0 0 1 0-19zM7.4 10.7a1.3 1.3 0 0 0 0 2.6h9.2a1.3 1.3 0 0 0 0-2.6z"/></svg>',
   'vakjes': '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2.4"/><rect x="13" y="3" width="8" height="8" rx="2.4"/><rect x="3" y="13" width="8" height="8" rx="2.4"/><rect x="13" y="13" width="8" height="8" rx="2.4"/></svg>'
 };
 const ico = (naam, attrs = '') => attrs ? ICONEN[naam].replace('<svg ', `<svg ${attrs} `) : ICONEN[naam];
@@ -407,20 +248,29 @@ function beschikbaar(d) {
 /** Totaal aantal afleveringen van een deel (ook wat nog moet uitkomen), als dat bekend is. */
 const aflTotaal = d => getal(d.afleveringen) || getal((bron(d) || {}).episodes) || beschikbaar(d);
 const deelNaam = (d, k) => d.naam || (d.soort === 'extra' ? 'Film' : 'Seizoen ' + (k + 1));
+/** Poster (Syztem K): standaard klein vooraan een rij; 'groot' op de titelpagina. */
 const posterHtml = (t, klasse = '') => t.plaatje
-  ? `<img class="poster ${klasse}" src="${esc(t.plaatje)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
-  : `<span class="poster zonder ${klasse}" aria-hidden="true">${esc((t.naam || '?').charAt(0).toUpperCase())}</span>`;
+  ? `<img class="poster${klasse ? ' ' + klasse : ''}" src="${esc(t.plaatje)}" alt="" loading="lazy" referrerpolicy="no-referrer">`
+  : `<span class="poster zonder${klasse ? ' ' + klasse : ''}" aria-hidden="true">${esc((t.naam || '?').charAt(0).toUpperCase())}</span>`;
+/** Naam met eventueel een bijregel, als tekstkolom van een rij. */
+const rijTekst = (naam, meta) => `<span><span class="pname">${esc(naam)}</span>${meta ? `<span class="pmeta">${esc(meta)}</span>` : ''}</span>`;
+/** Tikrondjes (Syztem A): plus (aan = vinkje) en min. */
+const PLUS_RONDJE = () => `<span class="tick plus">${ico('plus', 'class="uit" aria-hidden="true"')}${ico('vinkje', 'class="aan" aria-hidden="true"')}</span>`;
+const MIN_RONDJE = () => `<span class="tick min">${ico('min', 'aria-hidden="true"')}</span>`;
+/** Actierij (Syztem B): laatste rij van een blok die iets doet. */
+const actieRij = (act, id, tekst, gevaar) => `<button type="button" class="item actie${gevaar ? ' gevaar' : ''}" data-act="${act}"${id ? ` data-id="${id}"` : ''}><span class="check">${gevaar ? MIN_RONDJE() : PLUS_RONDJE()}<span class="pname">${tekst}</span></span></button>`;
+const SKELET_RIJ = '<div class="item"><div class="check"><span class="skelet skelet-rond"></span><span class="skelet skelet-tekst"></span></div></div>';
 
 /* ---------- Opslag: optimistisch (Kage Syztem, hoofdstuk 6) ---------- */
 const LOKAAL = 'kollectie-stand';
 function onthoudLokaal(s) { if (!window.API_MODUS) return; try { localStorage.setItem(LOKAAL, JSON.stringify(s)); } catch (e) {} }
 function leesLokaal() { if (!window.API_MODUS) return null; try { return JSON.parse(localStorage.getItem(LOKAAL)); } catch (e) { return null; } }
-function tekenSkelet() { $('#main').innerHTML = '<div class="skelet"></div>'.repeat(5); }
+function tekenSkelet() { $('#main').innerHTML = [3, 2].map(n => `<h3 class="cat"><span class="skelet skelet-kop"></span></h3><div class="items">${SKELET_RIJ.repeat(n)}</div>`).join(''); }
 function laad() {
   if (!S.data) { const l = leesLokaal(); if (l) { S.data = l; wissel(S.tab); } else tekenSkelet(); }
   LOKET('getState')
     .then(s => { const eerste = !S.data, anders = !eerste && JSON.stringify(s) !== JSON.stringify(S.data); S.data = s; onthoudLokaal(s); if (eerste) wissel(S.tab); else if (!bezig && anders) teken(); zetStatusOm(); haalBron(); })
-    .catch(e => { if (!S.data) $('#main').innerHTML = `<div class="leeg"><strong>Laden lukte niet</strong>${esc(e.message)}. Herlaad de pagina.</div>`; });
+    .catch(e => { if (!S.data) $('#main').innerHTML = `<div class="empty"><strong>Laden lukte niet</strong>${esc(e.message)}. Herlaad de pagina.</div>`; });
 }
 function bel(fn, ...args) {
   bezig++; teller++;
@@ -495,8 +345,7 @@ function bewaarDelen(titelId, wijzigingen, undo) {
 
 
 /* ---------- Kleur betekent status (Kage Syztem, thema Kollectie) ---------- */
-const STATUS_KLEUR = { watching: 1, waiting: 2, finished: 3, towatch: 4, dropped: 5 };
-const stKleur = id => `var(--blok-${STATUS_KLEUR[id] || 8})`;
+const stKleur = id => `var(--status-${STATUSSEN.some(s => s.id === id) ? id : 'towatch'})`;
 
 /* ---------- Weergaven ---------- */
 const VIEWS = {
@@ -527,18 +376,15 @@ function teken() {
 }
 /** Kop: op een hoofdscherm is de titel de schakelaar, op een subpagina staat er "‹ Terug" boven. */
 function zetKop(tekst, terug) {
+  $('#schakel-titel').textContent = tekst;
   $('#title').textContent = tekst;
-  $('#title').classList.toggle('lang', !!terug);
-  $('#schakelaar').disabled = !!terug;
+  $('#schakelaar').hidden = !!terug;
+  $('#title').hidden = !terug;
   $('#terug').hidden = !terug;
   if (terug) $('#terug-tekst').textContent = terug;
   $('#actieknop').hidden = true;
   $('#topextra').innerHTML = '';
-}
-/** Houd de gekozen chip in beeld. */
-function chipInBeeld(rij) {
-  const g = rij && rij.querySelector('[aria-pressed="true"]');
-  if (g && (g.offsetLeft + g.offsetWidth > rij.scrollLeft + rij.clientWidth || g.offsetLeft < rij.scrollLeft)) rij.scrollLeft = g.offsetLeft - (rij.clientWidth - g.offsetWidth) / 2;
+  $('#headerextra').innerHTML = '';
 }
 
 /* ---------- Overzicht ---------- */
@@ -588,7 +434,7 @@ function datumDelen(m) {
   if (j) return { groot: String(j), klein: '' };
   return { groot: '?', klein: '' };
 }
-const veegTitel = (t, inhoud) => veegRij('t-' + t.id, [['wijzig', 'titel-naam', t.id, `${t.naam} hernoemen`], ['weg', 'titel-weg', t.id, `${t.naam} verwijderen`]], inhoud);
+const veegTitel = (t, inhoud, klasse) => veegRij('t-' + t.id, [['wijzig', 'titel-naam', t.id, `${t.naam} hernoemen`], ['weg', 'titel-weg', t.id, `${t.naam} verwijderen`]], inhoud, klasse);
 /* Het Anime-scherm: de hoofdpagina toont wat nu speelt (Nieuw gevonden, Nu te kijken, Wachten).
    Rechtsboven twee knoppen: ★ Collectie (verleden: Gezien en Gestopt, met filter) en 🔖 Wil ik zien (toekomst). */
 const LIJSTEN = {
@@ -598,71 +444,61 @@ const LIJSTEN = {
 };
 const lijstNaam = id => (LIJSTEN[id] || {}).naam || 'Anime';
 const animeTitels = () => D().titels.filter(t => t.soort === 'anime');
-const kopjeN = (tekst, n) => `<div class="kopje kop-n">${tekst}${n ? `<span>${n}</span>` : ''}</div>`;
 function tekenAnime() {
   haalBron();
   if (S.lijst && LIJSTEN[S.lijst]) {
     const l = LIJSTEN[S.lijst];
     zetKop(l.naam, lijstNaam(l.ouder));
     $('#actieknop').hidden = S.lijst !== 'towatch';   // ook toevoegen vanaf Wil ik zien
-    $('#headerextra').innerHTML = '';
     return l.teken();
   }
   zetKop('Anime');
   $('#actieknop').hidden = false;
-  $('#headerextra').innerHTML = '';
-  $('#topextra').innerHTML = `<div class="kop-knoppen">
-    <button type="button" class="rond-knop" data-act="lijst-open" data-id="collectie" aria-label="Collectie: gezien en gestopt">${ico('ster')}</button>
-    <button type="button" class="rond-knop" data-act="lijst-open" data-id="towatch" aria-label="Wil ik zien">${ico('bladwijzer')}</button></div>`;
+  $('#topextra').innerHTML = `<button type="button" class="round" data-act="lijst-open" data-id="collectie" aria-label="Collectie: gezien en gestopt">${ico('ster')}</button>
+    <button type="button" class="round" data-act="lijst-open" data-id="towatch" aria-label="Wil ik zien">${ico('bladwijzer')}</button>`;
   const ts = animeTitels();
-  if (!ts.length) { $('#main').innerHTML = `<div class="leeg"><strong>Nog niets in je lijst</strong>Tik onderin op Anime toevoegen.</div>`; return; }
+  if (!ts.length) { $('#main').innerHTML = `<div class="empty"><strong>Nog niets in je lijst</strong>Tik onderin op + om een anime toe te voegen.</div>`; return; }
   const van = s => ts.filter(t => statusVan(t) === s);
   let h = '';
 
-  // Nieuw gevonden: één rij, alleen als er iets is
+  // Nieuw gevonden: één menurij, alleen als er iets is
   const vs = vondstenNu();
-  if (vs.length) h += `<div class="groep"><button type="button" class="rij" data-act="lijst-open" data-id="nieuw"><span class="rij-ico">${ico('vonk')}</span><span class="naam">Nieuw gevonden</span><span class="teller-stip">${vs.length}</span><span class="pijltje rij-ico">${ico('pijl-rechts')}</span></button></div>`;
+  if (vs.length) h += `<div class="group"><button type="button" class="nav-row" data-act="lijst-open" data-id="nieuw"><span class="ico">${ico('vonk')}</span><span class="lbltxt">Nieuw gevonden</span><span class="chip vol">${vs.length}</span><span class="chev2"></span></button></div>`;
 
-  // Nu te kijken: per serie de volgende aflevering, met +1
+  // Nu te kijken: per serie de volgende aflevering, met het tikrondje (+1)
   const bezig = van('watching').sort(opRecent);
   if (bezig.length) {
-    h += kopjeN(statusNaam('watching'), bezig.length);
+    h += `<h3 class="cat">${statusNaam('watching')}</h3><div class="items" style="--c:${stKleur('watching')}">`;
     h += bezig.map(t => {
       const v = volgende(t), vg = voortgang(t);
       const label = v && v.meer ? deelNaam(v.d, v.k) : '';
       const uit = v ? beschikbaar(v.d) : 0, eind = (vg && vg.tot) || uit, pr = n => Math.min(100, Math.round(n / eind * 100));
-      const balk = vg && eind ? `<span class="lagen"><i class="uit" style="width:${pr(uit)}%"></i><i class="af" style="width:${pr(vg.gezien)}%"></i></span>
-        <span class="stand">${vg.gezien.toLocaleString('nl-NL')} <span>van ${eind.toLocaleString('nl-NL')}</span></span>` : '';
-      const getikt = S.netGetikt === t.id;
-      return veegTitel(t, `<div class="blok kleur verder" style="--c:${stKleur('watching')}">
-        <button type="button" class="verder-open" data-act="titel-open" data-id="${t.id}">
-          ${posterHtml(t, 'blok-plaatje')}
-          <span class="blok-tekst">${label ? `<span class="blok-label">${esc(label)}</span>` : ''}<span class="blok-naam">${esc(t.naam)}</span>${balk}</span>
-        </button>
-        ${v ? `<button type="button" class="plus-een${getikt ? ' getikt' : ''}" data-act="plus-een" data-id="${v.d.id}" aria-label="Aflevering ${v.n} van ${esc(t.naam)} gezien"><span>${ico(getikt ? 'vinkje' : 'plus')}</span></button>` : ''}
-      </div>`);
+      const balk = vg && eind ? `<span class="balk"><i class="uit" style="width:${pr(uit)}%"></i><i style="width:${pr(vg.gezien)}%"></i></span>
+        <span class="pmeta">${vg.gezien.toLocaleString('nl-NL')} van ${eind.toLocaleString('nl-NL')}</span>` : '';
+      const plus = v ? `<button type="button" class="vinkknop" data-act="plus-een" data-id="${v.d.id}" aria-label="Aflevering ${v.n} van ${esc(t.naam)} gezien">${PLUS_RONDJE()}</button>` : '';
+      return veegTitel(t, `<div class="check met-poster" data-act="titel-open" data-id="${t.id}">${posterHtml(t)}
+          <span>${label ? `<span class="pmeta">${esc(label)}</span>` : ''}<span class="pname">${esc(t.naam)}</span>${balk}</span>${plus}</div>`,
+        S.netGetikt === t.id ? 'on' : '');
     }).join('');
+    h += '</div>';
   }
 
-  // Wachten: wat er aankomt, eerstvolgende bovenaan
+  // Wachten: wat er aankomt, eerstvolgende bovenaan (tijdlijn)
   const wacht = van('waiting').map(t => ({ t, k: komtEraan(t) })).sort((a, b) => ((a.k || {}).sl || 1e13) - ((b.k || {}).sl || 1e13) || opCijfer(a.t, b.t));
   if (wacht.length) {
-    h += kopjeN(statusNaam('waiting'), wacht.length);
-    // Tijdlijn: links groot de datum aan een lijn, rechts de titel; wat binnen een week komt is lavendel
-    h += `<div class="tijdlijn">${wacht.map(({ t, k }) => {
+    h += `<h3 class="cat">${statusNaam('waiting')}</h3><div class="tijdlijn" style="--c:${stKleur('waiting')}">${wacht.map(({ t, k }) => {
       const dt = (k && k.datum) || { groot: '?', klein: '' };
       return `<div class="tl-rij"><div class="tl-datum${dt.exact ? '' : ' vaag'}"><b>${esc(dt.groot)}</b>${dt.klein ? `<i>${esc(dt.klein)}</i>` : ''}</div>
-        <button type="button" class="tl-kaart${dt.binnenkort ? ' snel' : ''}" data-act="titel-open" data-id="${t.id}">${posterHtml(t, 'mini')}
-          <span class="rij-tekst"><span class="naam">${esc(t.naam)}</span>${k && k.wat ? `<span class="bijregel">${esc(k.wat)}</span>` : ''}</span></button></div>`;
+        <div class="items"><button type="button" class="item" data-act="titel-open" data-id="${t.id}"><span class="check met-poster">${posterHtml(t)}${rijTekst(t.naam, k && k.wat)}${dt.binnenkort ? '<span class="chip vol">deze week</span>' : ''}</span></button></div></div>`;
     }).join('')}</div>`;
   }
-  if (!h) h = `<div class="leeg"><strong>Niets om nu te kijken</strong>Wat je gezien hebt staat onder ★, wat je wilt zien onder ${ico('bladwijzer', 'width="16" height="16" style="vertical-align:-2px"')}.</div>`;
+  if (!h) h = `<div class="empty"><strong>Niets om nu te kijken</strong>Wat je gezien hebt staat onder de ster, wat je wilt zien onder de bladwijzer.</div>`;
   $('#main').innerHTML = h;
 }
-/** Cijfer als pil in de kleur van de status (Gezien salie, Nu te kijken mosterd, Wachten lavendel, Gestopt roze); geen cijfer een grijs streepje. */
-const cijferPil = t => heeftCijfer(t)
-  ? `<span class="pil vol" style="--c:${stKleur(statusVan(t))}">${cijferTekst(t.rating)}</span>`
-  : `<span class="pil leeg">–</span>`;
+/** Cijfer als chip in de kleur van de status; geen cijfer een grijs streepje. */
+const cijferChip = t => heeftCijfer(t)
+  ? `<span class="chip" style="--c:${stKleur(statusVan(t))}">${cijferTekst(t.rating)}</span>`
+  : `<span class="getal">–</span>`;
 /** ★ Collectie: alles waar je aan begonnen bent (Gezien, Loopt = Nu te kijken of Wachten, Gestopt), met een filter, vier getallen en één lijst op cijfer. */
 const COLL_FILTERS = [['alles', 'Alles'], ['gezien', 'Gezien'], ['loopt', 'Loopt'], ['gestopt', 'Gestopt']];
 const aflGezien = t => delenVan(t.id).reduce((s, d) => s + getal(d.gezien), 0);
@@ -675,84 +511,73 @@ function tekenCollectie() {
   const f = groep[S.collFilter] ? S.collFilter : 'alles';
   const aantal = id => groep[id].length;
   const lijst = groep[f].slice().sort(opCijfer);
-  let h = `<div class="keuze">${COLL_FILTERS.map(([id, n]) => `<button type="button" aria-pressed="${id === f}" data-act="coll-filter" data-id="${id}">${n} <span class="n">${aantal(id)}</span></button>`).join('')}</div>`;
+  $('#headerextra').innerHTML = `<div class="keuzepil" role="group" aria-label="Filter">${COLL_FILTERS.map(([id, n]) => `<button type="button"${id === f ? ' class="gekozen"' : ''} aria-pressed="${id === f}" data-act="coll-filter" data-id="${id}">${n} <span class="n${aantal(id) ? '' : ' leeg'}">${aantal(id)}</span></button>`).join('')}</div>`;
   if (!lijst.length) {
-    h += f === 'gestopt' ? `<div class="leeg"><strong>Nergens mee gestopt</strong>Zet een titel op Gestopt en hij staat hier.</div>`
-      : f === 'loopt' ? `<div class="leeg"><strong>Niets dat loopt</strong>Wat je aan het kijken bent of waar je op wacht, staat hier.</div>`
-      : `<div class="leeg"><strong>Nog niets gezien</strong>Wat je helemaal hebt gezien en waar niets meer van komt, staat hier.</div>`;
-    $('#main').innerHTML = h; return;
+    $('#main').innerHTML = f === 'gestopt' ? `<div class="empty"><strong>Nergens mee gestopt</strong>Zet een titel op Gestopt en hij staat hier.</div>`
+      : f === 'loopt' ? `<div class="empty"><strong>Niets dat loopt</strong>Wat je aan het kijken bent of waar je op wacht, staat hier.</div>`
+      : `<div class="empty"><strong>Nog niets gezien</strong>Wat je helemaal hebt gezien en waar niets meer van komt, staat hier.</div>`;
+    return;
   }
   const metCijfer = lijst.filter(heeftCijfer), gem = metCijfer.length ? cijferTekst(metCijfer.reduce((s, t) => s + getal(t.rating), 0) / metCijfer.length) : '–';
   const afl = lijst.reduce((s, t) => s + aflGezien(t), 0), uren = Math.round(lijst.reduce((s, t) => s + minutenGezien(t), 0) / 60);
-  const tegel = (b, i, c) => `<div class="tegel"${c ? ` style="--c:${c}"` : ''}><b>${b}</b><i>${i}</i></div>`;
-  const eerste = f === 'gestopt' ? tegel(gestopt.length, 'gestopt', stKleur(GESTOPT)) : f === 'loopt' ? tegel(loopt.length, 'loopt', stKleur('watching')) : tegel(gezien.length, 'gezien', stKleur('finished'));
-  h += `<div class="tegels">${eerste}${tegel(gem, 'gemiddeld')}${tegel(afl.toLocaleString('nl-NL'), 'afleveringen')}${tegel(uren.toLocaleString('nl-NL') + '<small> u</small>', 'gekeken')}</div>`;
-  h += `<div class="groep">${lijst.map(t => `<button type="button" class="rij" data-act="titel-open" data-id="${t.id}">${posterHtml(t, 'mini')}<span class="naam">${esc(t.naam)}</span>${cijferPil(t)}</button>`).join('')}</div>`;
+  const kern = (b, i, c) => `<div><b>${b}</b><i>${c ? `<span class="bol" style="--c:${c}"></span>` : ''}${i}</i></div>`;
+  const eerste = f === 'gestopt' ? kern(gestopt.length, 'gestopt', stKleur(GESTOPT)) : f === 'loopt' ? kern(loopt.length, 'loopt', stKleur('watching')) : kern(gezien.length, 'gezien', stKleur('finished'));
+  let h = `<div class="getallen">${eerste}${kern(gem, 'gemiddeld')}${kern(afl.toLocaleString('nl-NL'), 'afleveringen')}${kern(uren.toLocaleString('nl-NL') + '<small> u</small>', 'gekeken')}</div>`;
+  h += `<h3 class="cat">Op cijfer</h3><div class="items">${lijst.map(t => `<button type="button" class="item" data-act="titel-open" data-id="${t.id}"><span class="check met-poster">${posterHtml(t)}<span class="pname">${esc(t.naam)}</span>${cijferChip(t)}</span></button>`).join('')}</div>`;
   $('#main').innerHTML = h;
 }
-/** 🔖 Wil ik zien: postermuur, laatst toegevoegd eerst. */
+/** 🔖 Wil ik zien: posterraster, laatst toegevoegd eerst. */
 function tekenWilZien() {
   const lijst = animeTitels().filter(t => statusVan(t) === 'towatch').sort(opRecent);
-  if (!lijst.length) { $('#main').innerHTML = `<div class="leeg"><strong>Niets op je lijstje</strong>Voeg een anime toe en hij staat hier tot je begint.</div>`; return; }
-  $('#main').innerHTML = `<div class="muur">${lijst.map(t => {
+  if (!lijst.length) { $('#main').innerHTML = `<div class="empty"><strong>Niets op je lijstje</strong>Voeg een anime toe en hij staat hier tot je begint.</div>`; return; }
+  $('#main').innerHTML = `<div class="posters">${lijst.map(t => {
     const n = seizoenenVan(t.id).reduce((s, d) => s + aflTotaal(d), 0);
-    return `<button type="button" class="p" data-act="titel-open" data-id="${t.id}">${posterHtml(t)}<span class="p-naam">${esc(t.naam)}</span>${n ? `<small>${n} afl.</small>` : ''}</button>`;
+    return `<button type="button" class="p" data-act="titel-open" data-id="${t.id}">${posterHtml(t)}<span class="p-naam">${esc(t.naam)}</span>${n ? `<span class="pmeta">${n} afl.</span>` : ''}</button>`;
   }).join('')}</div>`;
 }
-/** Nieuw gevonden: vervolgen die je nog niet hebt, met toevoegen en negeren. */
+/** Nieuw gevonden: vervolgen die je nog niet hebt. Tikrondje = toevoegen, vegen = negeren. */
 function tekenNieuw() {
   const vs = vondstenNu();
-  if (!vs.length) { $('#main').innerHTML = `<div class="leeg"><strong>Niets nieuws</strong>Komt er een vervolg van iets in je lijst, dan zie je het hier.</div>`; return; }
-  $('#main').innerHTML = `<div class="groep">${vs.map(({ m, titelId }) => {
+  if (!vs.length) { $('#main').innerHTML = `<div class="empty"><strong>Niets nieuws</strong>Komt er een vervolg van iets in je lijst, dan zie je het hier.</div>`; return; }
+  $('#main').innerHTML = `<div class="items">${vs.map(({ m, titelId }) => {
     const t = titel(titelId), deel = kortNaam(mediaNaam(m), t.naam) || mediaNaam(m);
-    return `<div class="rij vondst">
-      <button type="button" class="deel-knop" data-act="titel-open" data-id="${t.id}">${posterHtml({ naam: t.naam, plaatje: (m.coverImage || {}).medium || t.plaatje }, 'mini')}
-        <span class="rij-tekst"><span class="naam">${esc(t.naam)}</span><span class="bijregel">${esc(deel)} · ${esc(vondstWanneer(m))}</span></span></button>
-      <button type="button" class="rond-knop toevoeg" data-act="vondst-toevoeg" data-id="${m.id}" aria-label="${esc(deel)} toevoegen aan ${esc(t.naam)}">${ico('plus')}</button>
-      <button type="button" class="rond-knop" data-act="vondst-negeer" data-id="${m.id}" aria-label="${esc(deel)} negeren">${ico('kruis')}</button>
-    </div>`;
-  }).join('')}</div>`;
+    return veegRij('v-' + m.id, [['min', 'vondst-negeer', m.id, `${deel} negeren`]],
+      `<div class="check" data-act="titel-open" data-id="${t.id}"><button type="button" class="vinkknop" data-act="vondst-toevoeg" data-id="${m.id}" aria-label="${esc(deel)} toevoegen aan ${esc(t.naam)}">${PLUS_RONDJE()}</button>${rijTekst(t.naam, deel + ' · ' + vondstWanneer(m))}</div>`);
+  }).join('')}${actieRij('vondst-alles-negeer', '', 'Alles negeren', true)}</div>`;
 }
-/** Blok of rij die je naar links veegt voor acties met alleen iconen. */
-function veegRij(key, acties, inhoud) {
-  const knoppen = acties.map(([soort, act, id, label]) =>
-    `<button type="button" style="--c:var(${soort === 'weg' ? '--gevaar' : '--wijzig'})" data-act="${act}" data-id="${id}" aria-label="${esc(label)}">${ico(soort === 'weg' ? 'prullenbak' : 'potlood')}</button>`).join('');
-  return `<div class="veeg${S.swipeOpen === key ? ' open' : ''}" data-key="${key}" style="--n:${acties.length}"><div class="veeg-knoppen">${knoppen}</div><div class="veeg-inhoud">${inhoud}</div></div>`;
+/** Rij die je naar links veegt (Syztem A5): potlood (--wijzig), min-rondje (--ontkoppel), prullenbak. */
+function veegRij(key, acties, inhoud, klasse = '') {
+  const knoppen = acties.map(([soort, act, id, label]) => soort === 'weg'
+    ? `<button type="button" class="swipe-weg" data-act="${act}" data-id="${id}" aria-label="${esc(label)}">${ico('prullenbak')}</button>`
+    : `<button type="button" class="swipe-wk" style="--c:var(${soort === 'min' ? '--ontkoppel' : '--wijzig'})" data-act="${act}" data-id="${id}" aria-label="${esc(label)}">${ico(soort === 'min' ? 'ontkoppel' : 'potlood')}</button>`).join('');
+  return `<div class="swipe${S.swipeOpen === key ? ' open' : ''}" data-key="${key}" style="--n:${acties.length}"><div class="swipe-acties">${knoppen}</div><div class="item swipe-kaart${klasse ? ' ' + klasse : ''}">${inhoud}</div></div>`;
 }
 
 /* ---------- Titelpagina ---------- */
 function tekenTitel() {
   const t = titel(S.titelOpen);
   zetKop(t.naam, S.lijst ? lijstNaam(S.lijst) : VIEWS[S.tab].titel);
-  $('#headerextra').innerHTML = '';
   const sz = seizoenenVan(t.id), ex = extrasVan(t.id);
   const totaal = sz.reduce((s, d) => s + aflTotaal(d), 0);
   const gezien = sz.reduce((s, d) => s + getal(d.gezien), 0);
   const open = openSeizoen(t.id);
-  const cijfer = cijferTekst(t.rating);
-  let h = `<div style="--st:${stKleur(statusVan(t))}">`;
-  h += `<div class="hero"><button type="button" class="poster-knop" data-act="plaatje-kies" data-id="${t.id}" aria-label="Plaatje kiezen">${posterHtml(t, 'groot')}</button>
-    <div class="hero-rechts">
-      <button type="button" class="blok kleur cijfer-knop" style="--c:var(--st)" data-act="rating-open" data-id="${t.id}" aria-label="Jouw cijfer: ${cijfer || 'nog niet gegeven'}">
-        <span class="blok-label">Jouw cijfer</span><b class="${cijfer ? '' : 'geen'}">${cijfer || '–'}</b></button>
-      ${totaal ? `<div class="hero-voortgang">${gezien} van ${totaal} afleveringen<span class="voortgang"><i style="width:${Math.min(100, Math.round(gezien / totaal * 100))}%"></i></span></div>` : ''}
-    </div></div>`;
-  const st = statusVan(t);
-  h += `<div class="kopje">Status</div>
-    <div class="chips status">${isGestopt(t) ? '' : `<span class="chip" style="--c:${stKleur(st)}" aria-pressed="true"><span class="stip"></span>${statusNaam(st)}</span>`}
-      <button type="button" class="chip" style="--c:${stKleur(GESTOPT)}" aria-pressed="${isGestopt(t)}" data-act="gestopt" data-id="${t.id}"><span class="stip"></span>Gestopt</button></div>`;
-  h += `<div class="kopje">Seizoenen</div><div class="groep">`;
+  const st = statusVan(t), kleur = stKleur(st);
+  // Poster groot met ernaast de status en de voortgang
+  let h = `<div class="titel-met-lead met-poster" style="--c:${kleur}"><button type="button" class="poster-knop" data-act="plaatje-kies" data-id="${t.id}" aria-label="Plaatje kiezen">${posterHtml(t, 'groot')}</button>
+    <div><span class="chip">${statusNaam(st)}</span>${totaal ? `<span class="balk"><i style="width:${Math.min(100, Math.round(gezien / totaal * 100))}%"></i></span><span class="pmeta">${gezien} van ${totaal} afleveringen</span>` : ''}</div></div>`;
+  h += `<div class="group"><button type="button" class="item" data-act="rating-open" data-id="${t.id}"><span class="check zonder-voor"><span class="pname">Jouw cijfer</span>${cijferChip(t)}<span class="chevr"></span></span></button></div>`;
+  h += `<h3 class="cat">Seizoenen</h3><div class="items" style="--c:${kleur}">`;
   sz.forEach((d, k) => { h += deelRij(d, k, open === d.id); });
-  h += `<button type="button" class="rij" data-act="deel-toevoegen" data-id="${t.id}"><span class="plus-rond">${ico('plus')}</span><span class="naam">Seizoen of film toevoegen</span></button></div>`;
-  if (ex.length) h += `<div class="kopje">Films</div><div class="groep">${ex.map((d, k) => deelRij(d, k, false)).join('')}</div>`;
-  h += `<div class="groep" style="margin-top:var(--ruimte-6)">
+  h += actieRij('deel-toevoegen', t.id, 'Seizoen of film toevoegen') + '</div>';
+  if (ex.length) h += `<h3 class="cat">Films</h3><div class="items" style="--c:${kleur}">${ex.map((d, k) => deelRij(d, k, false)).join('')}</div>`;
+  h += `<div class="group">
     ${navRij('titel-naam', 'potlood', 'Naam wijzigen', t.id)}
     ${navRij('plaatje-kies', 'plaatje', 'Plaatje kiezen', t.id)}
     ${delenVan(t.id).some(d => d.bronId) ? navRij('titel-nieuw', 'vakjes', 'Nieuwe delen zoeken', t.id) : ''}
-    ${navRij('titel-weg', 'prullenbak', 'Verwijder', t.id, true)}
-  </div></div>`;
+    ${isGestopt(t) ? navRij('gestopt', 'tv', 'Weer oppakken', t.id, false) : navRij('gestopt', 'ontkoppel', 'Zet op Gestopt', t.id, false, stKleur(GESTOPT))}
+    ${actieRij('titel-weg', t.id, 'Verwijder', true)}
+  </div>`;
   $('#main').innerHTML = h;
-  chipInBeeld($('#main .chips.status'));
   ververs(t);
 }
 /** Het opengeklapte seizoen: je eigen keuze, anders het eerste dat nog niet af is. */
@@ -761,7 +586,9 @@ function openSeizoen(titelId) {
   const d = seizoenenVan(titelId).find(d => getal(d.gezien) < beschikbaar(d));
   return d ? d.id : null;
 }
-const navRij = (act, icoon, tekst, id, gevaar) => `<button type="button" class="rij${gevaar ? ' gevaar' : ''}" data-act="${act}" data-id="${id}"><span class="rij-ico">${ico(icoon)}</span><span class="naam">${tekst}</span>${gevaar ? '' : `<span class="pijltje rij-ico">${ico('pijl-rechts')}</span>`}</button>`;
+/** Menurij (Syztem L8): icoon in een rondje, naam, pijltje als hij iets opent. */
+const navRij = (act, icoon, tekst, id, pijl = true, kleur = '') => `<button type="button" class="nav-row" data-act="${act}" data-id="${id}"><span class="ico"${kleur ? ` style="--c:${kleur}"` : ''}>${ico(icoon)}</span><span class="lbltxt">${tekst}</span><span></span>${pijl ? '<span class="chev2"></span>' : ''}</button>`;
+/** Seizoen of film: vinkje vooraan (helemaal gezien), tik op de naam klapt de afleveringen open (Syztem G). */
 function deelRij(d, k, open) {
   const max = beschikbaar(d), tot = Math.max(aflTotaal(d), max), g = getal(d.gezien);
   const af = max > 0 && g >= max;
@@ -772,27 +599,24 @@ function deelRij(d, k, open) {
   const rechts = extra ? 'Film' : `${g}/${tot || '?'}`;
   const naam = deelNaam(d, k);
   const klapbaar = !extra && max;
-  let h = veegRij('d-' + d.id, [['wijzig', 'deel-wijzig', d.id, `${naam} wijzigen`], ['weg', 'deel-weg', d.id, `${naam} verwijderen`]],
-    `<div class="rij${af ? ' af' : ''}">
-      <button type="button" class="vink" aria-pressed="${af}" data-act="deel-vink" data-id="${d.id}" aria-label="${esc(naam)} ${af ? 'niet gezien' : 'helemaal gezien'}"${max ? '' : ' disabled'}>${ico('vinkje')}</button>
-      <button type="button" class="deel-knop" data-act="${extra ? 'deel-vink' : 'deel-klap'}" data-id="${d.id}"${max ? '' : ' disabled'}>
-        <span class="rij-tekst"><span class="naam">${esc(naam)}</span>${meta ? `<span class="bijregel">${esc(meta)}</span>` : ''}</span>
-        <span class="rechts">${esc(rechts)}</span>
-        ${klapbaar ? `<span class="klap${open ? ' open' : ''}">${ico('pijl-onder')}</span>` : ''}
-      </button>
-    </div>`);
-  if (open && klapbaar) h += `<div class="afl-paneel geen-lijn">${afleveringen(d)}</div>`;
-  return h;
+  const vink = `<button type="button" class="vinkknop" data-act="deel-vink" data-id="${d.id}" aria-pressed="${af}" aria-label="${esc(naam)} ${af ? 'niet gezien' : 'helemaal gezien'}"${max ? '' : ' disabled'}><span class="tick"></span></button>`;
+  const kop = klapbaar
+    ? `<div class="check">${vink}<button type="button" class="klapknop" data-act="deel-klap" data-id="${d.id}" aria-expanded="${open}">${rijTekst(naam, meta)}<span class="getal">${esc(rechts)}</span><span class="chevr klap"></span></button></div>`
+    : `<div class="check">${vink}${rijTekst(naam, meta)}<span class="getal">${esc(rechts)}</span></div>`;
+  const rij = veegRij('d-' + d.id, [['wijzig', 'deel-wijzig', d.id, `${naam} wijzigen`], ['weg', 'deel-weg', d.id, `${naam} verwijderen`]], kop, af ? 'on' : '');
+  if (!klapbaar) return rij;
+  return `<div class="klaprij">${rij}${open ? `<div class="klap-inhoud">${afleveringen(d)}</div>` : ''}</div>`;
 }
+/** Afleveringen afvinken (Syztem N, tik = tot en met deze gezien); lange seizoenen met de teller (Syztem H). */
 function afleveringen(d) {
   const max = beschikbaar(d), tot = Math.max(aflTotaal(d), max), g = getal(d.gezien);
   if (tot > LANG_SEIZOEN) return `<div class="teller">
-      <button type="button" class="rond-knop" data-act="afl-stap" data-id="${d.id}" data-stap="-1" aria-label="Eén aflevering terug">${ico('min')}</button>
-      <input class="veld" type="number" inputmode="numeric" min="0" max="${max}" value="${g}" data-afl-invoer="${d.id}" aria-label="Gezien tot en met aflevering">
-      <button type="button" class="rond-knop" data-act="afl-stap" data-id="${d.id}" data-stap="1" aria-label="Volgende aflevering gezien">${ico('plus')}</button>
-      <span class="van">van ${max}</span></div>`;
-  let h = '<div class="afl">';
-  for (let n = 1; n <= tot; n++) h += `<button type="button" class="afl-n${n <= g ? ' gezien' : ''}" data-act="afl" data-id="${d.id}" data-n="${n}"${n > max ? ' disabled' : ''} aria-label="Tot en met aflevering ${n} gezien">${n}</button>`;
+      <button type="button" class="stap" data-act="afl-stap" data-id="${d.id}" data-stap="-1" aria-label="Eén aflevering terug">${ico('min')}</button>
+      <input class="field waarde" type="number" inputmode="numeric" min="0" max="${max}" value="${g}" data-afl-invoer="${d.id}" aria-label="Gezien tot en met aflevering">
+      <button type="button" class="stap" data-act="afl-stap" data-id="${d.id}" data-stap="1" aria-label="Volgende aflevering gezien">${ico('plus')}</button></div>
+    <p class="note">van ${max.toLocaleString('nl-NL')} afleveringen</p>`;
+  let h = '<div class="nummers kleur">';
+  for (let n = 1; n <= tot; n++) h += `<button type="button"${n <= g ? ' class="gekozen"' : ''} data-act="afl" data-id="${d.id}" data-n="${n}"${n > max ? ' disabled' : ''} aria-label="Tot en met aflevering ${n} gezien">${n}</button>`;
   return h + '</div>';
 }
 /** Lopende delen bijwerken vanaf AniList (hoogstens één keer per 6 uur per titel). */
@@ -812,9 +636,8 @@ async function ververs(t) {
 /* ---------- Instellingen ---------- */
 function tekenInst() {
   zetKop('Instellingen');
-  $('#headerextra').innerHTML = '';
-  $('#main').innerHTML = `<div class="kopje">Namen bij toevoegen</div>
-    <div class="keuze">${[['engels', 'Engels'], ['romaji', 'Japans (romaji)']].map(([id, n]) => `<button type="button" aria-pressed="${taal() === id}" data-act="taal" data-id="${id}">${n}</button>`).join('')}</div>`;
+  $('#main').innerHTML = `<h3 class="cat">Namen bij toevoegen</h3>
+    <div class="keuzepil" role="group" aria-label="Namen bij toevoegen">${[['engels', 'Engels'], ['romaji', 'Japans (romaji)']].map(([id, n]) => `<button type="button"${taal() === id ? ' class="gekozen"' : ''} aria-pressed="${taal() === id}" data-act="taal" data-id="${id}">${n}</button>`).join('')}</div>`;
 }
 
 /* ---------- Verse AniList-gegevens ----------
@@ -913,9 +736,11 @@ function voegVondstToe(id) {
 }
 function negeerVondst(id) {
   const zet = ids => bewaar('instellingen', [{ id: 'genegeerd', waarde: [...ids].join(',') }]);
-  const oud = genegeerd(), nieuw = new Set(oud); nieuw.add(id);
+  const lijst = [].concat(id), oud = genegeerd(), nieuw = new Set(oud);
+  lijst.forEach(x => nieuw.add(x));
+  sluitVeeg();
   zet(nieuw);
-  melding('Genegeerd.', 'Ongedaan maken', () => zet(oud));
+  melding(lijst.length > 1 ? `${lijst.length} genegeerd.` : 'Genegeerd.', 'Ongedaan maken', () => zet(oud));
 }
 
 
@@ -1008,37 +833,40 @@ const deelUitMedia = (titelId, x, positie) => ({
 const inLijst = id => D().delen.find(d => String(d.bronId) === String(id));
 
 /* ================= Vensters ================= */
-const SKELET_RIJEN = n => '<div class="skelet" style="height:var(--rij)"></div>'.repeat(n);
-function openSheet(html, zoeken) {
+const SKELET_RIJEN = n => `<div class="items">${SKELET_RIJ.repeat(n)}</div>`;
+/** Venster (Syztem V1). vast = altijd even hoog, de lijst scrolt binnen (zoeken). */
+function openSheet(html, vast) {
   $('#venster-inhoud').innerHTML = html;
-  $('#venster .venster').classList.toggle('zoeken', !!zoeken);
+  $('#venster .sheet').classList.toggle('vast', !!vast);
   $('#venster').hidden = false;
-  const s = $('#venster .venster'); s.scrollTop = 0; s.focus();
+  const s = $('#venster .sheet'); s.scrollTop = 0; s.focus();
 }
 function sluitSheet() { $('#venster').hidden = true; S.zoekDoel = null; }
+/** Bevestigen (Syztem V2) in plaats van confirm(). */
 function bevestig(tekst, knop = 'Verwijder', gevaar = true) {
   return new Promise(klaar => {
     const w = $('#bevestig');
-    w.innerHTML = `<div class="venster-bg" data-bv="0"></div>
-      <div class="venster bevestig" role="alertdialog" aria-modal="true" aria-label="${esc(tekst)}">
-        <h2>${esc(tekst)}</h2>
-        <button type="button" class="knop${gevaar ? ' gevaar' : ''}" data-bv="1">${esc(knop)}</button>
-        <button type="button" class="knop zacht" data-bv="0">Annuleer</button>
+    w.innerHTML = `<div class="sheet-bg" data-bv="0"></div>
+      <div class="bv-kaart" role="alertdialog" aria-modal="true" aria-label="${esc(tekst)}">
+        <p>${esc(tekst)}</p>
+        <button type="button" class="btn wide${gevaar ? ' gevaar' : ''}" data-bv="1">${esc(knop)}</button>
+        <button type="button" class="btn soft wide" data-bv="0">Annuleer</button>
       </div>`;
     w.hidden = false;
     w.onclick = e => { const b = e.target.closest('[data-bv]'); if (!b) return; w.hidden = true; w.innerHTML = ''; klaar(b.dataset.bv === '1'); };
     $('[data-bv="1"]', w).focus();
   });
 }
+/** Eigen invoervenster in plaats van prompt(). Geeft de tekst terug, of null bij annuleren. */
 function vraagTekst(titelTekst, waarde, placeholder = '') {
   return new Promise(klaar => {
     const w = $('#bevestig');
-    w.innerHTML = `<div class="venster-bg" data-bv="0"></div>
-      <div class="venster bevestig" role="dialog" aria-modal="true" aria-label="${esc(titelTekst)}">
-        <h2>${esc(titelTekst)}</h2>
-        <input class="veld" id="bv-invoer" value="${esc(waarde || '')}" placeholder="${esc(placeholder)}" autocomplete="off" enterkeyhint="done">
-        <button type="button" class="knop" data-bv="1">Opslaan</button>
-        <button type="button" class="knop zacht" data-bv="0">Annuleer</button>
+    w.innerHTML = `<div class="sheet-bg" data-bv="0"></div>
+      <div class="bv-kaart" role="dialog" aria-modal="true" aria-label="${esc(titelTekst)}">
+        <p>${esc(titelTekst)}</p>
+        <input class="field" id="bv-invoer" value="${esc(waarde || '')}" placeholder="${esc(placeholder)}" autocomplete="off" enterkeyhint="done">
+        <button type="button" class="btn wide" data-bv="1">Opslaan</button>
+        <button type="button" class="btn soft wide" data-bv="0">Annuleer</button>
       </div>`;
     w.hidden = false;
     const inp = $('#bv-invoer');
@@ -1049,26 +877,27 @@ function vraagTekst(titelTekst, waarde, placeholder = '') {
   });
 }
 let toastTimer, toastActie;
+/** Melding (Syztem V3): 3,5 s; met een knop 5 s. */
 function melding(tekst, knop, actie) {
   $('#toast-text').textContent = tekst;
   const b = $('#toast-btn');
   b.hidden = !knop; b.textContent = knop || '';
   toastActie = actie || null;
-  $('#toast').classList.add('toon');
+  $('#toast').classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { $('#toast').classList.remove('toon'); toastActie = null; }, knop ? 5000 : 3500);
+  toastTimer = setTimeout(() => { $('#toast').classList.remove('show'); toastActie = null; }, knop ? 5000 : 3500);
 }
-$('#toast-btn').onclick = () => { const a = toastActie; toastActie = null; $('#toast').classList.remove('toon'); if (a) a(); };
+$('#toast-btn').onclick = () => { const a = toastActie; toastActie = null; $('#toast').classList.remove('show'); if (a) a(); };
 
 /* ---------- Zoeken en toevoegen ---------- */
 function openZoeken(doelTitelId) {
   S.zoekDoel = doelTitelId || null;
   S.zoekQ = '';
-  openSheet(`<h2>${doelTitelId ? 'Seizoen of film toevoegen' : 'Anime toevoegen'}</h2>
-    <input class="veld" type="search" id="al-zoek" placeholder="Zoek op AniList" autocomplete="off" enterkeyhint="search" aria-label="Zoek op AniList">
-    <div id="ac">${zelfRij()}</div>`, true);
+  openSheet(`<h4>${doelTitelId ? 'Seizoen of film toevoegen' : 'Anime toevoegen'}</h4>
+    <input class="field" type="search" id="al-zoek" placeholder="Zoek op AniList" autocomplete="off" enterkeyhint="search" aria-label="Zoek op AniList">
+    <div id="ac" class="scroll-lijst">${zelfRij()}</div>`, true);
 }
-const zelfRij = () => `<div class="groep" style="margin-top:var(--ruimte-3)"><button type="button" class="rij" data-act="zelf-open"><span class="rij-ico">${ico('plus')}</span><span class="naam">Zelf toevoegen</span></button></div>`;
+const zelfRij = (rijen = '') => `<div class="items">${rijen}${actieRij('zelf-open', '', 'Zelf toevoegen')}</div>`;
 let zoekTimer;
 function zoekInvoer(q) {
   clearTimeout(zoekTimer);
@@ -1076,22 +905,21 @@ function zoekInvoer(q) {
   if (!S.zoekQ) { $('#ac').innerHTML = zelfRij(); return; }
   zoekTimer = setTimeout(async () => {
     const vraag = S.zoekQ;
-    $('#ac').innerHTML = `<p class="ac-leeg">Zoeken…</p>`;
+    $('#ac').innerHTML = `<p class="note">Zoeken…</p>`;
     try {
       const d = await anilist(`query($s:String){Page(perPage:15){media(search:$s,type:ANIME,sort:SEARCH_MATCH){${MEDIA}}}}`, { s: vraag });
       if (vraag !== S.zoekQ || !$('#ac')) return;
       const r = d.Page.media.filter(telt);
-      $('#ac').innerHTML = (r.length ? `<div class="groep">${r.map(m => {
+      $('#ac').innerHTML = (r.length ? '' : `<p class="note">Niets gevonden voor “${esc(vraag)}”.</p>`) + zelfRij(r.map(m => {
         const al = inLijst(m.id), t = al && titel(al.titelId);
         const meta = [(m.startDate || {}).year, FORMATEN[m.format], m.episodes ? m.episodes + ' afl.' : ''].filter(Boolean).join(' · ');
-        return `<button type="button" class="rij" data-act="kies-media" data-id="${m.id}">
-          ${posterHtml({ naam: mediaNaam(m), plaatje: (m.coverImage || {}).medium }, 'mini')}
-          <span class="rij-tekst"><span class="naam">${esc(mediaNaam(m))}</span><span class="bijregel">${esc(meta)}</span></span>
-          ${t ? `<span class="chip kleur" style="--c:${stKleur(statusVan(t))}">${esc(statusNaam(statusVan(t)))}</span>` : ''}</button>`;
-      }).join('')}</div>` : `<p class="ac-leeg">Niets gevonden voor “${esc(vraag)}”.</p>`) + zelfRij();
+        return `<button type="button" class="item" data-act="kies-media" data-id="${m.id}"><span class="check met-poster">
+          ${posterHtml({ naam: mediaNaam(m), plaatje: (m.coverImage || {}).medium })}${rijTekst(mediaNaam(m), meta)}
+          ${t ? `<span class="chip" style="--c:${stKleur(statusVan(t))}">${esc(statusNaam(statusVan(t)))}</span>` : ''}</span></button>`;
+      }).join(''));
       S.zoekMedia = r;
     } catch (e) {
-      if (vraag === S.zoekQ && $('#ac')) $('#ac').innerHTML = `<p class="ac-leeg">AniList is even niet bereikbaar.</p>` + zelfRij();
+      if (vraag === S.zoekQ && $('#ac')) $('#ac').innerHTML = `<p class="note">AniList is even niet bereikbaar.</p>` + zelfRij();
     }
   }, 350);
 }
@@ -1110,37 +938,36 @@ async function kiesMedia(id) {
     return melding(`${x.naam || mediaNaam(m)} toegevoegd.`);
   }
   if (al) { sluitSheet(); openTitel(al.titelId); return melding('Staat al in je lijst.'); }
-  $('#venster .venster').classList.remove('zoeken');
-  $('#venster-inhoud').innerHTML = `<h2>Reeks zoeken…</h2>${SKELET_RIJEN(4)}`;
+  $('#venster .sheet').classList.remove('vast');
+  $('#venster-inhoud').innerHTML = `<h4>Reeks zoeken…</h4>${SKELET_RIJEN(4)}`;
   try {
     const r = await haalReeks(id);
     S.reeks = r;
     toonReeks(r);
   } catch (e) {
-    $('#venster-inhoud').innerHTML = `<h2>Dat lukte niet</h2><p class="ac-leeg">AniList is even niet bereikbaar. Probeer het zo opnieuw.</p>`;
+    $('#venster-inhoud').innerHTML = `<h4>Dat lukte niet</h4><p class="note">AniList is even niet bereikbaar. Probeer het zo opnieuw.</p>`;
   }
 }
-/** Keuzelijst met alle seizoenen en films; alles staat aan. */
+/** Keuzelijst met alle seizoenen en films; alles staat aan (tikrondje, Syztem A). */
 function toonReeks(r, titelId) {
   const rij = (x, k) => {
     const al = inLijst(x.m.id);
     const aan = !al && (x.soort === 'seizoen' || x.m.format === 'MOVIE');
     const meta = [(x.m.startDate || {}).year, FORMATEN[x.m.format], x.m.episodes ? x.m.episodes + ' afl.' : (x.m.status === 'NOT_YET_RELEASED' ? 'nog niet uit' : ''), al ? 'staat al bij ' + titel(al.titelId).naam : ''].filter(Boolean).join(' · ');
-    return `<button type="button" class="rij${aan ? ' on' : ''}" data-act="reeks-vink" data-k="${k}"${al ? ' disabled' : ''}>
-      <span class="vink" aria-pressed="${aan}">${ico('vinkje')}</span>
-      <span class="rij-tekst"><span class="naam">${esc(x.naam || (x.m === r.eerste ? 'Seizoen 1' : mediaNaam(x.m)))}</span><span class="bijregel">${esc(meta)}</span></span></button>`;
+    return `<button type="button" class="item${aan ? ' on' : ''}" data-act="reeks-vink" data-k="${k}" aria-pressed="${aan}"${al ? ' disabled' : ''}>
+      <span class="check"><span class="vinkknop">${PLUS_RONDJE()}</span>${rijTekst(x.naam || (x.m === r.eerste ? 'Seizoen 1' : mediaNaam(x.m)), meta)}</span></button>`;
   };
   const lijst = r.delen.map((x, k) => ({ x, k })).filter(({ x }) => !titelId || !inLijst(x.m.id));
   const sz = lijst.filter(({ x }) => x.soort === 'seizoen'), ex = lijst.filter(({ x }) => x.soort === 'extra');
-  $('#venster-inhoud').innerHTML = `<h2>${titelId ? 'Nieuwe delen' : esc(r.basis)}</h2>
-    ${titelId ? '' : `<label class="label" for="rk-naam">Naam</label><input class="veld" id="rk-naam" value="${esc(r.basis)}" autocomplete="off">`}
-    ${sz.length ? `<div class="kopje">Seizoenen</div><div class="groep">${sz.map(({ x, k }) => rij(x, k)).join('')}</div>` : ''}
-    ${ex.length ? `<div class="kopje">Films</div><div class="groep">${ex.map(({ x, k }) => rij(x, k)).join('')}</div>` : ''}
-    <button type="button" class="knop breed" data-act="reeks-bewaar" data-id="${titelId || ''}">Toevoegen</button>`;
+  $('#venster-inhoud').innerHTML = `<h4>${titelId ? 'Nieuwe delen' : esc(r.basis)}</h4>
+    ${titelId ? '' : `<label class="lbl"><span>Naam</span><input class="field" id="rk-naam" value="${esc(r.basis)}" autocomplete="off"></label>`}
+    ${sz.length ? `<h3 class="cat">Seizoenen</h3><div class="items">${sz.map(({ x, k }) => rij(x, k)).join('')}</div>` : ''}
+    ${ex.length ? `<h3 class="cat">Films</h3><div class="items">${ex.map(({ x, k }) => rij(x, k)).join('')}</div>` : ''}
+    <div class="acts"><button type="button" class="btn wide" data-act="reeks-bewaar" data-id="${titelId || ''}">Toevoegen</button></div>`;
 }
 function bewaarReeks(titelId) {
   const r = S.reeks;
-  const gekozen = $$('#venster-inhoud .rij.on').map(b => r.delen[Number(b.dataset.k)]);
+  const gekozen = $$('#venster-inhoud .item.on').map(b => r.delen[Number(b.dataset.k)]);
   if (!gekozen.length) return melding('Kies minstens één deel.');
   if (titelId) {
     const t = titel(titelId);
@@ -1171,9 +998,9 @@ function bewaarReeks(titelId) {
 async function openPlaatjes(id) {
   const t = titel(id), metBron = delenVan(id).filter(d => d.bronId);
   S.plaatjeVoor = id;
-  openSheet(`<h2>Plaatje kiezen</h2>
-    ${metBron.length ? `<div class="plaatjes" id="plaatjes">${'<span class="skelet"></span>'.repeat(Math.min(metBron.length, 6))}</div>` : ''}
-    <div class="groep" style="margin-top:var(--ruimte-4)"><button type="button" class="rij" data-act="plaatje-link" data-id="${id}"><span class="rij-ico">${ico('plaatje')}</span><span class="naam">Eigen link plakken</span></button></div>`);
+  openSheet(`<h4>Plaatje kiezen</h4>
+    ${metBron.length ? `<div class="posters" id="plaatjes">${'<span class="skelet"></span>'.repeat(Math.min(metBron.length, 6))}</div>` : ''}
+    <div class="group">${navRij('plaatje-link', 'plaatje', 'Eigen link plakken', id)}</div>`);
   if (!metBron.length) return;
   try {
     const data = await anilist('query{' + metBron.map((d, i) => `m${i}:Media(id:${Number(d.bronId)}){coverImage{large}}`).join(' ') + '}');
@@ -1184,25 +1011,25 @@ async function openPlaatjes(id) {
       if (!url || al.has(url)) return '';
       al.add(url);
       const naam = deelNaam(d, d.soort === 'extra' ? ex.indexOf(d) : sz.indexOf(d));
-      return `<button type="button" class="plaatje-keuze" data-act="plaatje-zet" data-url="${esc(url)}" aria-pressed="${url === t.plaatje}" aria-label="Poster van ${esc(naam)}">
-        <img src="${esc(url)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span>${esc(naam)}</span></button>`;
+      return `<button type="button" class="p${url === t.plaatje ? ' gekozen' : ''}" data-act="plaatje-zet" data-url="${esc(url)}" aria-pressed="${url === t.plaatje}" aria-label="Poster van ${esc(naam)}">
+        <img class="poster" src="${esc(url)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="p-naam">${esc(naam)}</span><span class="gekozen-vink">${ico('vinkje')}</span></button>`;
     }).join('');
   } catch (e) {
-    if ($('#plaatjes')) $('#plaatjes').outerHTML = '<p class="ac-leeg">AniList is even niet bereikbaar. Probeer het zo opnieuw.</p>';
+    if ($('#plaatjes')) $('#plaatjes').outerHTML = '<p class="note">AniList is even niet bereikbaar. Probeer het zo opnieuw.</p>';
   }
 }
 /* Zelf toevoegen, als AniList hem niet heeft */
-const soortKeuze = () => `<div class="keuze" id="zf-soort">${[['seizoen', 'Seizoen'], ['extra', 'Film']].map(([id, n]) => `<button type="button" aria-pressed="${S.zelfSoort === id}" data-act="zf-soort" data-id="${id}">${n}</button>`).join('')}</div>`;
+const soortKeuze = () => `<div class="lbl"><span>Soort</span><div class="keuzepil in-venster" id="zf-soort" role="group" aria-label="Soort">${[['seizoen', 'Seizoen'], ['extra', 'Film']].map(([id, n]) => `<button type="button"${S.zelfSoort === id ? ' class="gekozen"' : ''} aria-pressed="${S.zelfSoort === id}" data-act="zf-soort" data-id="${id}">${n}</button>`).join('')}</div></div>`;
 function openZelf() {
   const doel = S.zoekDoel && titel(S.zoekDoel);
   S.zelfSoort = 'seizoen';
-  $('#venster .venster').classList.remove('zoeken');
-  $('#venster-inhoud').innerHTML = `<h2>Zelf toevoegen</h2>
-    <label class="label" for="zf-naam">Naam</label><input class="veld" id="zf-naam" value="${esc(doel ? '' : S.zoekQ || '')}" autocomplete="off" placeholder="${doel ? 'Bijvoorbeeld Seizoen 2' : ''}">
-    ${doel ? `<div class="label">Soort</div>${soortKeuze()}`
-      : `<label class="label" for="zf-plaatje">Plaatje (link, mag leeg)</label><input class="veld" id="zf-plaatje" type="url" autocomplete="off" placeholder="https://">`}
-    <label class="label" for="zf-afl">Afleveringen</label><input class="veld" id="zf-afl" type="number" inputmode="numeric" min="0" value="${doel ? '' : 12}">
-    <button type="button" class="knop breed" data-act="zelf-bewaar">Toevoegen</button>`;
+  $('#venster .sheet').classList.remove('vast');
+  $('#venster-inhoud').innerHTML = `<h4>Zelf toevoegen</h4>
+    <label class="lbl"><span>Naam</span><input class="field" id="zf-naam" value="${esc(doel ? '' : S.zoekQ || '')}" autocomplete="off" placeholder="${doel ? 'Bijvoorbeeld Seizoen 2' : ''}"></label>
+    ${doel ? soortKeuze()
+      : `<label class="lbl"><span>Plaatje (link, mag leeg)</span><input class="field" id="zf-plaatje" type="url" autocomplete="off" placeholder="https://"></label>`}
+    <label class="lbl"><span>Afleveringen</span><input class="field" id="zf-afl" type="number" inputmode="numeric" min="0" value="${doel ? '' : 12}"></label>
+    <div class="acts"><button type="button" class="btn wide" data-act="zelf-bewaar">Toevoegen</button></div>`;
   $('#zf-naam').focus();
 }
 function bewaarZelf() {
@@ -1235,11 +1062,11 @@ function openRating(id) {
 function tekenRating() {
   const t = titel(S.ratingVoor), r = t.rating === '' || t.rating == null ? null : Number(t.rating);
   const heel = r == null ? null : Math.floor(r + 1e-9), dec = r == null ? null : Math.round((r - heel) * 10);
-  const html = `<h2>Jouw cijfer</h2>
-    <p class="rating-groot${r == null ? ' geen' : ''}">${r == null ? '–' : cijferTekst(r)}</p>
-    <div class="keuze raster">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button type="button" aria-pressed="${heel === n}" data-act="rating-heel" data-id="${n}">${n}</button>`).join('')}</div>
-    <div class="keuze raster">${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button type="button" aria-pressed="${dec === n && r != null}" data-act="rating-dec" data-id="${n}"${r == null || heel === 10 ? ' disabled' : ''}>,${n}</button>`).join('')}</div>
-    <button type="button" class="knop zacht breed" data-act="rating-wis"${r == null ? ' disabled' : ''}>Wis cijfer</button>`;
+  const knop = (aan, act, n, tekst, uit) => `<button type="button"${aan ? ' class="gekozen"' : ''} aria-pressed="${aan}" data-act="${act}" data-id="${n}"${uit ? ' disabled' : ''}>${tekst}</button>`;
+  const html = `<h4>Jouw cijfer${r == null ? '' : ': ' + cijferTekst(r)}</h4>
+    <div class="nummers vijf">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => knop(heel === n, 'rating-heel', n, n)).join('')}</div>
+    <div class="nummers vijf">${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => knop(dec === n && r != null, 'rating-dec', n, ',' + n, r == null || heel === 10)).join('')}</div>
+    <div class="acts"><button type="button" class="btn soft wide" data-act="rating-wis"${r == null ? ' disabled' : ''}>Wis cijfer</button></div>`;
   if ($('#venster').hidden) openSheet(html); else $('#venster-inhoud').innerHTML = html;
 }
 function zetRating(waarde) {
@@ -1249,11 +1076,11 @@ function zetRating(waarde) {
 function openDeelWijzig(id) {
   const d = D().delen.find(x => x.id === id);
   S.wijzigDeel = id; S.zelfSoort = d.soort === 'extra' ? 'extra' : 'seizoen';
-  openSheet(`<h2>Wijzigen</h2>
-    <label class="label" for="dw-naam">Naam</label><input class="veld" id="dw-naam" value="${esc(d.naam)}" autocomplete="off" placeholder="${esc(deelNaam(Object.assign({}, d, { naam: '' }), seizoenenVan(d.titelId).indexOf(d)))}">
-    <div class="label">Soort</div>${soortKeuze()}
-    <label class="label" for="dw-afl">Afleveringen</label><input class="veld" id="dw-afl" type="number" inputmode="numeric" min="0" value="${esc(d.afleveringen || beschikbaar(d) || '')}">
-    <button type="button" class="knop breed" data-act="deel-bewaar">Opslaan</button>`);
+  openSheet(`<h4>Wijzigen</h4>
+    <label class="lbl"><span>Naam</span><input class="field" id="dw-naam" value="${esc(d.naam)}" autocomplete="off" placeholder="${esc(deelNaam(Object.assign({}, d, { naam: '' }), seizoenenVan(d.titelId).indexOf(d)))}"></label>
+    ${soortKeuze()}
+    <label class="lbl"><span>Afleveringen</span><input class="field" id="dw-afl" type="number" inputmode="numeric" min="0" value="${esc(d.afleveringen || beschikbaar(d) || '')}"></label>
+    <div class="acts"><button type="button" class="btn wide" data-act="deel-bewaar">Opslaan</button></div>`);
 }
 
 
@@ -1284,6 +1111,7 @@ const ACTIES = {
   'titel-open': (b, id) => { S.titelOpen = id; S.swipeOpen = null; teken(); $('#scroller').scrollTop = 0; },
   'vondst-toevoeg': (b, id) => voegVondstToe(Number(id)),
   'vondst-negeer': (b, id) => negeerVondst(Number(id)),
+  'vondst-alles-negeer': () => negeerVondst(vondstenNu().map(v => v.m.id)),
   'titel-naam': async (b, id) => { sluitVeeg(); const t = titel(id); const n = await vraagTekst('Naam wijzigen', t.naam); if (n) bewaar('titels', [{ id, naam: n }]); },
   'plaatje-kies': (b, id) => openPlaatjes(id),
   'plaatje-zet': b => { const id = S.plaatjeVoor; sluitSheet(); bewaar('titels', [{ id, plaatje: b.dataset.url }]); melding('Plaatje gewijzigd.'); },
@@ -1299,7 +1127,7 @@ const ACTIES = {
   },
   'titel-nieuw': async (b, id) => {
     const start = seizoenenVan(id).find(d => d.bronId) || delenVan(id).find(d => d.bronId);
-    openSheet(`<h2>Nieuwe delen zoeken…</h2>${SKELET_RIJEN(3)}`);
+    openSheet(`<h4>Nieuwe delen zoeken…</h4>${SKELET_RIJEN(3)}`);
     try {
       const r = await haalReeks(Number(start.bronId));
       S.reeks = r;
@@ -1347,11 +1175,11 @@ const ACTIES = {
   },
   'coll-filter': (b, id) => { S.collFilter = id; teken(); },
   'kies-media': (b, id) => kiesMedia(Number(id)),
-  'reeks-vink': b => { const aan = b.classList.toggle('on'); $('.vink', b).setAttribute('aria-pressed', aan); },
+  'reeks-vink': b => { const aan = b.classList.toggle('on'); b.setAttribute('aria-pressed', aan); },
   'reeks-bewaar': (b, id) => bewaarReeks(id || null),
   'zelf-open': openZelf,
   'zelf-bewaar': bewaarZelf,
-  'zf-soort': (b, id) => { S.zelfSoort = id; $$('#zf-soort button').forEach(x => x.setAttribute('aria-pressed', x === b)); },
+  'zf-soort': (b, id) => { S.zelfSoort = id; $$('#zf-soort button').forEach(x => { x.classList.toggle('gekozen', x === b); x.setAttribute('aria-pressed', x === b); }); },
   taal: (b, id) => bewaar('instellingen', [{ id: 'taal', waarde: id }])
 };
 document.addEventListener('click', e => {
@@ -1373,16 +1201,16 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !$('#venster').hidden) sluitSheet();
 });
 
-/* ---------- Vegen naar links (Kage Syztem 5.11) ---------- */
+/* ---------- Vegen naar links (Kage Syztem A5) ---------- */
 let veeg = null, klikOnderdrukken = false;
-const breedte = sw => [...$('.veeg-knoppen', sw).children].reduce((t, b) => t + b.offsetWidth, 0) || 72;
-function sluitVeeg() { if (!S.swipeOpen) return; S.swipeOpen = null; $$('.veeg.open').forEach(x => x.classList.remove('open')); }
+const breedte = sw => [...$('.swipe-acties', sw).children].reduce((t, b) => t + b.offsetWidth, 0) || 72;
+function sluitVeeg() { if (!S.swipeOpen) return; S.swipeOpen = null; $$('.swipe.open').forEach(x => x.classList.remove('open')); }
 document.addEventListener('pointerdown', e => {
-  const sw = e.target.closest('.veeg');
-  if (e.target.closest('.veeg-knoppen')) return;
+  const sw = e.target.closest('.swipe');
+  if (e.target.closest('.swipe-acties')) return;
   if (!sw) { sluitVeeg(); return; }
   if (S.swipeOpen && S.swipeOpen !== sw.dataset.key) sluitVeeg();
-  veeg = { el: sw, kaart: $('.veeg-inhoud', sw), x: e.clientX, y: e.clientY, id: e.pointerId, start: sw.classList.contains('open') ? -breedte(sw) : 0, t: 0, actief: false };
+  veeg = { el: sw, kaart: $('.swipe-kaart', sw), x: e.clientX, y: e.clientY, id: e.pointerId, start: sw.classList.contains('open') ? -breedte(sw) : 0, t: 0, actief: false };
 });
 document.addEventListener('pointermove', e => {
   if (!veeg || e.pointerId !== veeg.id) return;
@@ -1418,11 +1246,11 @@ document.addEventListener('pointerup', eindVeeg);
 document.addEventListener('pointercancel', eindVeeg);
 document.addEventListener('click', e => {
   if (klikOnderdrukken) { e.preventDefault(); e.stopPropagation(); return; }
-  const sw = e.target.closest('.veeg.open');
-  if (sw && !e.target.closest('.veeg-knoppen')) { e.preventDefault(); e.stopPropagation(); sluitVeeg(); }
+  const sw = e.target.closest('.swipe.open');
+  if (sw && !e.target.closest('.swipe-acties')) { e.preventDefault(); e.stopPropagation(); sluitVeeg(); }
 }, true);
 
-/* ---------- Titel-schakelaar (Kage Syztem 5.1) ---------- */
+/* ---------- Titel-schakelaar (Kage Syztem K2) ---------- */
 function menuOpen() { $('#schermmenu').hidden = false; $('#schakelaar').setAttribute('aria-expanded', 'true'); }
 function menuDicht() { $('#schermmenu').hidden = true; $('#schakelaar').setAttribute('aria-expanded', 'false'); }
 $('#schakelaar').addEventListener('click', () => { if ($('#schermmenu').hidden) menuOpen(); else menuDicht(); });
@@ -1430,7 +1258,7 @@ document.addEventListener('click', e => { if (!$('#schermmenu').hidden && !e.tar
 $('#scroller').addEventListener('scroll', () => { if (!$('#schermmenu').hidden) menuDicht(); }, { passive: true });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#schermmenu').hidden) menuDicht(); });
 
-/* ---------- Toetsenbord (iOS), zie Kage Syztem hoofdstuk 10 ---------- */
+/* ---------- Toetsenbord (iOS), zie Kage Syztem hoofdstuk 9 ---------- */
 function pasToetsenbordAan() {
   const vv = window.visualViewport; if (!vv) return;
   const kb = Math.max(0, Math.round(innerHeight - vv.height - vv.offsetTop));
@@ -1442,7 +1270,7 @@ function houdInBeeld() {
   const el = document.activeElement, vv = window.visualViewport, sc = $('#scroller');
   if (!vv || !el || !/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || !sc.contains(el)) return;
   const r = el.getBoundingClientRect();
-  const boven = Math.max($('.kop-wrap').getBoundingClientRect().bottom, vv.offsetTop) + 8;
+  const boven = Math.max($('header.top').getBoundingClientRect().bottom, vv.offsetTop) + 8;
   const onder = vv.offsetTop + vv.height - 16;
   if (r.bottom > onder) sc.scrollBy(0, Math.min(r.bottom - onder, r.top - boven));
   else if (r.top < boven) sc.scrollBy(0, r.top - boven);

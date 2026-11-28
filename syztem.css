@@ -1,0 +1,522 @@
+/* =====================================================================
+   Kage Syztem · syztem.css · versie 1.2 (28 november 2026)
+   ---------------------------------------------------------------------
+   De blokkendoos voor al mijn apps: alle goedgekeurde onderdelen. Vormgeving afkomstig van Kravschappen.
+   Regels, catalogus en werkwijze: ../SYZTEM.md. Alles bekijken: ../catalogus.html.
+
+   Laden:  <html data-thema="naam" class="app-schil">
+           <link rel="stylesheet" href="…/1.2/syztem.css">
+           <link rel="stylesheet" href="thema.css">
+
+   Een app wijzigt dit bestand nooit en heeft geen eigen onderdelen. Iets nieuws nodig? Dan via de
+   Syztem-check (zie SYZTEM.md) een nieuwe versie maken.
+   ===================================================================== */
+
+/* ---------- 1. Tokens ---------- */
+:root{
+  /* ---------- Neutraal (alleen donker: bruin en beige) ---------- */
+  --bg:#1E1611; --surface:#2A201A; --ink:#F3EADF; --muted:#B3A08E; --line:#3A2E25;
+  --scheiding:color-mix(in srgb,var(--line) 55%,var(--surface)); /* zachte lijn tussen rijen */
+  --bruin:#5B3B26; --actief:#6B4A33; --op-kleur:#FBF6EE; --op-kleur-zacht:rgba(251,246,238,.2);
+  --primary:#E8D6C2; --primary-ink:#2A1D14; --primary-soft:#3A2C22;
+  --accent:#C2594A; --done:#7E6C5E;
+
+  /* ---------- Palet: gelijk in elke app; het thema zegt wat een kleur betekent ----------
+     Tekst op een kleur is altijd --op-kleur. Kleur is een accent (pil, bolletje, rondje,
+     balk, veegknop), nooit de achtergrond van een heel blok. */
+  --terracotta:#B06A48; --olijf:#8A8550; --lavendel:#8B78B8; --zeegroen:#5A9585;
+  --roze:#B56A82; --leisteen:#7D8A97; --mosterd:#A8873F; --wijnrood:#9A4A5A;
+
+  /* ---------- Rollen ---------- */
+  --merk:var(--bruin);            /* het thema mag dit overschrijven (app-icoon, theme_color) */
+  --ontkoppel:var(--accent);      /* van een lijst halen: zelfde rood als verwijderen, ander icoon */
+  --veeg-open:var(--bruin); --wijzig:#8C6E55; --veeg-favoriet:var(--bruin); --veeg-kies:var(--bruin);
+  --chip-meng:var(--op-kleur); --chip-tint:55%; --chip-vlak:28%;
+  --overlay:rgba(0,0,0,.45); --schaduw:rgba(0,0,0,.45); --schaduw-klein:rgba(0,0,0,.3);
+  --tint:rgba(243,234,223,.07);   /* half transparant vlak, in plaats van een rand */
+  --menu-vlak:var(--primary-soft);/* keuzepil, schermmenu, zoekveld */
+
+  /* ---------- Tekst ---------- */
+  --font:"Bricolage Grotesque",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --fs-xs:12px; --fs-s:14px; --fs-m:15px; --fs-basis:17px; --fs-l:18px; --fs-xl:24px; --fs-titel:34px;
+  --gewicht-naam:500; --gewicht-vet:700; --gewicht-zwaar:800;
+  --spatie-titel:-0.02em; --spatie-kop:-0.01em; --spatie-label:.04em;
+
+  /* ---------- Vorm ---------- */
+  --r-s:10px; --r-m:14px; --r-l:18px; --r-xl:24px; --r-rond:999px; --r-blok:var(--r-xl);
+  --schaduw-lijst:0 14px 34px var(--schaduw); --schaduw-sleep:0 12px 30px var(--schaduw);
+  --schaduw-knop:0 2px 4px var(--schaduw-klein);
+  --waas-m:10px;
+  --lijn:1px; --lijn-dik:2px;
+
+  /* ---------- Ruimte ---------- */
+  --ruimte-0:2px; /* alleen voor fijnafstelling */
+  --ruimte-1:4px; --ruimte-2:8px; --ruimte-3:12px; --ruimte-4:16px; --ruimte-5:20px; --ruimte-6:28px;
+
+  /* ---------- Maten ---------- */
+  --breedte:560px; --breedte-bevestig:440px; --breedte-code:360px; --rand:var(--ruimte-4);
+  --h-s:44px;       /* ronde knop, kleine knop */
+  --tik:48px;       /* knoppen, velden */
+  --h-m:54px;       /* rij in een venster, actieknop */
+  --rij:58px;       /* gewone rij */
+  --h-tekstvak:110px;
+  --rondje:28px;    /* rondje vooraan een rij */
+  --vinkje:24px;
+  --ico:32px;       /* icoon in een menurij */
+  --icoonknop:36px; /* segment in een keuzepil, knop in een veld */
+  --icoon-s:16px; --icoon-m:22px; --icoon-l:28px;
+  --veegknop:72px;
+  --vink-b:10px; --vink-h:6px; --vink-dik:2.5px;
+  --pijl:9px; --keuzepijl:5px; --keuzepijl-rand:15px;
+  --schakel-b:51px; --schakel-h:31px; --schakel-knop:27px;
+  --stip:10px;      /* rood stipje op de schakelaar */
+  --veld-klein:104px; /* 1.1: klein veld rechts in een bewerkrij (aantal) */
+  --menu-breedte:240px; /* schermmenu onder de titel */
+  /* actieknop onderin het midden */
+  --actie-hoogte:var(--h-m); --actie-afstand:var(--ruimte-3);
+  --actie-ruimte:calc(var(--actie-afstand) + var(--actie-hoogte) + var(--ruimte-6));
+
+  /* ---------- Beweging ---------- */
+  --duur-snel:.15s; --duur:.2s; --duur-traag:.25s; --duur-lus:1.2s;
+  --veer:cubic-bezier(.2,.9,.3,1); --veer-tab:cubic-bezier(.3,1.4,.5,1);
+
+  /* ---------- Lagen ---------- */
+  --z-binnen:1; --z-kop:5; --z-keuzelijst:7; --z-menu:8; --z-label:10; --z-actie:9; --z-venster:20; --z-boven:30; --z-bevestig:40; --z-code:50;
+
+  color-scheme:dark;
+}
+
+/* ---------- 2. Basis ---------- */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:var(--fs-basis);line-height:1.4;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+button:disabled{opacity:.35;cursor:default}
+input,select,textarea{font:inherit;color:var(--ink)}
+:focus-visible{outline:var(--lijn-dik) solid var(--primary);outline-offset:var(--lijn-dik)}
+a{color:var(--primary)}
+.wrap{max-width:var(--breedte);margin:0 auto;padding:0 var(--rand)}
+
+/* App-schil (iOS): de pagina scrolt nooit, alleen #scroller. Toetsenbordcode: SYZTEM.md > App-schil */
+html.app-schil,html.app-schil body{overflow:hidden;overscroll-behavior:none}
+html.app-schil{height:calc(100% + env(safe-area-inset-top,0px))}
+html.app-schil body{height:100%}
+#scroller{position:fixed;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:calc(var(--actie-ruimte) + env(safe-area-inset-bottom,0px))}
+body.toetsenbord #scroller{padding-bottom:calc(var(--kb,0px) + var(--ruimte-5))}
+
+/* ---------- 3. Kop: titel-schakelaar en kop-knoppen ---------- */
+header.top{position:sticky;top:0;z-index:var(--z-kop);background:var(--bg);padding:calc(var(--ruimte-5) + env(safe-area-inset-top,0px)) 0 var(--ruimte-2)}
+.toprow{position:relative;display:flex;align-items:center;gap:var(--ruimte-3);min-height:var(--tik)}
+.toprow > :first-child{flex:1;min-width:0}
+header.top h1{margin:0;font-size:var(--fs-titel);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-titel);line-height:1.05;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.back{display:inline-flex;align-items:center;gap:var(--ruimte-0);color:var(--primary);font-weight:var(--gewicht-vet);font-size:var(--fs-basis);padding:var(--ruimte-1) 0;margin-left:calc(var(--ruimte-1) * -1)}
+.back svg{width:var(--icoon-m);height:var(--icoon-m)}
+
+/* Titel-schakelaar: de paginatitel met een rond pijltje; een tik opent het schermmenu eronder.
+   Alleen op het hoofdniveau. Op een subpagina is de titel een gewone h1 met .back erboven. */
+.schakelaar{display:inline-flex;align-items:center;gap:var(--ruimte-2);max-width:100%;min-width:0}
+.schakelaar h1{min-width:0}
+.schakelaar .pijl{position:relative;flex:none;width:var(--rondje);height:var(--rondje);border-radius:var(--r-rond);background:var(--tint);color:var(--muted);display:grid;place-items:center;transition:transform var(--duur) var(--veer)}
+.schakelaar .pijl svg{width:var(--icoon-s);height:var(--icoon-s)}
+.schakelaar[aria-expanded="true"] .pijl{transform:rotate(180deg)}
+.schakelaar:active .pijl{transform:scale(.9)}
+/* Rood stipje: op een ander scherm staat iets wat aandacht vraagt (Boodschappen met items) */
+.schakelaar .stip{position:absolute;top:calc(var(--ruimte-0) * -1);right:calc(var(--ruimte-0) * -1);width:var(--stip);height:var(--stip);border-radius:var(--r-rond);background:var(--accent);border:var(--lijn-dik) solid var(--bg)}
+.schakelaar[aria-expanded="true"] .stip{display:none}
+
+/* Schermmenu: compacte kaart onder de titel, iconen + naam + aantal. Huidig scherm = crème.
+   Instellingen staat altijd onderaan, na een lijn. Sluit na kiezen, tik ernaast, scrollen of Escape. */
+.schermmenu{position:absolute;top:calc(100% + var(--ruimte-2));left:0;z-index:var(--z-menu);width:var(--menu-breedte);max-width:calc(100vw - var(--rand) * 2);background:var(--menu-vlak);border-radius:var(--r-xl);padding:var(--ruimte-1);box-shadow:var(--schaduw-lijst);display:grid;gap:var(--ruimte-0);transform-origin:top left;animation:menu-open var(--duur) var(--veer)}
+.schermmenu button{display:grid;grid-template-columns:var(--icoon-m) 1fr auto;align-items:center;gap:var(--ruimte-3);min-height:var(--tik);padding:0 var(--ruimte-4) 0 var(--ruimte-3);border-radius:var(--r-l);font-weight:var(--gewicht-vet);color:var(--ink)}
+.schermmenu button svg{width:var(--icoon-m);height:var(--icoon-m);color:var(--muted)}
+.schermmenu button .n{font-size:var(--fs-s);font-weight:var(--gewicht-naam);color:var(--muted);font-variant-numeric:tabular-nums}
+.schermmenu button:active{background:var(--tint)}
+.schermmenu button[aria-current="page"]{background:var(--primary);color:var(--primary-ink)}
+.schermmenu button[aria-current="page"] svg,.schermmenu button[aria-current="page"] .n{color:var(--primary-ink)}
+.schermmenu hr{border:0;border-top:var(--lijn) solid var(--line);margin:var(--ruimte-1) var(--ruimte-3)}
+@keyframes menu-open{from{opacity:0;transform:scale(.96) translateY(calc(var(--ruimte-1) * -1))}}
+
+/* Kop-knoppen: hooguit twee ronde knoppen rechtsboven. Ze openen iets (een subpagina, zoeken)
+   of zetten een filter aan (.aan = crème). Geen handelingen die iets veranderen: die horen onderin. */
+.kop-knoppen{display:flex;gap:var(--ruimte-2);flex:none}
+.round{width:var(--h-s);height:var(--h-s);border-radius:var(--r-rond);background:var(--tint);display:grid;place-items:center;color:var(--primary);flex:none;transition:background-color var(--duur),color var(--duur),transform var(--duur-snel)}
+.round svg{width:var(--icoon-m);height:var(--icoon-m)}
+.round:active{transform:scale(.92)}
+.round.aan{background:var(--primary);color:var(--primary-ink)}
+
+/* ---------- 4. Onder de titel: keuzepil, stapper, zoekbalk ---------- */
+/* Keuzepil: alles waar je één uit kiest is één compacte pil met segmenten. Gekozen = gevuld.
+   Met .kleur is het gekozen segment de kleur van wat je kiest (--c op de knop), bijvoorbeeld een winkel.
+   .n = aantal: vol bolletje in --c als er iets is, grijs cijfer zonder bolletje bij 0 (.leeg). */
+.keuzepil{display:flex;width:fit-content;max-width:100%;gap:0;margin-top:var(--ruimte-3);padding:var(--ruimte-1);overflow-x:auto;scrollbar-width:none;border-radius:var(--r-rond);background:var(--menu-vlak)}
+.keuzepil::-webkit-scrollbar{display:none}
+.keuzepil button{flex:none;display:flex;align-items:center;justify-content:center;gap:var(--ruimte-1);min-height:var(--icoonknop);padding:0 var(--ruimte-3);border-radius:var(--r-rond);color:var(--muted);font-weight:var(--gewicht-vet);white-space:nowrap;transition:background-color var(--duur),color var(--duur)}
+.keuzepil button.gekozen{background:var(--primary);color:var(--primary-ink)}
+.keuzepil.kleur button.gekozen{background:var(--c,var(--actief));color:var(--op-kleur)} /* zonder --c (zoals "Alles"): --actief */
+.keuzepil .n{display:grid;place-items:center;min-width:var(--ruimte-5);height:var(--ruimte-5);padding:0 var(--ruimte-1);border-radius:var(--r-rond);background:var(--tint);font-size:var(--fs-xs);font-weight:var(--gewicht-naam);font-variant-numeric:tabular-nums}
+.keuzepil.kleur button:not(.gekozen) .n:not(.leeg){background:var(--c,var(--tint));color:var(--op-kleur)}
+.keuzepil button.gekozen .n{background:var(--op-kleur-zacht)}
+.keuzepil .n.leeg{background:transparent}
+.keuzepil.in-venster{margin-top:0}
+/* Stapper: dezelfde pil met twee ronde pijlen en de periode in het midden; huidige periode = --actief */
+.keuzepil.stapper .stap{width:var(--icoonknop);padding:0}
+.keuzepil.stapper .stap svg{width:var(--icoon-m);height:var(--icoon-m)}
+.keuzepil.stapper .periode{padding:0 var(--ruimte-4);color:var(--ink)}
+.keuzepil.stapper .periode.gekozen{background:var(--actief);color:var(--op-kleur)}
+
+/* Zoekbalk: rond zoekveld, rechts erin hooguit één filter (.zoekster), eventueel een knop ernaast (Nieuw) */
+.add{display:flex;gap:var(--ruimte-2);margin:var(--ruimte-3) 0 var(--ruimte-1)}
+.add .field,.add .zoekveld{flex:1}
+.zoekveld{position:relative;flex:1}
+.zoekveld .field{padding-right:calc(var(--icoonknop) + var(--ruimte-2) * 2)}
+.zoekster{position:absolute;right:var(--ruimte-1);top:50%;transform:translateY(-50%);width:var(--icoonknop);height:var(--icoonknop);display:grid;place-items:center;border-radius:var(--r-rond);color:var(--muted);transition:background-color var(--duur),color var(--duur)}
+.zoekster svg{width:var(--icoon-m);height:var(--icoon-m)}
+.zoekster.aan{background:var(--primary);color:var(--primary-ink)}
+
+/* ---------- 5. Knoppen en velden ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--ruimte-1);background:var(--primary);color:var(--primary-ink);border-radius:var(--r-rond);padding:0 var(--ruimte-4);font-weight:var(--gewicht-vet);min-height:var(--tik);white-space:nowrap;text-align:center}
+.btn svg{width:var(--icoon-m);height:var(--icoon-m)}
+.btn.soft{background:var(--primary-soft);color:var(--ink)}
+.btn.danger{background:transparent;color:var(--accent);border:var(--lijn-dik) solid var(--accent)}
+.btn.gevaar{background:var(--accent);color:var(--op-kleur)}
+.btn.ontkoppel{background:var(--ontkoppel);color:var(--op-kleur)}
+.btn.wide{width:100%}
+.acts{display:flex;gap:var(--ruimte-2);flex-wrap:wrap;margin-top:var(--ruimte-4)}
+.acts .btn{flex:1 1 auto}
+.field{display:block;width:100%;min-width:0;background:var(--surface);border:var(--lijn) solid var(--line);border-radius:var(--r-m);padding:var(--ruimte-3);min-height:var(--tik);-webkit-appearance:none;appearance:none}
+.field::placeholder{color:var(--muted)}
+input[type=search].field{border:0;border-radius:var(--r-rond);background:var(--menu-vlak);padding:0 var(--ruimte-4)}
+input[type=search].field::-webkit-search-cancel-button,input[type=search].field::-webkit-search-decoration{-webkit-appearance:none;appearance:none}
+.zoekveld input[type=search].field{padding-right:calc(var(--icoonknop) + var(--ruimte-2) * 2)}
+select.field{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - var(--keuzepijl-rand) - var(--keuzepijl)) 54%,calc(100% - var(--keuzepijl-rand)) 54%;background-size:var(--keuzepijl) var(--keuzepijl);background-repeat:no-repeat;padding-right:calc(var(--ruimte-6) + var(--ruimte-2))}
+textarea.field{resize:vertical;min-height:var(--h-tekstvak)}
+.lbl{display:block;margin-bottom:var(--ruimte-3)}
+.lbl>span{display:block;font-size:var(--fs-s);font-weight:var(--gewicht-vet);color:var(--muted);margin:0 var(--ruimte-1) var(--ruimte-1)}
+.schakel{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-radius:var(--r-m);padding:var(--ruimte-2) var(--ruimte-3);min-height:var(--h-m);margin-bottom:var(--ruimte-3)}
+.schakel input{appearance:none;-webkit-appearance:none;width:var(--schakel-b);height:var(--schakel-h);border-radius:var(--r-rond);background:var(--line);position:relative;transition:background var(--duur);margin:0;cursor:pointer}
+.schakel input::after{content:"";position:absolute;top:var(--ruimte-0);left:var(--ruimte-0);width:var(--schakel-knop);height:var(--schakel-knop);border-radius:var(--r-rond);background:var(--op-kleur);box-shadow:var(--schaduw-knop);transition:transform var(--duur)}
+.schakel input:checked{background:var(--primary)}
+.schakel input:checked::after{transform:translateX(calc(var(--schakel-b) - var(--schakel-knop) - var(--ruimte-0) * 2))}
+
+/* ---------- 6. Actieknop en actiebalk onderin ---------- */
+/* Eén per scherm, of geen: rond crème plusje (of vinkje = opslaan) in het midden, zonder tekst (aria-label). */
+.actieknop{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--actie-afstand) + env(safe-area-inset-bottom,0px));z-index:var(--z-actie);width:var(--actie-hoogte);height:var(--actie-hoogte);border-radius:var(--r-rond);background:var(--primary);color:var(--primary-ink);display:grid;place-items:center;box-shadow:var(--schaduw-lijst);transition:transform var(--duur-snel)}
+.actieknop svg{width:var(--icoon-l);height:var(--icoon-l)}
+.actieknop:active{transform:translateX(-50%) scale(.92)}
+/* Twee keuzes onderin (kiesmodus: Annuleer · Verplaats): op de plek van de actieknop */
+.actiebalk{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--actie-afstand) + env(safe-area-inset-bottom,0px));z-index:var(--z-actie);display:flex;gap:var(--ruimte-2)}
+.actiebalk .btn{min-height:var(--actie-hoogte);box-shadow:var(--schaduw-lijst)}
+
+/* ---------- 7. Lijsten: kopje, blok, rij ---------- */
+/* Kopje: grijs, boven het blok, zonder aantal. Aantallen staan in het schermmenu en de keuzepil. */
+h3.cat{font-size:var(--fs-m);font-weight:var(--gewicht-vet);color:var(--muted);margin:var(--ruimte-5) var(--ruimte-1) var(--ruimte-1);display:flex;justify-content:space-between;align-items:center;gap:var(--ruimte-2)}
+.cat.vandaag{color:var(--ink)}
+/* Blok: neutraal, zonder rand; rijen erin gescheiden door een zachte lijn */
+.items,.group{background:var(--surface);border-radius:var(--r-blok);overflow:hidden}
+.group{margin-top:var(--ruimte-3)}
+.item{border-top:var(--lijn) solid var(--scheiding);background:var(--surface)}
+.item:first-child{border-top:0}
+/* Rij: rondje vooraan, naam (+ bijregel), rechts eventueel een chip, getal, pijltje of greepje */
+.check{display:grid;grid-template-columns:var(--rondje) 1fr;gap:var(--ruimte-3);align-items:center;padding:var(--ruimte-3);min-height:var(--rij);width:100%}
+.check.metchip{grid-template-columns:var(--rondje) 1fr auto}
+.check.zonder-voor{grid-template-columns:1fr auto}
+.pname{font-weight:var(--gewicht-naam);font-size:var(--fs-l);line-height:1.2}
+.pmeta{display:block;font-size:var(--fs-s);color:var(--muted);margin-top:var(--ruimte-0)}
+.getal{font-weight:var(--gewicht-vet);font-variant-numeric:tabular-nums;color:var(--muted)}
+.item.done .pname{text-decoration:line-through;color:var(--done)}
+/* Vinkje: betekent alleen "gedaan". Alleen het rondje is tikbaar (.vinkknop = grotere tikzone) */
+.vinkknop{width:var(--tik);height:var(--tik);margin:calc((var(--rondje) - var(--tik)) / 2);display:grid;place-items:center;border-radius:var(--r-rond)}
+.tick{width:var(--vinkje);height:var(--vinkje);border-radius:var(--r-rond);border:var(--lijn-dik) solid var(--muted);display:grid;place-items:center;transition:background var(--duur-snel),border-color var(--duur-snel),transform var(--duur-snel)}
+.vinkknop:active .tick{transform:scale(.88)}
+.on .tick{background:var(--primary);border-color:var(--primary)}
+.on .tick::after,.item.done .tick::after{content:"";width:var(--vink-b);height:var(--vink-h);border-left:var(--vink-dik) solid var(--primary-ink);border-bottom:var(--vink-dik) solid var(--primary-ink);transform:translateY(-1px) rotate(-45deg)}
+.item.done .tick{background:var(--done);border-color:var(--done)}
+.item.done .tick::after{border-color:var(--surface)}
+/* Rondje vooraan: beginletter (.lead), nummer (.pos), emoji (.lead.emoji). Kleur via --c; .vol = gevuld */
+.lead,.pos{width:var(--rondje);height:var(--rondje);border-radius:var(--r-rond);display:grid;place-items:center;font-weight:var(--gewicht-zwaar);font-size:var(--fs-s);color:var(--c,var(--primary));background:color-mix(in srgb,var(--c,var(--primary)) 14%,transparent);font-variant-numeric:tabular-nums}
+.lead.vol{background:var(--c,var(--primary));color:var(--op-kleur)}
+.lead.emoji{font-size:var(--fs-basis);font-weight:normal}
+/* Chip: korte naam of status in een kleur (--c). .vol = crème nadruk ("Vandaag", "di 24") */
+.chip{display:inline-flex;align-items:center;gap:var(--ruimte-1);font-size:var(--fs-xs);font-weight:var(--gewicht-vet);line-height:1;color:color-mix(in srgb,var(--c,var(--muted)) var(--chip-tint),var(--chip-meng));background:color-mix(in srgb,var(--c,var(--muted)) var(--chip-vlak),transparent);border-radius:var(--r-rond);padding:var(--ruimte-1) var(--ruimte-2);white-space:nowrap}
+.chip.vol{background:var(--primary);color:var(--primary-ink)}
+.chips{display:flex;flex-wrap:wrap;align-items:center;gap:var(--ruimte-1) var(--ruimte-2);min-width:0}
+.chevr{width:var(--pijl);height:var(--pijl);border-right:var(--lijn-dik) solid var(--muted);border-top:var(--lijn-dik) solid var(--muted);transform:rotate(45deg);opacity:.6;margin-right:var(--ruimte-1);justify-self:end}
+/* Greepje om te slepen; vaste regels zonder greepje blijven onderaan */
+.greep{display:grid;place-items:center;width:var(--tik);height:var(--tik);margin-right:calc(var(--ruimte-1) * -1);color:var(--muted);touch-action:none;cursor:grab}
+.greep svg{width:var(--icoon-m);height:var(--icoon-m)}
+.check.greeprij{grid-template-columns:1fr var(--tik);padding:0 var(--ruimte-2) 0 0}
+.greeprij-hoofd{display:flex;align-items:center;gap:var(--ruimte-3);padding:var(--ruimte-3);min-height:var(--h-m)}
+.sleept{position:fixed;z-index:var(--z-boven);margin:0;background:var(--surface);border:var(--lijn) solid var(--line);border-radius:var(--r-l);box-shadow:var(--schaduw-sleep);transform:scale(1.02);pointer-events:none}
+.plek{background:var(--primary-soft);border-top:var(--lijn) solid var(--scheiding);min-height:var(--h-m)}
+/* Kiesmodus: gekozen rij is crème met een vinkje rechts */
+.item.gekozen,.item.gekozen .check{background:var(--primary);color:var(--primary-ink)}
+.item.gekozen .pmeta{color:color-mix(in srgb,var(--primary-ink) 65%,transparent)}
+/* Menurij (instellingen): icoon in een rondje, naam, rechts eventueel een getal, pijltje */
+.nav-row{display:grid;grid-template-columns:var(--ico) 1fr auto var(--ruimte-3);align-items:center;gap:var(--ruimte-3);width:100%;padding:0 var(--ruimte-4) 0 var(--ruimte-3);min-height:var(--rij);position:relative}
+.nav-row + .nav-row::before{content:"";position:absolute;top:0;left:calc(var(--ruimte-3) + var(--ico) + var(--ruimte-3));right:0;border-top:var(--lijn) solid var(--scheiding)}
+.nav-row:active{background:var(--primary-soft)}
+.nav-row .lbltxt{font-weight:var(--gewicht-naam);font-size:var(--fs-l)}
+.nav-row .chev2{width:var(--pijl);height:var(--pijl);border-right:var(--lijn-dik) solid var(--muted);border-top:var(--lijn-dik) solid var(--muted);transform:rotate(45deg);opacity:.7}
+.ico{width:var(--ico);height:var(--ico);border-radius:var(--r-rond);display:grid;place-items:center;background:color-mix(in srgb,var(--c,var(--primary)) 14%,transparent);color:var(--c,var(--primary))}
+.ico svg{width:var(--icoon-s);height:var(--icoon-s)}
+
+/* ---------- 8. Vegen naar links: alleen iconen ----------
+   Volgorde: openen · ster · kiezen · potlood · min-rondje · prullenbak. --n = aantal knoppen. */
+.swipe{position:relative;touch-action:pan-y;-webkit-user-select:none;user-select:none;--bw:calc(var(--n,1) * var(--veegknop))}
+.items .swipe + .swipe{border-top:var(--lijn) solid var(--scheiding)}
+.swipe .swipe-kaart{position:relative;margin:0;border-top:0;transition:transform var(--duur-traag) var(--veer)}
+.swipe.open .swipe-kaart{transform:translateX(calc(var(--bw) * -1))}
+.swipe-acties{position:absolute;inset:0;display:flex;justify-content:flex-end;visibility:hidden}
+.swipe.open .swipe-acties,.swipe.bezig .swipe-acties{visibility:visible}
+.swipe-weg,.swipe-wk{width:var(--veegknop);height:100%;color:var(--op-kleur);font-size:0;display:flex;align-items:center;justify-content:center}
+.swipe-weg{background:var(--accent)}
+.swipe-wk{background:var(--c)} /* --c: --veeg-open | --veeg-favoriet | --veeg-kies | --wijzig | --ontkoppel */
+.swipe-weg svg,.swipe-wk svg{width:var(--icoon-l);height:var(--icoon-l)}
+
+/* ---------- 9. Lege staat, laden, notitie ---------- */
+.empty{background:var(--surface);border:var(--lijn) dashed var(--line);border-radius:var(--r-blok);padding:var(--ruimte-5) var(--ruimte-4);color:var(--muted);margin-top:var(--ruimte-4)}
+.empty strong{display:block;color:var(--ink);font-size:var(--fs-l);margin-bottom:var(--ruimte-1)}
+.empty .btn{margin-top:var(--ruimte-3)}
+.note{color:var(--muted);font-size:var(--fs-m);margin:var(--ruimte-3) var(--ruimte-1) var(--ruimte-2)}
+.skelet{display:block;background:var(--line);border-radius:var(--r-s);animation:skelet var(--duur-lus) ease-in-out infinite alternate}
+.skelet-kop{width:30%;height:var(--ruimte-3)}
+.skelet-rond{width:var(--vinkje);height:var(--vinkje);border-radius:var(--r-rond)}
+.skelet-tekst{width:60%;height:var(--ruimte-4)}
+.item:nth-child(3n+2) .skelet-tekst{width:45%}
+.item:nth-child(3n) .skelet-tekst{width:70%}
+@keyframes skelet{to{opacity:.4}}
+
+/* ---------- 10. Venster, bevestigen, melding ---------- */
+.sheet-wrap{position:fixed;inset:0 0 var(--kb,0px) 0;z-index:var(--z-venster);display:flex;align-items:flex-end;justify-content:center}
+.sheet-bg{position:absolute;inset:0;background:var(--overlay);-webkit-backdrop-filter:blur(var(--waas-m));backdrop-filter:blur(var(--waas-m))}
+.sheet{position:relative;background:var(--bg);width:100%;max-width:var(--breedte);max-height:min(90vh,calc(100% - var(--ruimte-5)));overflow-y:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r-xl) var(--r-xl) 0 0;padding:var(--ruimte-5) var(--ruimte-4) calc(var(--ruimte-4) + env(safe-area-inset-bottom,0px));animation:op var(--duur) ease-out}
+.sheet.vast{display:flex;flex-direction:column;height:min(90vh,calc(100% - var(--ruimte-5)));overflow:hidden} /* altijd even hoog, inhoud scrolt binnen */
+.sheet h4{margin:0 calc(var(--h-s) + var(--ruimte-2)) var(--ruimte-3) 0;font-size:var(--fs-xl);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-kop);line-height:1.1}
+.sheet .close{position:absolute;top:var(--ruimte-2);right:var(--ruimte-2);width:var(--h-s);height:var(--h-s);display:grid;place-items:center;color:var(--muted)}
+.sheet .close svg{width:var(--icoon-m);height:var(--icoon-m)}
+.sheet h3.cat{margin:var(--ruimte-1) var(--ruimte-1) var(--ruimte-2)}
+.bv-kaart{position:relative;width:calc(100% - var(--ruimte-2) * 2);max-width:var(--breedte-bevestig);margin:0 var(--ruimte-2) calc(var(--ruimte-2) + env(safe-area-inset-bottom,0px));background:var(--bg);border-radius:var(--r-xl);padding:var(--ruimte-4);display:grid;gap:var(--ruimte-2);animation:op var(--duur) ease-out}
+.bv-kaart p{margin:var(--ruimte-0) var(--ruimte-1) var(--ruimte-2);font-size:var(--fs-basis);text-align:center;line-height:1.35}
+@keyframes op{from{transform:translateY(var(--ruimte-6));opacity:.5}}
+.toast{position:fixed;left:50%;bottom:calc(var(--actie-afstand) + var(--actie-hoogte) + var(--ruimte-3) + env(safe-area-inset-bottom,0px));transform:translate(-50%,var(--ruimte-5));opacity:0;pointer-events:none;z-index:var(--z-boven);background:var(--ink);color:var(--bg);border-radius:var(--r-m);padding:var(--ruimte-3);display:flex;align-items:center;gap:var(--ruimte-3);width:max-content;max-width:calc(100% - var(--rand) * 2);transition:opacity var(--duur),transform var(--duur);font-size:var(--fs-m)}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{color:var(--bg);font-weight:var(--gewicht-zwaar);text-decoration:underline;white-space:nowrap}
+
+/* =====================================================================
+   11. Toegevoegd in 1.1 (27 november 2026): opgenomen uit Kravschappen
+   ===================================================================== */
+
+/* Rij: kolommen groeien mee met wat er rechts staat (rondje · tekst · chip · getal · greep).
+   .metchip blijft werken. .tekst = meerregelige tekst, alles bovenaan. */
+.check{grid-auto-flow:column;grid-auto-columns:auto}
+.check.zonder-voor{grid-template-columns:1fr}
+.check.tekst{align-items:start}
+.check.tekst > .pos{margin-top:var(--ruimte-0)}
+.rij-tekst{font-size:var(--fs-basis);line-height:1.45;padding-top:var(--ruimte-0);overflow-wrap:anywhere}
+.items{list-style:none;margin:0;padding:0} /* ook als <ul> of <ol> */
+.sheet .check,.klap-inhoud .check{min-height:var(--h-m)} /* rijen in een venster of uitklaprij zijn lager */
+button.item{display:block;width:100%;text-align:left}
+.cat > span{display:inline-flex;align-items:center;gap:var(--ruimte-2)}
+.sheet h3.cat{margin-top:var(--ruimte-4)}
+.sheet h4 + h3.cat{margin-top:var(--ruimte-1)}
+.sheet:focus{outline:none}
+/* Titel: op een detailpagina mag hij over meer regels lopen; de titel-schakelaar blijft op één regel */
+header.top .toprow h1{white-space:normal;overflow:visible}
+header.top .schakelaar h1{white-space:nowrap;overflow:hidden}
+.plek + *{border-top:0}
+
+/* A · Tikrondje: het vinkje (L4) met een ander icoon. Tikvlak = .vinkknop, rondje = .tick.
+   .plus = + ; aan (.on op de rij) = crème met tasje ; .elders = omlijnd tasje (op de lijst voor iets anders)
+   .min  = rood, weghalen (bewerkmodus, actierij)
+   Iconen in het rondje: <svg class="uit"> en <svg class="aan">. */
+.tick.plus,.tick.min{width:var(--rondje);height:var(--rondje);color:var(--muted);border-color:color-mix(in srgb,var(--muted) 55%,transparent);transition:background-color var(--duur-snel),border-color var(--duur-snel),color var(--duur-snel),transform var(--duur-snel)}
+.tick.plus::after,.tick.min::after{display:none}
+.tick.plus svg,.tick.min svg{grid-area:1/1;width:var(--icoon-s);height:var(--icoon-s)}
+.tick.plus .aan{display:none}
+.on .tick.plus{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.elders .tick.plus{background:transparent;border-color:var(--primary);color:var(--primary)}
+.on .tick.plus .uit,.elders .tick.plus .uit{display:none}
+.on .tick.plus .aan,.elders .tick.plus .aan{display:block}
+.tick.min{background:var(--ontkoppel);border-color:var(--ontkoppel);color:var(--op-kleur)}
+
+/* B · Actierij: de laatste rij van een blok die iets doet in plaats van iets te tonen.
+   Tikrondje (.plus of .min) + tekst. Grijs = toevoegen; .gevaar = weghalen (rood); .nadruk = crème. */
+.item.actie{color:var(--muted)}
+.item.actie .check{min-height:var(--h-m)}
+.item.actie .pname{font-size:var(--fs-basis)}
+.item.actie:active{background:var(--primary-soft)}
+.item.actie.gevaar{color:var(--accent)}
+.item.actie.gevaar .pname,.item.actie.nadruk .pname{font-weight:var(--gewicht-vet)}
+.item.actie.nadruk{color:var(--primary)}
+
+/* C · Veld in een rij. .field.kaal = zonder rand en vlak (een select als hele rij, of tekst in een rij);
+   .field.klein = klein veld rechts (aantal); .field.titel = de paginatitel bewerken. */
+.field.kaal{border:0;background-color:transparent;border-radius:var(--r-blok);min-height:var(--rij);padding:var(--ruimte-3) var(--ruimte-4);font-size:var(--fs-basis)}
+select.field.kaal{padding-right:calc(var(--ruimte-6) + var(--ruimte-3))}
+.check .field.kaal{min-height:0;border-radius:0;padding:var(--ruimte-0) 0;line-height:1.45;resize:none;overflow:hidden}
+.field.klein{min-height:0;background:var(--bg);border-radius:var(--r-s);padding:var(--ruimte-2);text-align:right}
+.check.bewerk{grid-template-columns:var(--rondje) 1fr var(--veld-klein);min-height:var(--h-m)}
+.check.stap{grid-template-columns:var(--rondje) 1fr var(--rondje) calc(var(--tik) - var(--ruimte-1) * 2);align-items:start;min-height:var(--h-m);padding-right:var(--ruimte-2)}
+.check.stap > .pos{margin-top:var(--ruimte-0)}
+.check.stap .greep{margin:calc((var(--rondje) - var(--tik)) / 2) calc(var(--ruimte-1) * -1)}
+.check.stap:focus-within{background:color-mix(in srgb,var(--primary) 6%,transparent)}
+textarea.field.titel{min-height:var(--tik)}
+.field.titel{display:block;font:inherit;color:inherit;letter-spacing:inherit;line-height:1.1;font-weight:var(--gewicht-zwaar);padding:var(--ruimte-1) var(--ruimte-3);resize:none;overflow:hidden}
+.field.kaal:focus,.field.titel:focus,.field.klein:focus{outline:var(--lijn-dik) solid var(--primary);outline-offset:calc(var(--lijn-dik) * -1)}
+.check .field.kaal:focus{outline:none}
+
+/* D · Groot rondje naast de titel (emoji of beginletter op een detailpagina); in de bewerkmodus een veld. */
+.titel-met-lead{display:flex;align-items:center;gap:var(--ruimte-4)}
+.titel-met-lead > :not(.lead){min-width:0;flex:1}
+.lead.groot{flex:none;width:var(--tik);height:var(--tik);padding:0;border:0;font:inherit;font-size:var(--fs-xl);font-weight:var(--gewicht-zwaar);letter-spacing:0;line-height:1;text-align:center}
+input.lead.groot{border:var(--lijn) solid var(--line);caret-color:transparent}
+input.lead.groot::placeholder{color:var(--primary);opacity:1}
+input.lead.groot:focus{outline:var(--lijn-dik) solid var(--primary);outline-offset:0}
+
+/* E · Plakkend kopje: blijft bovenaan in een lijst die zelf scrolt (keuzelijst in een venster) */
+.cat.plak,.sheet h3.cat.plak{position:sticky;top:0;z-index:var(--z-binnen);margin:0;padding:var(--ruimte-3) var(--ruimte-4) var(--ruimte-1);background:var(--surface);border-top:var(--lijn) solid var(--scheiding)}
+.cat.plak:first-child{border-top:0}
+.cat.plak + .item,.cat.plak + .swipe{border-top:0}
+
+/* F · Icoon achter een naam (ster = favoriet), en een vet deel van een naam (zoektreffer) */
+.naam-icoon{display:inline-grid;vertical-align:var(--lijn);margin-left:var(--ruimte-1);color:var(--primary)}
+.naam-icoon svg{width:var(--icoon-s);height:var(--icoon-s)}
+.pname b{font-weight:var(--gewicht-zwaar)}
+
+/* G · Uitklaprij: een rij die openklapt, met eronder eigen rijen.
+   <div class="klaprij"> > <button class="check" aria-expanded> (… + .chevr.klap) + <ul class="items klap-inhoud"> */
+.chevr.klap{transform:rotate(135deg);transition:transform var(--duur-snel)}
+[aria-expanded="true"] .chevr.klap{transform:rotate(-45deg)}
+.klaprij{background:var(--surface)}
+.klap-inhoud{padding:0 var(--ruimte-2) var(--ruimte-2);border-top:var(--lijn) solid var(--scheiding);background:color-mix(in srgb,var(--bg) 55%,var(--surface));border-radius:0}
+.klap-inhoud > .item{background:transparent}
+
+/* H · Teller: − waarde + , groot, in een venster. De waarde is een veld (ook tekst, zoals "300 g"). */
+.teller{display:grid;grid-template-columns:var(--rij) 1fr var(--rij);gap:var(--ruimte-2);align-items:center;margin:0 0 var(--ruimte-3)}
+.teller .stap{height:var(--rij);border-radius:var(--r-rond);background:var(--primary-soft);color:var(--primary);display:grid;place-items:center;transition:transform var(--duur-snel)}
+.teller .stap svg{width:var(--icoon-l);height:var(--icoon-l)}
+.teller .stap:active{transform:scale(.94)}
+.teller .waarde{text-align:center;font-size:var(--fs-xl);font-weight:var(--gewicht-vet);min-height:var(--rij)}
+
+/* Keuzepil met kleuren (een kleur kiezen): rondjes (.lead.vol) in de segmenten */
+.keuzepil.kleuren button{padding:0 var(--ruimte-0)}
+
+/* Kiesmodus: vinkje rechts in een gekozen rij */
+.gekozen-vink{display:grid;place-items:center;width:var(--vinkje);height:var(--vinkje);opacity:0;transform:scale(.6);transition:opacity var(--duur-snel),transform var(--duur) var(--veer-tab)}
+.gekozen-vink svg{width:var(--icoon-m);height:var(--icoon-m)}
+.item.gekozen .gekozen-vink{opacity:1;transform:none}
+.item.gekozen .chip{--chip-meng:var(--primary-ink)}
+.items .item.gekozen + .item.gekozen{border-top-color:color-mix(in srgb,var(--primary-ink) 12%,var(--primary))}
+.item.gekozen{transition:background var(--duur-snel),color var(--duur-snel)}
+
+/* Zwevende keuzelijst onder een veld (product kiezen bij een recept) */
+.met-keuzelijst{position:relative}
+.items.zwevend{position:absolute;left:0;right:0;top:calc(100% + var(--ruimte-1));z-index:var(--z-keuzelijst);max-height:50vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;box-shadow:var(--schaduw-lijst)}
+
+/* Venster dat altijd even hoog is (.sheet.vast): de lijst (.scroll-lijst) scrolt binnen de kaart */
+.sheet.vast > div{flex:1;min-height:0;display:flex;flex-direction:column}
+.scroll-lijst{flex:0 1 auto;min-height:0;margin-top:var(--ruimte-3);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+
+/* Kleine aanvullingen */
+.acts .btn.wide{white-space:normal}
+.note b{color:var(--ink)}
+.bv-kaart .field{margin-bottom:var(--ruimte-1)}
+
+/* I · Codescherm: de eerste keer openen op een telefoon (app-icoon, naam, één zin, veld, knop) */
+.codescherm{position:fixed;inset:0;z-index:var(--z-code);background:var(--bg);display:grid;place-items:center;padding:var(--ruimte-5)}
+.code-kaart{width:100%;max-width:var(--breedte-code);display:grid;gap:var(--ruimte-3);text-align:center}
+.code-kaart img{justify-self:center;border-radius:var(--r-l)}
+.code-kaart h2{margin:var(--ruimte-1) 0 0;font-size:var(--fs-xl);font-weight:var(--gewicht-zwaar)}
+.code-kaart p{margin:0 0 var(--ruimte-2);color:var(--muted)}
+
+/* J · Preview-pil: demomodus (geen API_URL). Rode pil bovenin; de kop schuift iets omlaag. */
+.preview-pil{position:fixed;top:calc(var(--ruimte-1) + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:var(--z-label);background:var(--accent);color:var(--op-kleur);font-size:var(--fs-xs);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-label);border-radius:var(--r-rond);padding:var(--ruimte-1) var(--ruimte-3);text-align:center;white-space:nowrap;width:max-content}
+body.preview header.top{padding-top:calc(var(--ruimte-6) + var(--ruimte-1) + env(safe-area-inset-top,0px))}
+
+/* =====================================================================
+   12. Toegevoegd in 1.2 (28 november 2026): opgenomen uit Kollectie
+   ===================================================================== */
+:root{
+  --poster-verhouding:5/7;  /* staand plaatje */
+  --poster-mini:36px;       /* plaatje vooraan een rij */
+  --poster-groot:120px;     /* plaatje op een detailpagina */
+  --balk:8px;               /* voortgangsbalk */
+  --balk-spoor:var(--line);
+  --tijdlijn-kolom:64px; --tijdlijn-lijn:4px; --tijdlijn-bol:16px;
+}
+
+/* K · Poster: staand plaatje (5:7). Standaard klein, vooraan een rij (.check.met-poster).
+   .groot = detailpagina (in .titel-met-lead.met-poster); .zonder = beginletter als er geen plaatje is.
+   .posters = raster van drie kolommen met onderschrift: een lijst, of een plaatje kiezen (.gekozen). */
+.poster{display:block;flex:none;width:var(--poster-mini);height:auto;aspect-ratio:var(--poster-verhouding);object-fit:cover;border-radius:var(--r-s);background:var(--tint)}
+.poster.zonder{display:grid;place-items:center;font-weight:var(--gewicht-zwaar);font-size:var(--fs-m);color:var(--muted)}
+.poster.groot{width:var(--poster-groot);border-radius:var(--r-l);font-size:var(--fs-titel);box-shadow:var(--schaduw-lijst)}
+.check.met-poster{grid-template-columns:var(--poster-mini) 1fr;padding-top:var(--ruimte-2);padding-bottom:var(--ruimte-2)}
+.poster-knop{display:block;flex:none;border-radius:var(--r-l);transition:transform var(--duur-snel)}
+.poster-knop:active{transform:scale(.97)}
+.posters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ruimte-4) var(--ruimte-3);margin-top:var(--ruimte-3)}
+.posters .p{position:relative;display:grid;align-content:start;gap:var(--ruimte-1);min-width:0;font-size:var(--fs-s);font-weight:var(--gewicht-vet);line-height:1.2}
+.posters .poster{width:100%;border-radius:var(--r-m);font-size:var(--fs-titel);transition:transform var(--duur-snel)}
+.posters .p:active .poster{transform:scale(.97)}
+.posters .p-naam{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:var(--ruimte-1)}
+.posters .pmeta{margin-top:0;font-weight:var(--gewicht-naam)}
+.posters .gekozen-vink{position:absolute;top:var(--ruimte-2);right:var(--ruimte-2);background:var(--primary);color:var(--primary-ink);border-radius:var(--r-rond)}
+.posters .gekozen-vink svg{width:var(--icoon-s);height:var(--icoon-s)}
+.posters .p.gekozen .gekozen-vink{opacity:1;transform:none}
+.posters .p.gekozen .p-naam{color:var(--ink)}
+.posters .skelet{aspect-ratio:var(--poster-verhouding);border-radius:var(--r-m)}
+/* Detailpagina met een poster: D met een poster in plaats van een rondje; ernaast status en voortgang */
+.titel-met-lead > .poster,.titel-met-lead > .poster-knop{flex:none}
+.titel-met-lead.met-poster{align-items:flex-end;margin:var(--ruimte-2) 0 var(--ruimte-1)}
+.titel-met-lead.met-poster > div{display:grid;gap:var(--ruimte-2);justify-items:start}
+
+/* L · Voortgangsbalk: spoor = totaal, i.uit = beschikbaar (licht), i.af = gedaan. Kleur via --c. */
+.balk{position:relative;display:block;width:100%;height:var(--balk);border-radius:var(--r-rond);background:var(--balk-spoor);overflow:hidden;color:var(--c,var(--primary))}
+.balk i{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:currentColor;transition:width var(--duur) var(--veer)}
+.balk i.uit{opacity:.35}
+.pname + .balk,.pmeta + .balk{margin-top:var(--ruimte-2)}
+.balk + .pmeta{margin-top:var(--ruimte-1)}
+
+/* M · Tijdlijn: links de datum groot aan een lijn met een bolletje (kleur via --c), rechts een gewoon blok.
+   .vaag = alleen maand, seizoen of jaar bekend: lichte lijn, open bolletje. */
+.tijdlijn{margin-top:var(--ruimte-2)}
+.tl-rij{display:grid;grid-template-columns:var(--tijdlijn-kolom) minmax(0,1fr);align-items:stretch}
+.tl-rij > .items{margin:0 0 var(--ruimte-2) var(--ruimte-4)}
+.tl-datum{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right;line-height:1;padding:0 var(--ruimte-4) var(--ruimte-2) 0;border-right:var(--tijdlijn-lijn) solid var(--c,var(--primary))}
+.tl-datum b{font-size:var(--fs-xl);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-titel)}
+.tl-datum i{font-style:normal;font-size:var(--fs-xs);font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);text-transform:uppercase;color:var(--muted);margin-top:var(--ruimte-1);white-space:nowrap}
+.tl-datum::after{content:"";position:absolute;right:calc((var(--tijdlijn-lijn) + var(--tijdlijn-bol)) / -2);top:calc(50% - var(--ruimte-2) / 2 - var(--tijdlijn-bol) / 2);width:var(--tijdlijn-bol);height:var(--tijdlijn-bol);border-radius:var(--r-rond);background:var(--c,var(--primary));box-shadow:0 0 0 var(--ruimte-1) var(--bg)}
+.tl-datum.vaag{border-right-color:color-mix(in srgb,var(--c,var(--primary)) 35%,transparent)}
+.tl-datum.vaag b{font-size:var(--fs-l);letter-spacing:0}
+.tl-datum.vaag::after{background:var(--bg);border:var(--lijn-dik) solid var(--c,var(--primary))}
+.tl-rij:last-child .tl-datum{border-right-color:transparent}
+.tl-rij:last-child .tl-datum::before{content:"";position:absolute;right:calc(var(--tijdlijn-lijn) * -1);top:0;width:var(--tijdlijn-lijn);height:calc(50% - var(--ruimte-2) / 2);background:var(--c,var(--primary))}
+.tl-rij:last-child .tl-datum.vaag::before{background:color-mix(in srgb,var(--c,var(--primary)) 35%,transparent)}
+
+/* N · Nummerraster: ronde knoppen met een nummer. Gekozen = gevuld (crème; met .kleur in --c).
+   Voor afleveringen afvinken (alles t/m het nummer gekozen) en een cijfer kiezen (.vijf = vijf per rij). */
+.nummers{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--icoonknop),1fr));gap:var(--ruimte-2)}
+.nummers.vijf{grid-template-columns:repeat(5,minmax(0,1fr))}
+.nummers button{height:var(--icoonknop);border-radius:var(--r-rond);background:var(--tint);color:var(--muted);font-weight:var(--gewicht-vet);font-size:var(--fs-s);font-variant-numeric:tabular-nums;text-align:center;transition:background-color var(--duur-snel),color var(--duur-snel),transform var(--duur-snel)}
+.nummers button:active{transform:scale(.88)}
+.nummers button.gekozen{background:var(--primary);color:var(--primary-ink)}
+.nummers.kleur button.gekozen{background:var(--c,var(--actief));color:var(--op-kleur)}
+.nummers + .nummers{margin-top:var(--ruimte-3)}
+.klap-inhoud > .nummers,.klap-inhoud > .teller{margin:var(--ruimte-3) var(--ruimte-1) var(--ruimte-1)}
+.klap-inhoud > .note{margin:0 var(--ruimte-1) var(--ruimte-1)}
+
+/* P · Kerngetallen: vier getallen twee bij twee, neutraal. Kleur alleen als bolletje bij het label. */
+.getallen{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ruimte-2);margin-top:var(--ruimte-3)}
+.getallen > div{background:var(--surface);border-radius:var(--r-l);padding:var(--ruimte-3) var(--ruimte-4);line-height:1;min-width:0}
+.getallen b{display:block;font-size:var(--fs-xl);font-weight:var(--gewicht-zwaar);letter-spacing:var(--spatie-titel);font-variant-numeric:tabular-nums;white-space:nowrap}
+.getallen b small{font-size:var(--fs-m);letter-spacing:0;color:var(--muted)}
+.getallen i{display:flex;align-items:center;gap:var(--ruimte-1);font-style:normal;font-size:var(--fs-xs);font-weight:var(--gewicht-vet);letter-spacing:var(--spatie-label);text-transform:uppercase;color:var(--muted);margin-top:var(--ruimte-2)}
+.getallen .bol{flex:none;width:var(--stip);height:var(--stip);border-radius:var(--r-rond);background:var(--c,var(--primary))}
+
+/* G-variant · Uitklaprij met een vinkje vooraan: de kop is dan geen knop, maar een .check met
+   .vinkknop + button.klapknop[aria-expanded] (naam · getal · .chevr.klap). */
+.klaprij .check > .klapknop{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-flow:column;grid-auto-columns:auto;gap:var(--ruimte-3);align-items:center;align-self:stretch;min-height:var(--rij);margin:calc(var(--ruimte-3) * -1) 0;width:100%;text-align:left} /* tikvlak = hele rij, rij blijft --rij hoog */
+.klaprij + .klaprij,.klaprij + .swipe,.swipe + .klaprij{border-top:var(--lijn) solid var(--scheiding)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
