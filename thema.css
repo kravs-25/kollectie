@@ -10,5 +10,5 @@
   --status-finished:var(--olijf);     /* klaar */
   --status-towatch:var(--zeegroen);   /* nog te doen */
   --status-dropped:var(--roze);       /* gestopt */
-  --merk:var(--lavendel);             /* app-icoon: televisie in --op-kleur op lavendel; ook theme_color */
+  /* --merk: niet overschreven, dus --bruin (zoals Kravschappen); app-icoon: tv in --op-kleur op bruin; ook theme_color */
 }
